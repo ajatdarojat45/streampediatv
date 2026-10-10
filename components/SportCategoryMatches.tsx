@@ -192,10 +192,13 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
         isLive: g.key === 'live',
         items: visible.filter((m) => categoryOf(m) === g.key),
       // Keep the Live group on the "All" tab even when it has no matches so the
-      // section header never disappears. Upcoming/Finished are still dropped
-      // when empty, and Live drops too on a pinned tab (the empty state shows
-      // instead).
-      })).filter((g) => g.items.length > 0 || (g.isLive && tab === 'all')),
+      // section header never disappears — but only while there are matches to
+      // show. When the list is empty (or a search has no hits) the empty state
+      // stands alone. Upcoming/Finished are still dropped when empty, and Live
+      // drops too on a pinned tab (the empty state shows instead).
+      })).filter(
+        (g) => g.items.length > 0 || (g.isLive && tab === 'all' && visible.length > 0)
+      ),
     [visible, tab]
   );
 
