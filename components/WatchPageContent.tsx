@@ -361,7 +361,10 @@ export function WatchPageContent({ id }: { id: string }) {
             </div>
           </section>
 
-          {/* Head-to-head / Lineups / Timeline (tabs; auto-shown only where data exists) */}
+          {/* Big ad — above the tabs (Overview / H2H / Lineups / Timeline) */}
+          <AdBanner slotId="watch-above-related" category={slug} size="rectangle" />
+
+          {/* H2H / Lineups / Timeline (tabs; auto-shown only where data exists) */}
           <MatchTabs
             analysis={analysisQuery.data}
             lineup={lineupQuery.data}
@@ -372,9 +375,6 @@ export function WatchPageContent({ id }: { id: string }) {
             sportType={sportType}
             matchStatus={match?.status}
           />
-
-          {/* Big ad — above the related matches */}
-          <AdBanner slotId="watch-above-related" category={slug} size="rectangle" />
 
           {/* Related matches (live/upcoming) — grouped by league name.
               `visibleRelated` is already filtered to this competition when the

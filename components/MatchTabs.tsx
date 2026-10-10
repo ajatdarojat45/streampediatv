@@ -46,7 +46,7 @@ function teamStats(events: MatchEvents | undefined): {
   return { home, away };
 }
 
-/** Panelled tab strip wrapping Head-to-Head, Lineups and Timeline. Tabs with no
+/** Panelled tab strip wrapping H2H, Lineups and Timeline. Tabs with no
  *  data are hidden; if only one has data it renders directly with no strip. */
 export function MatchTabs({
   analysis,
@@ -92,7 +92,7 @@ export function MatchTabs({
 
   const defs: Record<TabId, { label: string; show: boolean }> = {
     overview: { label: 'Overview', show: hasStats },
-    h2h: { label: 'Head to Head', show: hasH2H },
+    h2h: { label: 'H2H', show: hasH2H },
     lineup: { label: 'Lineups', show: hasLineup },
     timeline: { label: 'Timeline', show: hasTimeline },
   };
@@ -137,7 +137,11 @@ export function MatchTabs({
 
   return (
     <div className="mb-4">
-      <div className="mb-0 flex flex-wrap gap-1 border-b border-border">
+      {/* Tab strip — pinned to a single row at every width: the buttons never
+          wrap (`nowrap` + `shrink-0`) and the <640px paddings/type shrink so all
+          four tabs still fit a 320px viewport instead of spilling onto a second
+          line. ≥640px keeps the original size. */}
+      <div className="mb-0 flex flex-nowrap items-stretch gap-1 border-b border-border max-[640px]:gap-0.5">
         {available.map((t) => {
           const on = t.id === current;
           return (
@@ -145,7 +149,7 @@ export function MatchTabs({
               key={t.id}
               type="button"
               onClick={() => setActive(t.id)}
-              className={`-mb-px cursor-pointer border-b-2 px-4 py-2.5 text-[14px] font-semibold transition-colors duration-150 ${
+              className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-4 py-2.5 text-[14px] font-semibold transition-colors duration-150 max-[640px]:px-2 max-[640px]:py-2 max-[640px]:text-[13px] ${
                 on
                   ? 'border-accent text-accent'
                   : 'border-transparent text-muted hover:text-text'

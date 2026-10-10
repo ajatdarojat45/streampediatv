@@ -160,12 +160,54 @@ function TeamHeader({
   );
 }
 
-/** The "Substitutes" label + rule, mirrored per side. */
-function SubsDivider({ side }: { side: 'home' | 'away' }) {
+/** Collapsible "Substitutes" block — label + rule + count with a chevron,
+ *  mirrored per side. Collapsed by default so the starting XI stays the focus;
+ *  tap the header to reveal the bench. */
+function SubsSection({
+  side,
+  subs,
+  sportType,
+  statsMap,
+}: {
+  side: 'home' | 'away';
+  subs: LineupPlayer[];
+  sportType: number;
+  statsMap?: Map<number, PlayerEventStats>;
+}) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className={`my-2 flex items-center gap-2 ${side === 'away' ? 'flex-row-reverse' : ''}`}>
-      <span className="text-[11px] font-bold uppercase tracking-wide text-muted">Substitutes</span>
-      <span className="h-px flex-1 bg-border" />
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`my-2 flex w-full cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-border-soft/60 ${
+          side === 'away' ? 'flex-row-reverse' : ''
+        }`}
+      >
+        <span className="text-[11px] font-bold uppercase tracking-wide text-muted">Substitutes</span>
+        <span className="rounded-full border border-border bg-card px-2 py-px text-[11px] font-bold text-muted">
+          {subs.length}
+        </span>
+        <span className="h-px flex-1 bg-border" />
+        <ChevronDown
+          size={14}
+          className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open && (
+        <div className="flex flex-col gap-0.5">
+          {subs.map((p, i) => (
+            <PlayerRow
+              key={`b-${p.player?.playerId ?? p.number}-${i}`}
+              p={p}
+              sportType={sportType}
+              side={side}
+              stats={statsMap?.get(p.player?.playerId ?? 0)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -203,22 +245,9 @@ function LineupColumn({
         ))}
       </div>
 
-      {/* Divider + substitutes (only when the team actually named subs) */}
+      {/* Collapsible substitutes (only when the team actually named subs) */}
       {subs.length > 0 && (
-        <>
-          <SubsDivider side={side} />
-          <div className="flex flex-col gap-0.5">
-            {subs.map((p, i) => (
-              <PlayerRow
-                key={`b-${p.player?.playerId ?? p.number}-${i}`}
-                p={p}
-                sportType={sportType}
-                side={side}
-                stats={statsMap?.get(p.player?.playerId ?? 0)}
-              />
-            ))}
-          </div>
-        </>
+        <SubsSection side={side} subs={subs} sportType={sportType} statsMap={statsMap} />
       )}
     </div>
   );

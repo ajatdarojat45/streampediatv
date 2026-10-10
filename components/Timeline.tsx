@@ -171,8 +171,8 @@ function EventRow({
     );
   const card = (
     <div
-      className={`flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2 ${
-        away ? 'flex-row-reverse text-right' : ''
+      className={`col-start-2 flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2 max-[640px]:gap-2 max-[640px]:px-2.5 ${
+        away ? 'flex-row-reverse text-right sm:col-start-3' : 'sm:col-start-1'
       }`}
     >
       <Icon size={16} strokeWidth={2.25} fill={filled ? 'currentColor' : 'none'} className={`shrink-0 ${cls}`} />
@@ -185,11 +185,11 @@ function EventRow({
   );
   // Centre spine: minute on top, then the score, then a coloured dot that sits
   // on the vertical line. The dot flows *below* the text (not absolutely
-  // positioned) so it never covers the scoreline. It stays centred on the line
-  // because the spine column is the middle, equally-flanked 1fr/auto/1fr column
-  // and this flex column already centres its children.
+  // positioned) so it never covers the scoreline. On ≥640px it stays centred on
+  // the line because the spine column is the middle, equally-flanked 1fr/auto/1fr
+  // column; on mobile it sits in the leftmost auto column instead.
   const spine = (
-      <span className="flex w-11 shrink-0 flex-col items-center">
+      <span className="col-start-1 flex w-11 shrink-0 flex-col items-center sm:col-start-2">
         <span className="rounded bg-panel px-1.5 text-[12px] font-bold tabular-nums text-muted">{eventMinute(e)}</span>
         {e.score && <span className="mt-0.5 rounded bg-panel px-1 text-[10px] tabular-nums text-muted">{e.score}</span>}
       {/* Dot with a ring cut out so it punches through the vertical line. */}
@@ -199,18 +199,13 @@ function EventRow({
       />
     </span>
   );
-  // Home events on the left, away events on the right, spine pinned centre.
-  return away ? (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2.5">
-      <div />
+  // Mobile: the spine hugs the left edge and the card takes the remaining width
+  // (two half-width columns are far too cramped on a phone). ≥640px: home cards
+  // on the left, away cards on the right, spine pinned centre.
+  return (
+    <div className="grid grid-cols-[auto_1fr] items-start gap-2.5 sm:grid-cols-[1fr_auto_1fr]">
       {spine}
       {card}
-    </div>
-  ) : (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2.5">
-      {card}
-      {spine}
-      <div />
     </div>
   );
 }
@@ -266,13 +261,14 @@ export function Timeline({
           </div>
         </div>
       <div className="relative mt-1">
-        {/* Vertical timeline line down the centre. The centre spine column is
-            exactly half the width (both side columns are equal 1fr), so this
-            line meets every event's dot. Each dot's ring masks the line where
-            they overlap, so events still read as distinct nodes. */}
+        {/* Vertical timeline line. On ≥640px it runs down the centre column (both
+            side columns are equal 1fr) so it meets every event's dot; on mobile
+            the spine is the leftmost 22px-wide column, so the line shifts with
+            it. Each dot's ring masks the line where they overlap, so events
+            still read as distinct nodes. */}
         <div
           aria-hidden
-          className="absolute bottom-4 left-1/2 top-4 z-0 w-px -translate-x-1/2 bg-border"
+          className="absolute bottom-4 left-[22px] top-4 z-0 w-px -translate-x-1/2 bg-border sm:left-1/2"
         />
         <div className="relative z-10 flex flex-col gap-1.5">
           {list.map((e, i) => (
