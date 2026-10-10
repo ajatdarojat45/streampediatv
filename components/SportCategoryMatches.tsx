@@ -68,8 +68,9 @@ interface SportCategoryMatchesProps {
 /** Render one Live/Upcoming/Finished status group. Every group is split into
  *  per-league sub-sections so the league name shows once per header,
  *  not per card. The status header is a toggle — collapsed groups show only
- *  the header row. Live stays open by default; upcoming/finished start
- *  collapsed when the list is long so the page scans faster. */
+ *  the header row. The caller decides which group starts expanded: the first
+ *  non-empty group (live → upcoming → finished) opens by default so the list
+ *  never looks empty, while the rest start collapsed. */
 function StatusGroupSection({
   group,
   onMatchClick,
@@ -83,7 +84,8 @@ function StatusGroupSection({
     () => groupMatchesByLeague(group.items),
     [group.items]
   );
-  const [open, setOpen] = useState(defaultOpen ?? group.isLive);
+  const openByDefault = defaultOpen ?? group.isLive;
+  const [open, setOpen] = useState(openByDefault);
   return (
     <section className="mb-[22px]">
       <button
@@ -101,13 +103,18 @@ function StatusGroupSection({
           className={`h-4 w-4 shrink-0 text-muted transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
         />
       </button>
-      {open && (
-        <div className="flex flex-col gap-4">
-          {leagueGroups.map((lg) => (
-            <LeagueGroupSection key={lg.key} group={lg} onMatchClick={onMatchClick} defaultOpen={group.isLive} />
-          ))}
-        </div>
-      )}
+      {open &&
+        (group.items.length === 0 ? (
+          <p className="px-1 text-[13px] text-muted">
+            No {group.label.toLowerCase()} matches right now.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {leagueGroups.map((lg) => (
+              <LeagueGroupSection key={lg.key} group={lg} onMatchClick={onMatchClick} defaultOpen={openByDefault} />
+            ))}
+          </div>
+        ))}
     </section>
   );
 }
@@ -184,9 +191,17 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
         icon: g.icon,
         isLive: g.key === 'live',
         items: visible.filter((m) => categoryOf(m) === g.key),
-      })).filter((g) => g.items.length),
-    [visible]
+      // Keep the Live group on the "All" tab even when it has no matches so the
+      // section header never disappears. Upcoming/Finished are still dropped
+      // when empty, and Live drops too on a pinned tab (the empty state shows
+      // instead).
+      })).filter((g) => g.items.length > 0 || (g.isLive && tab === 'all')),
+    [visible, tab]
   );
+
+  // First group that actually has matches — it opens by default so an empty
+  // Live group never forces the whole list to render collapsed.
+  const firstOpenKey = groups.find((g) => g.items.length > 0)?.key;
 
   const tabLabel = FILTER_TABS.find((t) => t.key === tab)?.label ?? 'All';
   const emptyKind: EmptyKind = query ? 'search' : list.length === 0 ? 'none' : 'filter';
@@ -276,10 +291,16 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
       )}
 
       {groups.map((g, idx) => (
-        <Fragment key={g.key}>
+        // Key includes the active tab so switching tabs remounts the group and
+        // re-applies `defaultOpen`.
+        <Fragment key={`${tab}-${g.key}`}>
           <StatusGroupSection
             group={g}
             onMatchClick={(m) => router.push(`/watch/${m.matchId}?sport=${m.sportType ?? sportType}`)}
+            // The first non-empty group expands by default: live when it has
+            // matches, otherwise upcoming, otherwise finished. An empty Live
+            // group stays visible (All tab) but collapsed.
+            defaultOpen={g.key === firstOpenKey}
           />
 
           {/* In-feed banner — between the first group and the rest of the list. */}
