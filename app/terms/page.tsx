@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — StreamPediaTV',
+  title: 'Terms of Service — StreampediaTV',
 };
 
 export default function TermsPage() {
@@ -19,9 +19,9 @@ export default function TermsPage() {
       </div>
 
       <section className="rounded border border-border bg-panel p-6 shadow max-sm:p-3.5">
-        <h2>StreamPediaTV Terms</h2>
+        <h2>StreampediaTV Terms</h2>
         <p>
-          1 - StreamPediaTV (&quot;Us&quot; or &quot;We&quot;) provides the website and various
+          1 - StreampediaTV (&quot;Us&quot; or &quot;We&quot;) provides the website and various
           related services (collectively, the &quot;Website&quot;) to you, the User, subject
           to your compliance with all the terms, conditions, and notices contained or
           referenced herein (the &quot;Terms of Service&quot;), as well as any other written
@@ -140,9 +140,9 @@ export default function TermsPage() {
         <p>
           11 - All custom graphics, icons, logos, and service names used on the Website are
           registered trademarks, service marks, and/or artwork held under copyright of
-          StreamPediaTV or its Affiliates. All other marks are property of their respective
+          StreampediaTV or its Affiliates. All other marks are property of their respective
           owners. Nothing in these Terms of Service grants you any right to use any
-          trademark, service mark, logo, and/or the name or trade names of StreamPediaTV or its
+          trademark, service mark, logo, and/or the name or trade names of StreampediaTV or its
           Affiliates.
         </p>
 
@@ -152,7 +152,7 @@ export default function TermsPage() {
           judgments of an information provider, site user, or other person or entity not
           connected with us. We do not endorse, nor are we responsible for the accuracy or
           reliability of, any opinion, advice, or statement made by anyone other than an
-          authorized StreamPediaTV spokesperson speaking in his/her official capacity. Please
+          authorized StreampediaTV spokesperson speaking in his/her official capacity. Please
           refer to the specific editorial policies posted on various sections of this
           Website for further information, which policies are incorporated by reference
           into these Terms of Service.
@@ -173,7 +173,7 @@ export default function TermsPage() {
 
         <h3>International Use</h3>
         <p>
-          15 - You agree that due to the nature of StreamPediaTV services your account can be
+          15 - You agree that due to the nature of StreampediaTV services your account can be
           terminated without prior notice.
         </p>
         <p>
@@ -226,7 +226,7 @@ export default function TermsPage() {
           international courts.
         </p>
         <p>
-          25 - Any form of re-streaming StreamPediaTV channels is strictly forbidden and
+          25 - Any form of re-streaming StreampediaTV channels is strictly forbidden and
           subscriptions found breaching this rule will be permanently banned without a
           refund.
         </p>

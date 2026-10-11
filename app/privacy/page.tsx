@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — StreamPediaTV',
+  title: 'Privacy Policy — StreampediaTV',
 };
 
 export default function PrivacyPage() {
@@ -21,24 +21,24 @@ export default function PrivacyPage() {
       <section className="rounded border border-border bg-panel p-6 shadow max-sm:p-3.5">
         <h2>Privacy Policy</h2>
 
-        <h3>1 Privacy Policy of StreamPediaTV</h3>
+        <h3>1 Privacy Policy of StreampediaTV</h3>
         <h4>1.1 INTRODUCTION</h4>
         <p>
-          This privacy policy concerns the products of StreamPediaTV (anything marked as
-          ‘we, us, our’ and similar in this policy will refer to StreamPediaTV) – our website
-          StreamPediaTV and our mobile applications. In order to provide our services, we have
+          This privacy policy concerns the products of StreampediaTV (anything marked as
+          ‘we, us, our’ and similar in this policy will refer to StreampediaTV) – our website
+          StreampediaTV and our mobile applications. In order to provide our services, we have
           to collect some personal data. This privacy policy explains what data do we
           collect, how and why do we process and keep it, how you can contact us and find
           out about your privacy rights, as well as show our commitment to protection of
           your information.
         </p>
         <h4>1.2 DATA CONTROLLER AND OWNER</h4>
-        <p>The owner of StreamPediaTV. You can contact us by e-mail on the address rbtvbiz@gmail.com</p>
+        <p>The owner of StreampediaTV. You can contact us by e-mail on the address rbtvbiz@gmail.com</p>
         <h4>1.3 THIRD-PARTY LINKS</h4>
         <p>
           Please do keep in mind that we aren’t in control of the data our partner
           websites collect and share. While we are committed to guarding your privacy and
-          safety in every way possible, if you’re leaving StreamPediaTV by clicking on a
+          safety in every way possible, if you’re leaving StreampediaTV by clicking on a
           plug-in or a link you find on our site, personal data they collect is out of our
           hands. We strongly recommend you to read the privacy policies of those sites
           first.
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           Personal data refers to information that can identify you, such as your name,
-          e-mail address, or any data you provide while using StreamPediaTV user account. Our
+          e-mail address, or any data you provide while using StreampediaTV user account. Our
           login providers (Facebook or Google) provide us with some of your personal data —
           name, surname, e-mail — upon your login to our services. However, your personal
           information of that kind will never be sold or rented to anyone, for any reason,
