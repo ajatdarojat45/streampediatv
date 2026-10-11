@@ -3,13 +3,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CircleCheck, Loader2, RefreshCw, Share2, ThumbsUp, X } from 'lucide-react';
+import { CircleCheck, Loader2, RefreshCw, Share2, ThumbsUp, Trophy, Tv, X } from 'lucide-react';
 import { useRB } from '@/components/RBProvider';
-import { Countdown, StatusBadge } from '@/components/Match';
+import { Countdown, MatchHead } from '@/components/Match';
 import { groupMatchesByLeague, LeagueGroupSection } from '@/components/LeagueGroup';
-import { isLiveStatus, isStarted, matchDateMs, isPlayable, statusLabel } from '@/lib/matchProto';
+import {
+  isLiveStatus,
+  isStarted,
+  matchDateMs,
+  isPlayable,
+  statusLabel,
+  computeH2HSummary,
+  formatKickoffLong,
+  matchHeading,
+} from '@/lib/matchProto';
 import { useSportMatches, useMatchDetail, useMatchAnalysis, useMatchLineup, useMatchEvent, useMatchStatistic, useStreamUrl } from '@/lib/queries';
-import { sportSlug, sportLabel } from '@/lib/sports';
+import { sportSlug } from '@/lib/sports';
 import VideoPlayer from '@/components/VideoPlayer';
 import AdBanner from '@/components/AdBanner';
 import { MatchTabs } from '@/components/MatchTabs';
@@ -34,6 +43,9 @@ const ACTION_BASE =
   'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-all duration-150';
 const ACTION_IDLE = `${ACTION_BASE} border-border bg-panel text-text hover:border-[#c7ccd2]`;
 const ACTION_ACTIVE = `${ACTION_BASE} border-accent bg-accent-soft text-accent`;
+/** Fact chip in the match head — season/stage, channels, H2H. */
+const META_CHIP =
+  'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-panel px-2.5 py-[3px] text-[12px] text-muted';
 
 interface ResolvedStream {
   key: number;
@@ -87,12 +99,13 @@ export function WatchPageContent({ id }: { id: string }) {
   /** Finished / cancelled / cut — the stream is over. */
   const finished = (matchStatus ?? 0) >= 10000;
   /** Upcoming with a known kickoff time → the player frame shows a countdown. */
-  const countdownMs = isStarted(matchStatus) ? null : matchDateMs(match?.matchDate);
+  const started = isStarted(matchStatus);
+  const countdownMs = started ? null : matchDateMs(match?.matchDate);
   const endLabel = finished ? statusLabel(matchStatus).toLowerCase() : '';
-  const finalScore =
-    finished && match?.homeScore !== undefined && match?.awayScore !== undefined
-      ? `${match.homeScore} : ${match.awayScore}`
-      : '';
+  /** "2 : 1" — proto3 omits a 0 score, so a 0-3 must read as "0 : 3" instead of
+   *  losing the left-hand side. */
+  const scoreText = `${match?.homeScore ?? 0} : ${match?.awayScore ?? 0}`;
+  const finalScore = matchStatus === 10000 && match ? scoreText : '';
 
   const streamLabel = (s: Stream, i: number): string =>
     s.fullName || s.name || `Channel #${s.streamId ?? s.channelId ?? i + 1}`;
@@ -186,24 +199,57 @@ export function WatchPageContent({ id }: { id: string }) {
 
   const slug = sportType > 0 ? sportSlug(sportType) : '';
   const backHref = slug ? `/sports/${slug}` : '/';
-  const categoryLabel = sportLabel(sportType);
 
-  const title = match?.league?.name || match?.title || match?.name || 'Live Stream';
-  const homeName = match?.home?.name || match?.homeTeams?.[0]?.name;
-  const awayName = match?.away?.name || match?.awayTeams?.[0]?.name;
-  const description = homeName && awayName
-    ? `${homeName} vs ${awayName}`
-    : match?.league?.name || match?.stage || 'Live stream';
+  const league = match?.league;
+  /** H1, player caption and share title — the matchup, not the competition. */
+  const title = matchHeading(match);
+  /** Kick-off with an explicit UTC stamp so SSR and client always agree. */
+  const kickoff = formatKickoffLong(match?.matchDate);
+  /** "Season 2026 · Round of 16 · Group A" — cups carry a stage, leagues usually
+   *  only a season, so every present part is joined and absent ones dropped.
+   *  A bare number in `round` is a matchday, so it gets the "Round" prefix. */
+  const round = match?.round
+    ? /^\d+$/.test(match.round)
+      ? `Round ${match.round}`
+      : match.round
+    : '';
+  const stageLabel = [
+    match?.season ? `Season ${match.season}` : '',
+    match?.stage,
+    round,
+    match?.group,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  /** Head-to-head record from the home side's perspective (analysis data the
+   *  tabs already fetch, so this adds no upstream request). */
+  const h2h = computeH2HSummary(analysisQuery.data?.h2h ?? [], match?.home);
+  const channelCount = streams.length;
+  /** Who plays whom, in which competition, when — plus the live/final state.
+   *  Doubles as the page's SEO description (see generateMetadata). */
+  const description = (() => {
+    const comp = league?.name ? ` in ${league.name}` : '';
+    const where = league?.country && league.country !== league.name ? ` (${league.country})` : '';
+    const channels =
+      channelCount > 0 ? ` ${channelCount} channel${channelCount > 1 ? 's' : ''} available.` : '';
+    if (live) return `${title} is live now${comp}${where} — ${statusLabel(matchStatus)}.${channels}`;
+    if (finished) {
+      return matchStatus === 10000
+        ? `${title} finished ${scoreText}${comp}${where}.`
+        : `${title} — this match was ${endLabel}${comp}${where}.`;
+    }
+    return kickoff ? `${title} kicks off ${kickoff}${comp}${where}.` : `${title}${comp}${where}.`;
+  })();
 
   const handleShare = useCallback(async () => {
     const url = window.location.href;
     try {
-      if (navigator.share) await navigator.share({ title, url });
+      if (navigator.share) await navigator.share({ title, text: description, url });
       else await navigator.clipboard.writeText(url);
     } catch {
       /* cancelled or unsupported */
     }
-  }, [title]);
+  }, [title, description]);
 
   const handleRefresh = (): void => {
     autoPlayedRef.current = false;
@@ -250,7 +296,36 @@ export function WatchPageContent({ id }: { id: string }) {
 
       {!busy && !err && match && (
         <>
-          {/* 1. Main video player + pause ad overlay */}
+          {/* 1. Match head — the same card as the match list items, above the
+              player: competition, teams, live/final score, state + kick-off,
+              the match facts and the page description. */}
+          <MatchHead match={match} className="mb-4">
+            {(stageLabel || channelCount > 0 || h2h.total > 0) && (
+              <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2">
+                {stageLabel && (
+                  <span className={META_CHIP}>
+                    <Trophy size={13} className="shrink-0" aria-hidden="true" />
+                    {stageLabel}
+                  </span>
+                )}
+                {channelCount > 0 && (
+                  <span className={META_CHIP}>
+                    <Tv size={13} className="shrink-0" aria-hidden="true" />
+                    {channelCount} {channelCount > 1 ? 'channels' : 'channel'}
+                  </span>
+                )}
+                {h2h.total > 0 && (
+                  <span className={META_CHIP}>
+                    H2H {h2h.wins}W {h2h.draws}D {h2h.losses}L
+                  </span>
+                )}
+              </div>
+            )}
+
+            <p className="mb-0 mt-2.5 text-[13px] leading-[1.6] text-muted">{description}</p>
+          </MatchHead>
+
+          {/* 2. Main video player + pause ad overlay */}
           <section className={PANEL}>
             <div className="relative">
               {playing ? (
@@ -325,41 +400,23 @@ export function WatchPageContent({ id }: { id: string }) {
 
             {resolveErr && <div className={ERROR_BANNER}>{resolveErr}</div>}
 
-            {/* 2. Video info area */}
-            <div className="mt-3.5 flex flex-col gap-2">
-              <h1 className="m-0 text-[18px] font-bold leading-[1.3]">{title}</h1>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {categoryLabel && (
-                  <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-[3px] text-[12px] font-semibold text-accent">
-                    {categoryLabel}
-                  </span>
-                )}
-                {match.status !== undefined && (
-                  <span className="flex items-center gap-2 text-[13px] text-muted">
-                    <StatusBadge status={match.status} />
-                  </span>
-                )}
-              </div>
-
-              <p className="m-0 text-sm leading-[1.6] text-muted">{description}</p>
-
-              <div className="mt-1 flex gap-2">
-                <button type="button" className={ACTION_IDLE} onClick={handleShare}>
-                  <Share2 size={16} />
-                  Share
-                </button>
-                <button
-                  type="button"
-                  className={liked ? ACTION_ACTIVE : ACTION_IDLE}
-                  onClick={() => setLiked((v) => !v)}
-                >
-                  <ThumbsUp size={16} />
-                  {liked ? 'Liked' : 'Like'}
-                </button>
-              </div>
-            </div>
           </section>
+
+          {/* 3. Actions under the player — share, like */}
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button type="button" className={ACTION_IDLE} onClick={handleShare}>
+              <Share2 size={16} />
+              Share
+            </button>
+            <button
+              type="button"
+              className={liked ? ACTION_ACTIVE : ACTION_IDLE}
+              onClick={() => setLiked((v) => !v)}
+            >
+              <ThumbsUp size={16} />
+              {liked ? 'Liked' : 'Like'}
+            </button>
+          </div>
 
           {/* Big ad — above the tabs (Overview / H2H / Lineups / Timeline) */}
           <AdBanner slotId="watch-above-related" category={slug} size="rectangle" />

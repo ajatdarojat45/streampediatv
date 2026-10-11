@@ -666,6 +666,42 @@ export function formatMatchDate(matchDate?: number): string {
   });
 }
 
+/** Longer kick-off stamp for the match header + SEO metadata:
+ *  "Sun, 11 Oct 2026 · 19:00 UTC". Fixed timeZone (UTC) for the same
+ *  SSR/hydration reason as formatMatchDate, and the zone is spelled out in the
+ *  string so the value is never ambiguous. */
+export function formatKickoffLong(matchDate?: number): string {
+  const ms = matchDateMs(matchDate);
+  if (!ms) return '';
+  const d = new Date(ms);
+  const day = d.toLocaleDateString('en-GB', {
+    timeZone: 'UTC', weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+  });
+  const time = d.toLocaleTimeString('en-GB', {
+    timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: false,
+  });
+  return `${day} · ${time} UTC`;
+}
+
+/** Headline matchup — "Home vs Away". Falls back to the payload's own title
+ *  (the live/data payloads carry it), then the competition name. Shared by the
+ *  watch page heading and its SEO metadata so both always read identically. */
+export function matchHeading(m?: Match | null): string {
+  const home = m?.home?.name || m?.homeTeams?.[0]?.name;
+  const away = m?.away?.name || m?.awayTeams?.[0]?.name;
+  if (home && away) return `${home} vs ${away}`;
+  return m?.title || m?.name || m?.league?.name || 'Live Stream';
+}
+
+/** Home/away competitor lists for crest strips — `homeTeams`/`awayTeams` carry
+ *  every player of a doubles pair, with the single-team fields as the fallback. */
+export function matchSides(m?: Match | null): { home: Team[]; away: Team[] } {
+  return {
+    home: m?.homeTeams?.length ? m.homeTeams : m?.home ? [m.home] : [],
+    away: m?.awayTeams?.length ? m.awayTeams : m?.away ? [m.away] : [],
+  };
+}
+
 /** Win / draw / loss summary from a head-to-head list, from `ref`'s perspective.
  *  H2H fixtures alternate home/away, so we locate the reference team on either
  *  side (by teamId, falling back to name) and compare its score. */

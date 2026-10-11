@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getMatchDetail } from '@/app/actions';
 import { WatchPageContent } from '@/components/WatchPageContent';
+import { formatKickoffLong, matchHeading } from '@/lib/matchProto';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -8,7 +9,9 @@ interface PageProps {
 }
 
 /** Dynamic SEO metadata — OpenGraph title/description/thumbnail fetched
- *  server-side from the match detail. */
+ *  server-side from the match detail. The heading + description are built with
+ *  the same helpers the page body uses, so the card never disagrees with the
+ *  page: teams first (what people search for), then competition and kick-off. */
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const { sport } = await searchParams;
@@ -17,11 +20,22 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     const res = await getMatchDetail({ matchId: id, sportType, language: 0, source: 'data' });
     if (!res.ok) throw new Error(res.error);
     const m = res.data.match;
-    const title = m?.league?.name || m?.title || m?.name || 'Live Stream';
-    const home = m?.home?.name || m?.homeTeams?.[0]?.name;
-    const away = m?.away?.name || m?.awayTeams?.[0]?.name;
-    const description = home && away ? `${home} vs ${away}` : title;
-    const image = m?.league?.logo || m?.home?.logo || undefined;
+    const heading = matchHeading(m);
+    const league = m?.league?.name;
+    const country = m?.league?.country;
+    const kickoff = formatKickoffLong(m?.matchDate);
+    /** Skip the competition when `heading` already fell back to its name. */
+    const withLeague = Boolean(league) && !heading.includes(league as string);
+    const title = withLeague ? `${heading} — ${league} live stream` : `${heading} live stream`;
+    const description = [
+      `${heading}${withLeague ? ` in ${league}` : ''}${country ? ` (${country})` : ''}.`,
+      kickoff ? `Kick-off ${kickoff}.` : '',
+      'Live stream with lineups, head-to-head, stats and timeline.',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    // A team crest reads better as a card image than the league's country badge.
+    const image = m?.home?.logo || m?.league?.logo || undefined;
     return {
       title,
       description,
@@ -35,7 +49,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
         card: 'summary_large_image',
         title,
         description,
-        images: image || undefined,
+        images: image ? [image] : undefined,
       },
     };
   } catch {

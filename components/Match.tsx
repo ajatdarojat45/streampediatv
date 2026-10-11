@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, type CSSProperties } from 'react';
+import { useState, useEffect, type CSSProperties, type ReactNode } from 'react';
 import { Flame } from 'lucide-react';
 import { statusLabel, isLiveStatus, isStarted, formatMatchDate } from '@/lib/matchProto';
 import { countryLogoUrl, teamLogoUrl } from '@/lib/logos';
@@ -51,11 +51,25 @@ const STATUS_DOT =
 const LIVE_LABEL =
   'inline-flex shrink-0 items-center gap-1 rounded bg-[#d93025] px-1.5 py-px text-[10px] font-extrabold uppercase tracking-[0.06em] text-white [[data-theme=dark]_&]:bg-[#f87171] [[data-theme=dark]_&]:text-[#1a1a1a]';
 
-/** `.match-row` base — single-column card; all info lives in the centred
- *  content (the side icon columns were removed as duplicates of the centre).
- *  Card chrome (radius/padding) and typography mirror the H2H `MeetingRow`. */
+/** Blinking `Live` tag sitting next to the league name — same in every card. */
+function LiveLabel() {
+  return (
+    <span className={LIVE_LABEL}>
+      <span className="h-1 w-1 rounded-full bg-current animate-[blink_1.2s_infinite]" />
+      Live
+    </span>
+  );
+}
+
+/** Card chrome shared by every match card — list rows (`MatchRow`) and the
+ *  watch-page head (`MatchHead`): single-column card, all info lives in the
+ *  centred content (the side icon columns were removed as duplicates of the
+ *  centre). Chrome (radius/padding) and typography mirror the H2H `MeetingRow`. */
+const CARD_CHROME =
+  'w-full rounded-lg border border-l-[3px] bg-card px-3.5 py-2.5 max-[1024px]:px-3.5';
+/** `.match-row` base — the interactive variant: lift + shadow on hover. */
 const ROW_BASE =
-  'block w-full rounded-lg border border-l-[3px] bg-card px-3.5 py-2.5 text-left transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow max-[1024px]:px-3.5';
+  `${CARD_CHROME} block text-left transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`;
 /** `.match-row` (upcoming/idle) — sport-coloured left accent only. */
 const ROW = `${ROW_BASE} border-border border-l-[color:var(--sport-color,transparent)] hover:border-[#c7ccd2]`;
 /** `.match-row.is-live` — live is the exception: the whole border (all sides)
@@ -63,6 +77,12 @@ const ROW = `${ROW_BASE} border-border border-l-[color:var(--sport-color,transpa
 const ROW_LIVE = `${ROW_BASE} border-[color:var(--live)]`;
 /** `.match-row` finished — muted gray left accent only (other sides normal). */
 const ROW_FINISHED = `${ROW_BASE} border-border border-l-[#9ca3af]`;
+
+/** `MatchHead` (watch page) — the same three states, but read-only: no hover
+ *  lift/border-highlight because the card is not clickable. */
+const HEAD = `${CARD_CHROME} block border-border border-l-[color:var(--sport-color,transparent)]`;
+const HEAD_LIVE = `${CARD_CHROME} block border-[color:var(--live)]`;
+const HEAD_FINISHED = `${CARD_CHROME} block border-border border-l-[#9ca3af]`;
 
 /** `.sk` shimmer block (pseudo-element rendered via `after:` utilities). */
 const SK =
@@ -215,18 +235,95 @@ interface MatchRowProps {
   onClick: () => void;
 }
 
-export function MatchRow({ match, onClick }: MatchRowProps) {
+interface MatchHeadProps {
+  match: Match;
+  /** Extra card rows — the watch page adds fact chips and a description. */
+  children?: ReactNode;
+  className?: string;
+}
+
+/** Card body shared by the list rows (`MatchRow`) and the watch-page head
+ *  (`MatchHead`): league line, versus grid and the state/date line.
+ *  `heading` swaps the wrappers to `div`/`h1`, because the watch page promotes
+ *  the versus grid to the page `<h1>`, while a row lives inside a `<button>`
+ *  (phrasing content only, hence `span`). */
+function CardContent({ match, heading = false }: { match: Match; heading?: boolean }) {
   const live = isLiveStatus(match.status);
   // Live/finished → missing score shown as 0; upcoming → shown as "-".
   const started = isStarted(match.status);
-  /** Finished / cancelled / cut → muted gray border instead of the sport accent. */
-  const finished = (match.status ?? 0) >= 10000;
   const score = (v?: number): number | string => (v ?? (started ? 0 : '-'));
   const league = match.league?.name || match.name || match.title || '—';
   const eventName = match.title || match.name || match.league?.name || '—';
   const sportName = sportLabel(match.sportType);
-  const color = sportColor(match.sportType);
   const scoring = sportIsScoring(match.sportType);
+  const Box = heading ? 'div' : 'span';
+  const Grid = heading ? 'h1' : 'span';
+  /** Explicit `m-0` on the `<h1>` variants, mirroring the h1 resets used
+   *  elsewhere in the app (Tailwind preflight already zeroes it). */
+  const reset = heading ? 'm-0 ' : '';
+  return (
+    <Box className="block min-w-0">
+      {scoring ? (
+        <Box className="flex min-w-0 flex-col">
+          {/* League row lives OUTSIDE the team grid (full-width, centred) so
+              its text length never changes the centre-column width — the team
+              logo/name positions stay fixed. Only the score sets the centre
+              width (with a min-width so "VS" / short scores align too).
+              Always shown so each card stays self-explanatory even when the
+              league group header is scrolled off-screen. */}
+          <Box className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
+              {match.hot && <Flame className="h-3.5 w-3.5 shrink-0 text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]" />}
+              <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
+              <Box className="min-w-0 max-w-[260px] truncate">{sportName}{' · '}{league}</Box>
+              {live && <LiveLabel />}
+          </Box>
+          <Grid className={`${reset}grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5`}>
+            <span className="flex min-w-0 justify-end">
+              <TeamSide teams={match.homeTeams?.length ? match.homeTeams : match.home ? [match.home] : []} sportType={match.sportType} align="home" />
+            </span>
+            <span className="flex min-w-[72px] items-center justify-center px-1">
+              {started ? (
+                <span className="whitespace-nowrap text-[15px] font-extrabold tabular-nums">{score(match.homeScore)} : {score(match.awayScore)}</span>
+              ) : (
+                <span className="whitespace-nowrap text-[13px] font-bold uppercase tracking-[0.08em] text-muted">VS</span>
+              )}
+            </span>
+            <span className="flex min-w-0">
+              <TeamSide teams={match.awayTeams?.length ? match.awayTeams : match.away ? [match.away] : []} sportType={match.sportType} align="away" />
+            </span>
+          </Grid>
+          <span className="mt-2 flex justify-center">
+            {live ? (
+              <span className="whitespace-nowrap text-[11px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">{statusLabel(match.status)}</span>
+            ) : (
+              <span className="text-[11px] text-muted">{formatMatchDate(match.matchDate)}</span>
+            )}
+          </span>
+        </Box>
+      ) : (
+        <Box className="flex min-w-0 flex-col gap-1">
+          <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-muted">
+            <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
+            <span className="truncate">{sportName}{' · '}{league}</span>
+            {live && <LiveLabel />}
+          </span>
+          <Grid className={`${reset}truncate text-[15px] font-bold`} title={eventName}>{eventName}</Grid>
+          {live ? (
+            <span className="whitespace-nowrap text-[11px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">{statusLabel(match.status)}</span>
+          ) : (
+            <span className="text-[11px] text-muted">{formatMatchDate(match.matchDate)}</span>
+          )}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+export function MatchRow({ match, onClick }: MatchRowProps) {
+  const live = isLiveStatus(match.status);
+  /** Finished / cancelled / cut → muted gray border instead of the sport accent. */
+  const finished = (match.status ?? 0) >= 10000;
+  const color = sportColor(match.sportType);
   return (
     <button
       type="button"
@@ -234,70 +331,26 @@ export function MatchRow({ match, onClick }: MatchRowProps) {
       style={{ '--sport-color': color } as CSSProperties}
       onClick={onClick}
     >
-      <span className="block min-w-0">
-        {scoring ? (
-          <span className="flex min-w-0 flex-col">
-            {/* League row lives OUTSIDE the team grid (full-width, centred) so
-                its text length never changes the centre-column width — the team
-                logo/name positions stay fixed. Only the score sets the centre
-                width (with a min-width so "VS" / short scores align too).
-                Always shown so each card stays self-explanatory even when the
-                league group header is scrolled off-screen. */}
-            <span className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
-                {match.hot && <Flame className="h-3.5 w-3.5 shrink-0 text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]" />}
-                <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
-                <span className="min-w-0 max-w-[260px] truncate">{sportName}{' · '}{league}</span>
-                {live && (
-                  <span className={LIVE_LABEL}>
-                    <span className="h-1 w-1 rounded-full bg-current animate-[blink_1.2s_infinite]" />
-                    Live
-                  </span>
-                )}
-            </span>
-            <span className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5">
-              <span className="flex min-w-0 justify-end">
-                <TeamSide teams={match.homeTeams?.length ? match.homeTeams : match.home ? [match.home] : []} sportType={match.sportType} align="home" />
-              </span>
-              <span className="flex min-w-[72px] items-center justify-center px-1">
-                {started ? (
-                  <span className="whitespace-nowrap text-[15px] font-extrabold tabular-nums">{score(match.homeScore)} : {score(match.awayScore)}</span>
-                ) : (
-                  <span className="whitespace-nowrap text-[13px] font-bold uppercase tracking-[0.08em] text-muted">VS</span>
-                )}
-              </span>
-              <span className="flex min-w-0">
-                <TeamSide teams={match.awayTeams?.length ? match.awayTeams : match.away ? [match.away] : []} sportType={match.sportType} align="away" />
-              </span>
-            </span>
-            <span className="mt-2 flex justify-center">
-              {live ? (
-                <span className="whitespace-nowrap text-[11px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">{statusLabel(match.status)}</span>
-              ) : (
-                <span className="text-[11px] text-muted">{formatMatchDate(match.matchDate)}</span>
-              )}
-            </span>
-          </span>
-        ) : (
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-muted">
-              <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
-              <span className="truncate">{sportName}{' · '}{league}</span>
-              {live && (
-                <span className={LIVE_LABEL}>
-                  <span className="h-1 w-1 rounded-full bg-current animate-[blink_1.2s_infinite]" />
-                  Live
-                </span>
-              )}
-            </span>
-            <span className="truncate text-[15px] font-bold" title={eventName}>{eventName}</span>
-            {live ? (
-              <span className="whitespace-nowrap text-[11px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">{statusLabel(match.status)}</span>
-            ) : (
-              <span className="text-[11px] text-muted">{formatMatchDate(match.matchDate)}</span>
-            )}
-          </span>
-        )}
-      </span>
+      <CardContent match={match} />
     </button>
+  );
+}
+
+/** Watch-page head — the list-item card (`MatchRow` content, chrome and order)
+ *  sitting above the player, minus the click affordances. `children` append
+ *  card rows: the watch page passes its fact chips and the description. */
+export function MatchHead({ match, children, className }: MatchHeadProps) {
+  const live = isLiveStatus(match.status);
+  const finished = (match.status ?? 0) >= 10000;
+  const color = sportColor(match.sportType);
+  const card = live ? HEAD_LIVE : finished ? HEAD_FINISHED : HEAD;
+  return (
+    <div
+      className={`${card}${className ? ` ${className}` : ''}`}
+      style={{ '--sport-color': color } as CSSProperties}
+    >
+      <CardContent match={match} heading />
+      {children}
+    </div>
   );
 }
