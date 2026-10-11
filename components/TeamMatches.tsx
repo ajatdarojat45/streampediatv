@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import type { MatchAnalysis, Match, Team, MatchOutcome } from '@/lib/types';
 import { matchOutcome } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
+import { watchHref } from '@/lib/sports';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
 const PANEL =
@@ -21,7 +23,8 @@ const OUTCOME_BG: Record<MatchOutcome, string> = {
   L: 'bg-[#dc2626]',
 };
 
-/** How many of the most recent results the compact form strip shows. */
+/** How many of the most recent results the compact form strip shows, and how
+ *  many fixtures a collapsed list previews before the "Show all" toggle. */
 const FORM_LEN = 5;
 
 /** Sort comparators: latest result first, soonest fixture first. */
@@ -50,8 +53,8 @@ function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 
         align === 'home' ? 'flex-row-reverse text-right' : ''
       }`}
     >
-      <TeamLogo name={name} logo={logo} />
       <span className="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis text-[14px] font-semibold">{name ?? '—'}</span>
+      <TeamLogo name={name} logo={logo} />
     </span>
   );
 }
@@ -80,8 +83,10 @@ function isSameTeam(t: Team | undefined, ref: Team | undefined): boolean {
  *  for an upcoming tie) with the result badge next to the reference side, and
  *  the kick-off below. The left border carries the result colour (green/win,
  *  grey/draw, red/loss) or the accent for an upcoming fixture — the same
- *  structure as the H2H `MeetingRow`. */
-function FormRow({ m, refTeam, played }: { m: Match; refTeam?: Team; played: boolean }) {
+ *  structure as the H2H `MeetingRow`. The card is a link into that fixture's
+ *  own detail page (`/watch/[id]`, the route the list rows open); the plain
+ *  card is only the defensive fallback when `matchId` is missing. */
+function FormRow({ m, refTeam, played, sportType }: { m: Match; refTeam?: Team; played: boolean; sportType?: number }) {
   const league = m.league;
   const stage = m.stage || m.round || m.group;
   const competition = league?.name || stage;
@@ -95,71 +100,87 @@ function FormRow({ m, refTeam, played }: { m: Match; refTeam?: Team; played: boo
         : 'border-l-[#9ca3af]';
   const homeIsRef = isSameTeam(m.home, refTeam);
   const awayIsRef = isSameTeam(m.away, refTeam);
-
-  return (
-    <div className={`block w-full rounded-lg border border-l-[3px] border-border ${border} bg-card px-3.5 py-2.5`}>
-      <div className="flex min-w-0 flex-col">
-        {competition && (
-          <span className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
-            {league?.logo && (
-              <img
-                src={league.logo}
-                alt=""
-                loading="lazy"
-                className={`${LEAGUE_LOGO_SIZE} shrink-0 rounded-[4px] object-contain`}
-              />
-            )}
-            <span className="min-w-0 max-w-[260px] truncate">
-              {league?.name ?? competition}
-              {stage && league?.name ? ` · ${stage}` : ''}
-            </span>
-          </span>
-        )}
-        <div className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5">
-          <div className="flex min-w-0 items-center justify-end gap-2">
-            <TeamChip name={m.home?.name} logo={m.home?.logo} align="home" />
-            {played && homeIsRef && <OutcomeBadge outcome={outcome} />}
-          </div>
-
-          <div className="flex min-w-[72px] items-center justify-center px-1">
-            {played ? (
-              <span className="whitespace-nowrap text-[15px] font-extrabold tabular-nums">
-                {m.homeScore ?? 0} : {m.awayScore ?? 0}
-              </span>
-            ) : (
-              <span className="whitespace-nowrap text-[12px] font-semibold uppercase tracking-wide text-muted">vs</span>
-            )}
-          </div>
-
-          <div className="flex min-w-0 items-center gap-2">
-            {played && awayIsRef && <OutcomeBadge outcome={outcome} />}
-            <TeamChip name={m.away?.name} logo={m.away?.logo} align="away" />
-          </div>
-        </div>
-
-        <span className="mt-2 flex justify-center">
-          <span className="text-[11px] text-muted">
-            <LocalTime ts={m.matchDate} />
+  const card = `block w-full rounded-lg border border-l-[3px] border-border ${border} bg-card px-3.5 py-2.5`;
+  const body = (
+    <div className="flex min-w-0 flex-col">
+      {competition && (
+        <span className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
+          {league?.logo && (
+            <img
+              src={league.logo}
+              alt=""
+              loading="lazy"
+              className={`${LEAGUE_LOGO_SIZE} shrink-0 rounded-[4px] object-contain`}
+            />
+          )}
+          <span className="min-w-0 max-w-[260px] truncate">
+            {league?.name ?? competition}
+            {stage && league?.name ? ` · ${stage}` : ''}
           </span>
         </span>
+      )}
+      <div className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5">
+        <div className="flex min-w-0 items-center justify-end gap-2">
+          <TeamChip name={m.home?.name} logo={m.home?.logo} align="home" />
+          {played && homeIsRef && <OutcomeBadge outcome={outcome} />}
+        </div>
+
+        <div className="flex min-w-[72px] items-center justify-center px-1">
+          {played ? (
+            <span className="whitespace-nowrap text-[15px] font-extrabold tabular-nums">
+              {m.homeScore ?? 0} : {m.awayScore ?? 0}
+            </span>
+          ) : (
+            <span className="whitespace-nowrap text-[12px] font-semibold uppercase tracking-wide text-muted">vs</span>
+          )}
+        </div>
+
+        <div className="flex min-w-0 items-center gap-2">
+          {played && awayIsRef && <OutcomeBadge outcome={outcome} />}
+          <TeamChip name={m.away?.name} logo={m.away?.logo} align="away" />
+        </div>
       </div>
+
+      <span className="mt-2 flex justify-center">
+        <span className="text-[11px] text-muted">
+          <LocalTime ts={m.matchDate} />
+        </span>
+      </span>
     </div>
+  );
+
+  if (m.matchId == null) return <div className={card}>{body}</div>;
+  return (
+    <Link
+      href={watchHref(m.matchId, m.sportType ?? sportType)}
+      className={`${card} transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`}
+    >
+      {body}
+    </Link>
   );
 }
 
 /** One team's list inside a tab: a header (crest + optional last-5 form strip)
- *  followed by that team's fixtures. Renders nothing when the list is empty. */
+ *  followed by that team's fixtures. Renders nothing when the list is empty.
+ *  With `maxVisible` set the list previews that many fixtures and any remainder
+ *  sits behind that team's own "Show more" / "Show less" toggle. */
 function TeamGroup({
   team,
   matches,
   played,
   showForm = false,
+  sportType,
+  maxVisible,
 }: {
   team?: Team;
   matches: Match[];
   played: boolean;
   showForm?: boolean;
+  sportType?: number;
+  /** Preview this many fixtures, with the rest behind a per-team toggle. */
+  maxVisible?: number;
 }) {
+  const [expanded, setExpanded] = useState(false);
   if (!matches.length) return null;
 
   const form = showForm
@@ -168,6 +189,8 @@ function TeamGroup({
         .map((m) => matchOutcome(m, team))
         .filter((o): o is MatchOutcome => o !== null)
     : [];
+  const hasMore = maxVisible !== undefined && matches.length > maxVisible;
+  const shown = expanded ? matches : matches.slice(0, maxVisible);
 
   return (
     <div className="min-w-0">
@@ -187,14 +210,29 @@ function TeamGroup({
         )}
       </div>
       <div className="flex flex-col gap-2">
-        {matches.map((m, i) => (
+        {shown.map((m, i) => (
           <FormRow
             key={m.matchId ?? `${played ? 'latest' : 'next'}-${i}`}
             m={m}
             refTeam={team}
             played={played}
+            sportType={sportType}
           />
         ))}
+        {hasMore && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            className="mx-auto flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-[12px] font-semibold text-accent"
+          >
+            {expanded ? 'Show less' : 'Show more'}
+            <ChevronDown
+              size={14}
+              className={`shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+            />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -205,6 +243,8 @@ interface TeamMatchesProps {
   analysis: MatchAnalysis;
   homeTeam?: Team;
   awayTeam?: Team;
+  /** Fallback sport code for rows whose own `sportType` is missing. */
+  sportType?: number;
 }
 
 /** Panel behind both the "Latest Matches" and "Next Matches" tabs: a collapsible
@@ -218,6 +258,8 @@ function TeamMatchesPanel({
   awayMatches,
   played,
   showForm = false,
+  sportType,
+  maxVisible,
 }: {
   title: string;
   homeTeam?: Team;
@@ -227,6 +269,10 @@ function TeamMatchesPanel({
   played: boolean;
   /** Render each team's last-5 W/D/L strip (`TeamGroup`) — both teams alike. */
   showForm?: boolean;
+  sportType?: number;
+  /** When set, each team's list previews this many fixtures, with the
+   *  remainder behind that team's own "Show more"; leave unset to render all. */
+  maxVisible?: number;
 }) {
   const [open, setOpen] = useState(true);
   if (!homeMatches.length && !awayMatches.length) return null;
@@ -254,35 +300,37 @@ function TeamMatchesPanel({
 
       {open && (
         <div className="flex flex-col gap-3">
-          <TeamGroup team={homeTeam} matches={homeMatches} played={played} showForm={showForm} />
-          <TeamGroup team={awayTeam} matches={awayMatches} played={played} showForm={showForm} />
+          <TeamGroup team={homeTeam} matches={homeMatches} played={played} showForm={showForm} sportType={sportType} maxVisible={maxVisible} />
+          <TeamGroup team={awayTeam} matches={awayMatches} played={played} showForm={showForm} sportType={sportType} maxVisible={maxVisible} />
         </div>
       )}
     </section>
   );
 }
 
-/** "Latest Matches" tab — each team's last five results (most recent first),
- *  each with its own last-5 form strip. Decoded from the analysis payload (107):
- *  `homeLatest` / `awayLatest` (the API returns more than five per team, so both
- *  lists are trimmed to `FORM_LEN`). */
-export function LatestMatches({ analysis, homeTeam, awayTeam }: TeamMatchesProps) {
+/** "Latest Matches" tab — each team's recent results (most recent first), each
+ *  with its own last-5 form strip. Decoded from the analysis payload (107):
+ *  `homeLatest` / `awayLatest` (the API returns more than five per team; each
+ *  team's list previews `FORM_LEN` and the rest sit behind its own "Show more"). */
+export function LatestMatches({ analysis, homeTeam, awayTeam, sportType }: TeamMatchesProps) {
   return (
     <TeamMatchesPanel
       title="Latest Matches"
       homeTeam={homeTeam}
-      homeMatches={[...analysis.homeLatest].sort(byDateDesc).slice(0, FORM_LEN)}
+      homeMatches={[...analysis.homeLatest].sort(byDateDesc)}
       awayTeam={awayTeam}
-      awayMatches={[...analysis.awayLatest].sort(byDateDesc).slice(0, FORM_LEN)}
+      awayMatches={[...analysis.awayLatest].sort(byDateDesc)}
       played
       showForm
+      sportType={sportType}
+      maxVisible={FORM_LEN}
     />
   );
 }
 
 /** "Next Matches" tab — both teams' upcoming fixtures, soonest first. Decoded
  *  from the analysis payload (107): `homeNext` / `awayNext`. */
-export function NextMatches({ analysis, homeTeam, awayTeam }: TeamMatchesProps) {
+export function NextMatches({ analysis, homeTeam, awayTeam, sportType }: TeamMatchesProps) {
   return (
     <TeamMatchesPanel
       title="Next Matches"
@@ -291,6 +339,7 @@ export function NextMatches({ analysis, homeTeam, awayTeam }: TeamMatchesProps) 
       awayTeam={awayTeam}
       awayMatches={[...analysis.awayNext].sort(byDateAsc)}
       played={false}
+      sportType={sportType}
     />
   );
 }

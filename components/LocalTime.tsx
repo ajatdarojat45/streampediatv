@@ -20,7 +20,7 @@ export function useUserTimeZone(): string | null {
 interface LocalTimeProps {
   /** Feed kick-off: seconds or milliseconds since epoch. */
   ts?: number;
-  /** `short` → "Oct 11, 07:00 PM" (match rows), `long` → "Sun, 11 Oct 2026 · 19:00 GMT+7". */
+  /** `short` → "Oct 11, 2026, 07:00 PM" (match rows), `long` → "Sun, 11 Oct 2026 · 19:00 GMT+7". */
   variant?: 'short' | 'long';
   className?: string;
 }

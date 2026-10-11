@@ -116,11 +116,11 @@ export function MatchTabs({
       case 'overview':
         return <Stats stats={stats!} homeTeam={homeTeam} awayTeam={awayTeam} />;
       case 'h2h':
-        return <H2H analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} />;
+        return <H2H analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} sportType={sportType} />;
       case 'latest':
-        return <LatestMatches analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} />;
+        return <LatestMatches analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} sportType={sportType} />;
       case 'next':
-        return <NextMatches analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} />;
+        return <NextMatches analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} sportType={sportType} />;
       case 'lineup':
         return (
           <Lineup

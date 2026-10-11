@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import type { MatchAnalysis, Match, Team } from '@/lib/types';
 import { computeH2HSummary } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
+import { watchHref } from '@/lib/sports';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
 const PANEL =
@@ -14,6 +16,9 @@ const PANEL =
  *  team `h-6 w-6 rounded-md`, league `h-4 w-4 rounded-[4px]`, monogram `text-[11px]`. */
 const TEAM_LOGO_SIZE = 'h-6 w-6';
 const LEAGUE_LOGO_SIZE = 'h-4 w-4';
+
+/** How many past meetings the list previews before the "Show all" toggle. */
+const H2H_PREVIEW = 5;
 
 /** Team logo with a monogram fallback. */
 function TeamLogo({ name, logo, size = TEAM_LOGO_SIZE }: { name?: string; logo?: string; size?: string }) {
@@ -47,51 +52,65 @@ function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 
 /** One past meeting: home : away, date, and (above the score) the competition
  *  they met in. Structure mirrors the match card: league row on top
  *  (full-width, centred), then the team grid, then the date row — with the
- *  same sizes/margins (mb-2 / min-w-[72px] / mt-2) so positions stay fixed. */
-function MeetingRow({ m }: { m: Match }) {
+ *  same sizes/margins (mb-2 / min-w-[72px] / mt-2) so positions stay fixed.
+ *  The card itself is a link into that meeting's own detail page (`/watch/[id]`,
+ *  the route the list rows open) so a result can be drilled into; `matchId` is
+ *  always present on the analysis payload, the plain card is the defensive
+ *  fallback for a malformed entry. */
+function MeetingRow({ m, sportType }: { m: Match; sportType?: number }) {
   const league = m.league;
   const stage = m.stage || m.round || m.group;
   const competition = league?.name || stage;
-  return (
-    <div className="block w-full rounded-lg border border-l-[3px] border-border border-l-[#9ca3af] bg-card px-3.5 py-2.5">
-      <div className="flex min-w-0 flex-col">
-        {competition && (
-          <span className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
-            {league?.logo && (
-              <img
-                src={league.logo}
-                alt=""
-                loading="lazy"
-                className={`${LEAGUE_LOGO_SIZE} shrink-0 rounded-[4px] object-contain`}
-              />
-            )}
-            <span className="min-w-0 max-w-[260px] truncate">
-              {league?.name ?? competition}
-              {stage && league?.name ? ` · ${stage}` : ''}
-            </span>
+  const card =
+    'block w-full rounded-lg border border-l-[3px] border-border border-l-[#9ca3af] bg-card px-3.5 py-2.5';
+  const body = (
+    <div className="flex min-w-0 flex-col">
+      {competition && (
+        <span className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
+          {league?.logo && (
+            <img
+              src={league.logo}
+              alt=""
+              loading="lazy"
+              className={`${LEAGUE_LOGO_SIZE} shrink-0 rounded-[4px] object-contain`}
+            />
+          )}
+          <span className="min-w-0 max-w-[260px] truncate">
+            {league?.name ?? competition}
+            {stage && league?.name ? ` · ${stage}` : ''}
           </span>
-        )}
-        <div className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5">
-          <div className="flex min-w-0 justify-end">
-            <TeamChip name={m.home?.name} logo={m.home?.logo} align="home" />
-          </div>
-
-          <div className="flex min-w-[72px] items-center justify-center px-1">
-            <span className="whitespace-nowrap text-[15px] font-extrabold tabular-nums">
-              {m.homeScore ?? 0} : {m.awayScore ?? 0}
-            </span>
-          </div>
-
-          <div className="flex min-w-0">
-            <TeamChip name={m.away?.name} logo={m.away?.logo} align="away" />
-          </div>
+        </span>
+      )}
+      <div className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5">
+        <div className="flex min-w-0 justify-end">
+          <TeamChip name={m.home?.name} logo={m.home?.logo} align="home" />
         </div>
 
-        <span className="mt-2 flex justify-center">
-          <span className="text-[11px] text-muted"><LocalTime ts={m.matchDate} /></span>
-        </span>
+        <div className="flex min-w-[72px] items-center justify-center px-1">
+          <span className="whitespace-nowrap text-[15px] font-extrabold tabular-nums">
+            {m.homeScore ?? 0} : {m.awayScore ?? 0}
+          </span>
+        </div>
+
+        <div className="flex min-w-0">
+          <TeamChip name={m.away?.name} logo={m.away?.logo} align="away" />
+        </div>
       </div>
+
+      <span className="mt-2 flex justify-center">
+        <span className="text-[11px] text-muted"><LocalTime ts={m.matchDate} /></span>
+      </span>
     </div>
+  );
+
+  if (m.matchId == null) return <div className={card}>{body}</div>;
+  return (
+    <Link
+      href={watchHref(m.matchId, m.sportType ?? sportType)}
+      className={`${card} transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`}
+    >
+      {body}
+    </Link>
   );
 }
 
@@ -99,14 +118,19 @@ export function H2H({
   analysis,
   homeTeam,
   awayTeam,
+  sportType,
 }: {
   analysis: MatchAnalysis;
   homeTeam?: Team;
   awayTeam?: Team;
+  sportType?: number;
 }) {
   const [open, setOpen] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const summary = computeH2HSummary(analysis.h2h, homeTeam);
   const h2h = [...analysis.h2h].sort((a, b) => (b.matchDate ?? 0) - (a.matchDate ?? 0));
+  const hasMore = h2h.length > H2H_PREVIEW;
+  const shown = expanded ? h2h : h2h.slice(0, H2H_PREVIEW);
 
   if (!h2h.length) return null;
 
@@ -155,8 +179,8 @@ export function H2H({
         </div>
       </div>
 
-      {/* Past meetings, most recent first — collapsible, with a divider
-          between each meeting. */}
+      {/* Past meetings, most recent first — the section collapses as a whole and
+          the list previews `H2H_PREVIEW` meetings, the rest behind "Show all". */}
       <div className="mt-1 border-t border-[rgba(0,0,0,0.06)] pt-3 [[data-theme=dark]_&]:border-[rgba(255,255,255,0.08)]">
         <button
           type="button"
@@ -177,9 +201,25 @@ export function H2H({
 
         {open && (
           <div className="mt-2 flex flex-col gap-2">
-            {h2h.map((m) => (
-              <MeetingRow key={m.matchId} m={m} />
+            {shown.map((m) => (
+              <MeetingRow key={m.matchId} m={m} sportType={sportType} />
             ))}
+            {hasMore && (
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                aria-expanded={expanded}
+                className="mx-auto mt-1 flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-[12px] font-semibold text-accent"
+              >
+                {expanded ? 'Show less' : `Show all ${h2h.length} meetings`}
+                <ChevronDown
+                  size={14}
+                  className={`shrink-0 transition-transform duration-200 ${
+                    expanded ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+            )}
           </div>
         )}
       </div>

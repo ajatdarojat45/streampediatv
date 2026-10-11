@@ -46,12 +46,13 @@ function zoneLabel(d: dayjs.Dayjs): string {
   return d.offsetName('short') ?? d.format('Z');
 }
 
-/** Compact stamp under a match row / H2H result — "Oct 11, 07:00 PM".
+/** Compact stamp under a match row / H2H result — "Oct 11, 2026, 07:00 PM".
  *  `timeZone` defaults to the runtime's local zone, so a browser render already
- *  follows the viewer's clock. */
+ *  follows the viewer's clock. The year is always part of the stamp so a
+ *  fixture never reads as ambiguous across seasons. */
 export function formatMatchDate(matchDate?: number, timeZone?: string): string {
   const d = kickoff(matchDate, timeZone);
-  return d ? d.format('MMM DD, hh:mm A') : '-';
+  return d ? d.format('MMM DD, YYYY, hh:mm A') : '-';
 }
 
 /** Longer kick-off stamp for the match header, the page description and the SEO
