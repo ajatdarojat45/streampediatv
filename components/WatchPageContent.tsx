@@ -271,7 +271,6 @@ export function WatchPageContent({ id }: { id: string }) {
           ← Back
         </Link>
         <div className="inline-flex items-center gap-3">
-          <span className="font-mono text-[12px] text-muted">Watch #{matchId}</span>
           <button
             type="button"
             className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-sm border border-border bg-panel text-[16px] text-muted transition-all duration-150 hover:border-[#c7ccd2] hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
@@ -321,8 +320,6 @@ export function WatchPageContent({ id }: { id: string }) {
                 )}
               </div>
             )}
-
-            <p className="mb-0 mt-2.5 text-[13px] leading-[1.6] text-muted">{description}</p>
           </MatchHead>
 
           {/* 2. Main video player + pause ad overlay */}
