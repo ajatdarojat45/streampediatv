@@ -39,13 +39,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 </aside>
                 <div className="min-h-[60vh] min-w-0 flex-1">
                   <header className="sticky top-0 z-20 mb-5 flex items-center justify-between bg-[rgba(248,249,250,0.72)] py-3 shadow-[0_1px_0_rgba(255,255,255,0.65)_inset,0_10px_30px_-18px_rgba(15,23,42,0.35)] backdrop-blur-[14px] backdrop-saturate-150 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:content-[''] after:bg-[linear-gradient(90deg,transparent,var(--accent),transparent)] max-[640px]:mb-4 max-[640px]:py-2.5 [[data-theme=dark]_&]:bg-[rgba(10,14,21,0.72)] [[data-theme=dark]_&]:shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)]">
-                    <div className="flex items-center gap-3 max-[640px]:gap-2.5">
+                    <Link href="/" className="group flex items-center gap-3 no-underline max-[640px]:gap-2.5">
                       <span className="inline-flex h-[42px] w-[42px] items-center justify-center rounded ring-1 ring-inset ring-[rgba(255,255,255,0.28)] [background:var(--grad)] text-[22px] shadow-[0_8px_20px_-6px_rgba(26,115,232,0.55)] max-[640px]:h-9 max-[640px]:w-9 max-[640px]:rounded-[10px] max-[640px]:text-[18px] max-[640px]:[&>svg]:h-[18px] max-[640px]:[&>svg]:w-[18px]"><Play size={22} /></span>
                       <div>
-                        <h1 className="m-0 text-[19px] font-bold leading-[1.1] tracking-[-0.02em] max-[640px]:text-[16px]">StreamPediaTV</h1>
+                        <h1 className="m-0 text-[19px] font-bold leading-[1.1] tracking-[-0.02em] transition-colors duration-150 group-hover:text-accent max-[640px]:text-[16px]">StreamPediaTV</h1>
                         <p className="mt-0.5 text-[12px] text-muted max-[640px]:text-[11px]">Live Sports Streaming</p>
                       </div>
-                    </div>
+                    </Link>
                     <div className="inline-flex items-center gap-2">
                       <ThemeToggle />
                       <span className="inline-flex items-center gap-[7px] rounded-full border border-[rgba(239,68,68,0.4)] bg-live-soft px-3.5 py-[7px] text-xs font-bold tracking-[0.08em] text-[#d93025] max-[640px]:px-[11px] max-[640px]:py-1.5 max-[640px]:text-[11px] [[data-theme=dark]_&]:border-[rgba(239,68,68,0.5)] [[data-theme=dark]_&]:text-[#fca5a5]"><span className="h-[7px] w-[7px] shrink-0 rounded-full bg-current" />LIVE</span>
