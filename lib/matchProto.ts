@@ -649,39 +649,10 @@ export const isPlayable = (s: Stream): boolean => (s.streamStatus ?? s.status) =
 
 /* ---------- util ---------- */
 
-/** matchDate can be seconds or milliseconds — normalize to ms. */
-export function matchDateMs(matchDate?: number): number | null {
-  if (!matchDate) return null;
-  return matchDate < 1e12 ? matchDate * 1000 : matchDate;
-}
-
-export function formatMatchDate(matchDate?: number): string {
-  const ms = matchDateMs(matchDate);
-  if (!ms) return '-';
-  // Fixed timeZone (UTC) so SSR and client render identical output — a
-  // locale/timezone-dependent format would cause a hydration mismatch.
-  return new Date(ms).toLocaleString('en-US', {
-    timeZone: 'UTC',
-    day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-  });
-}
-
-/** Longer kick-off stamp for the match header + SEO metadata:
- *  "Sun, 11 Oct 2026 · 19:00 UTC". Fixed timeZone (UTC) for the same
- *  SSR/hydration reason as formatMatchDate, and the zone is spelled out in the
- *  string so the value is never ambiguous. */
-export function formatKickoffLong(matchDate?: number): string {
-  const ms = matchDateMs(matchDate);
-  if (!ms) return '';
-  const d = new Date(ms);
-  const day = d.toLocaleDateString('en-GB', {
-    timeZone: 'UTC', weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
-  });
-  const time = d.toLocaleTimeString('en-GB', {
-    timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: false,
-  });
-  return `${day} · ${time} UTC`;
-}
+/** Kick-off maths — `matchDateMs` (normalize seconds/milliseconds) and the
+ *  zone-aware formatters `formatMatchDate` / `formatKickoffLong` — live in
+ *  `lib/datetime.ts`, together with the `<LocalTime>` primitive that renders a
+ *  kick-off in the viewer's own timezone. */
 
 /** Headline matchup — "Home vs Away". Falls back to the payload's own title
  *  (the live/data payloads carry it), then the competition name. Shared by the

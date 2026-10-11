@@ -6,17 +6,17 @@ import Link from 'next/link';
 import { CircleCheck, Loader2, RefreshCw, Share2, ThumbsUp, Trophy, Tv, X } from 'lucide-react';
 import { useRB } from '@/components/RBProvider';
 import { Countdown, MatchHead } from '@/components/Match';
+import { useUserTimeZone } from '@/components/LocalTime';
 import { groupMatchesByLeague, LeagueGroupSection } from '@/components/LeagueGroup';
 import {
   isLiveStatus,
   isStarted,
-  matchDateMs,
   isPlayable,
   statusLabel,
   computeH2HSummary,
-  formatKickoffLong,
   matchHeading,
 } from '@/lib/matchProto';
+import { UTC, formatKickoffLong, matchDateMs } from '@/lib/datetime';
 import { useSportMatches, useMatchDetail, useMatchAnalysis, useMatchLineup, useMatchEvent, useMatchStatistic, useStreamUrl } from '@/lib/queries';
 import { sportSlug, sportTypeFromParam, watchHref } from '@/lib/sports';
 import VideoPlayer from '@/components/VideoPlayer';
@@ -60,6 +60,10 @@ export function WatchPageContent({ id }: { id: string }) {
   const router = useRouter();
   const { cfg } = useRB();
   const matchId = id || params.id;
+  /** Viewer's own zone (`Asia/Jakarta`, …), `null` until mounted — the kick-off
+   *  strings below therefore fall back to the explicit-UTC stamp for the
+   *  SSR/first client render and follow the viewer's clock afterwards. */
+  const timeZone = useUserTimeZone();
 
   const [paused, setPaused] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -206,8 +210,8 @@ export function WatchPageContent({ id }: { id: string }) {
   const league = match?.league;
   /** H1, player caption and share title — the matchup, not the competition. */
   const title = matchHeading(match);
-  /** Kick-off with an explicit UTC stamp so SSR and client always agree. */
-  const kickoff = formatKickoffLong(match?.matchDate);
+  /** Kick-off in the viewer's own timezone (UTC until that is known). */
+  const kickoff = formatKickoffLong(match?.matchDate, timeZone ?? UTC);
   /** "Season 2026 · Round of 16 · Group A" — cups carry a stage, leagues usually
    *  only a season, so every present part is joined and absent ones dropped.
    *  A bare number in `round` is a matchday, so it gets the "Round" prefix. */

@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { MatchAnalysis, Match, Team } from '@/lib/types';
-import { computeH2HSummary, formatMatchDate } from '@/lib/matchProto';
+import { computeH2HSummary } from '@/lib/matchProto';
+import { LocalTime } from '@/components/LocalTime';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
 const PANEL =
@@ -87,7 +88,7 @@ function MeetingRow({ m }: { m: Match }) {
         </div>
 
         <span className="mt-2 flex justify-center">
-          <span className="text-[11px] text-muted">{formatMatchDate(m.matchDate)}</span>
+          <span className="text-[11px] text-muted"><LocalTime ts={m.matchDate} /></span>
         </span>
       </div>
     </div>

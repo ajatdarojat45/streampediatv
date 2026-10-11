@@ -6,6 +6,8 @@
 // backend. Only the two `fetch*` functions know about the URL — the hooks in
 // `lib/streamingQueries.ts` call these and never change.
 
+import dayjs from 'dayjs';
+
 export interface Video {
   id: string;
   category: string;
@@ -44,6 +46,9 @@ const titleCase = (slug: string): string =>
 async function mockCategoryVideos(category: string): Promise<Video[]> {
   await delay(250);
   const label = titleCase(category) || 'Category';
+  /** One clock reading for the whole batch, so the items sit exactly an hour
+   *  apart regardless of how long the loop takes. */
+  const now = dayjs();
   return Array.from({ length: 8 }, (_, i) => ({
     id: `${category}-${i + 1}`,
     category,
@@ -51,7 +56,7 @@ async function mockCategoryVideos(category: string): Promise<Video[]> {
     description: `Mock description for ${label} event ${i + 1}.`,
     thumbnailUrl: `https://placehold.co/320x180?text=${encodeURIComponent(`${label} ${i + 1}`)}`,
     durationSec: 90 * 60 + i * 7,
-    publishedAt: new Date(Date.now() - i * 3_600_000).toISOString(),
+    publishedAt: now.subtract(i, 'hour').toISOString(),
   }));
 }
 
@@ -66,7 +71,7 @@ async function mockStreamDetail(videoId: string): Promise<StreamDetail> {
     thumbnailUrl: `https://placehold.co/640x360?text=${encodeURIComponent(videoId)}`,
     category,
     views: 12_345,
-    publishedAt: new Date().toISOString(),
+    publishedAt: dayjs().toISOString(),
   };
 }
 

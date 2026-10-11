@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { getMatchDetail } from '@/app/actions';
 import { WatchPageContent } from '@/components/WatchPageContent';
-import { formatKickoffLong, matchHeading } from '@/lib/matchProto';
+import { matchHeading } from '@/lib/matchProto';
+import { UTC, formatKickoffLong } from '@/lib/datetime';
 import { sportTypeFromParam } from '@/lib/sports';
 
 interface PageProps {
@@ -25,7 +26,10 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     const heading = matchHeading(m);
     const league = m?.league?.name;
     const country = m?.league?.country;
-    const kickoff = formatKickoffLong(m?.matchDate);
+    /** Crawlers and social cards render once, with no viewer zone to read —
+     *  a deterministic, explicitly-labelled UTC stamp keeps the card
+     *  unambiguous (the page body shows the viewer's own zone instead). */
+    const kickoff = formatKickoffLong(m?.matchDate, UTC);
     /** Skip the competition when `heading` already fell back to its name. */
     const withLeague = Boolean(league) && !heading.includes(league as string);
     const title = withLeague ? `${heading} — ${league} live stream` : `${heading} live stream`;

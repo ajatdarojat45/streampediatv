@@ -2,7 +2,8 @@
 
 import { useState, useEffect, type CSSProperties, type ReactNode } from 'react';
 import { Flame } from 'lucide-react';
-import { statusLabel, isLiveStatus, isStarted, formatMatchDate } from '@/lib/matchProto';
+import { statusLabel, isLiveStatus, isStarted } from '@/lib/matchProto';
+import { LocalTime } from '@/components/LocalTime';
 import { countryLogoUrl, teamLogoUrl } from '@/lib/logos';
 import { sportColor, sportLabel, sportIsScoring } from '@/lib/sports';
 import type { Match, Team } from '@/lib/types';
@@ -296,7 +297,7 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
             {live ? (
               <span className="whitespace-nowrap text-[11px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">{statusLabel(match.status)}</span>
             ) : (
-              <span className="text-[11px] text-muted">{formatMatchDate(match.matchDate)}</span>
+              <span className="text-[11px] text-muted"><LocalTime ts={match.matchDate} /></span>
             )}
           </span>
         </Box>
@@ -311,7 +312,7 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
           {live ? (
             <span className="whitespace-nowrap text-[11px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">{statusLabel(match.status)}</span>
           ) : (
-            <span className="text-[11px] text-muted">{formatMatchDate(match.matchDate)}</span>
+            <span className="text-[11px] text-muted"><LocalTime ts={match.matchDate} /></span>
           )}
         </Box>
       )}
