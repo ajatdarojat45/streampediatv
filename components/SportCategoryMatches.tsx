@@ -13,6 +13,7 @@ import { matchDateMs } from '@/lib/datetime';
 import { useSportMatches } from '@/lib/queries';
 import { watchHref } from '@/lib/sports';
 import AdBanner from '@/components/AdBanner';
+import { ADSENSE_CLIENT, AD_SLOTS } from '@/lib/ads';
 import type { Match } from '@/lib/types';
 
 const FILTER_TABS = [
@@ -222,7 +223,8 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
   return (
     <>
       {/* Top banner — before the title/content. */}
-      <AdBanner slotId="sports-category-top" category={category} size="leaderboard" />
+      <AdBanner slotId={AD_SLOTS.topLeaderboard} client={ADSENSE_CLIENT} category={category} size="leaderboard" />
+
 
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
         <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-accent no-underline hover:underline">← All sports</Link>
@@ -322,6 +324,9 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
           )}
         </Fragment>
       ))}
+
+      {/* Bottom content banner — after the list. */}
+      <AdBanner slotId={AD_SLOTS.contentBannerBottom} client={ADSENSE_CLIENT} category={category} size="leaderboard" />
     </>
   );
 }

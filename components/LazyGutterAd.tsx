@@ -6,10 +6,19 @@ import AdBanner from '@/components/AdBanner';
 /** How far the user must scroll before the rail is revealed (px). */
 const REVEAL_AFTER = 320;
 
+/** Props mirror AdBanner's AdSense wiring (`client` + numeric `slotId`); both
+ *  come from `lib/ads.ts`. */
+export interface LazyGutterAdProps {
+  /** Numeric AdSense `data-ad-slot` for this rail. */
+  slotId: string;
+  /** AdSense publisher ID. When omitted the reserved slot stays empty. */
+  client?: string;
+}
+
 /** Lazy gutter ad — the left/right rails stay empty on first paint (their
  *  height is still reserved so the layout never shifts) and the ad only mounts
  *  once the user actually scrolls the page. */
-export function LazyGutterAd({ slotId }: { slotId: string }) {
+export function LazyGutterAd({ slotId, client }: LazyGutterAdProps) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -30,7 +39,7 @@ export function LazyGutterAd({ slotId }: { slotId: string }) {
   }
   return (
     <div className="animate-[fadeIn_0.35s_ease-out]">
-      <AdBanner slotId={slotId} size="skyscraper" />
+      <AdBanner slotId={slotId} client={client} size="skyscraper" />
     </div>
   );
 }

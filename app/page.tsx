@@ -11,6 +11,7 @@ import { matchDateMs } from '@/lib/datetime';
 import { useSportMatches } from '@/lib/queries';
 import { sportLabel, sportIcon, watchHref } from '@/lib/sports';
 import AdBanner from '@/components/AdBanner';
+import { ADSENSE_CLIENT, AD_SLOTS } from '@/lib/ads';
 import type { Match } from '@/lib/types';
 
 interface MatchGroup {
@@ -137,7 +138,8 @@ function MatchListContent() {
   return (
     <>
       {/* Top banner — before the content. */}
-      <AdBanner slotId="home-top" category="live" size="leaderboard" />
+      <AdBanner slotId={AD_SLOTS.topLeaderboard} client={ADSENSE_CLIENT} category="live" size="leaderboard" />
+
 
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
         <span className="font-mono text-xs text-muted">Live</span>
@@ -210,6 +212,9 @@ function MatchListContent() {
           )}
         </Fragment>
       ))}
+
+      {/* Bottom content banner — after the list. */}
+      <AdBanner slotId={AD_SLOTS.contentBannerBottom} client={ADSENSE_CLIENT} category="live" size="leaderboard" />
 
     </>
   );

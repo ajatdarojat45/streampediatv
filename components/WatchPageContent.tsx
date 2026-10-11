@@ -21,6 +21,7 @@ import { useSportMatches, useMatchDetail, useMatchAnalysis, useMatchLineup, useM
 import { sportSlug, sportTypeFromParam, watchHref } from '@/lib/sports';
 import VideoPlayer from '@/components/VideoPlayer';
 import AdBanner from '@/components/AdBanner';
+import { ADSENSE_CLIENT, AD_SLOTS } from '@/lib/ads';
 import { MatchTabs } from '@/components/MatchTabs';
 import type { Match, Stream } from '@/lib/types';
 
@@ -268,7 +269,7 @@ export function WatchPageContent({ id }: { id: string }) {
   return (
     <>
       {/* Top banner — below the navbar */}
-      <AdBanner slotId="watch-top" category={slug} size="leaderboard" />
+      <AdBanner slotId={AD_SLOTS.topLeaderboard} client={ADSENSE_CLIENT} category={slug} size="leaderboard" />
 
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3 max-[640px]:gap-2">
         <Link
@@ -459,6 +460,9 @@ export function WatchPageContent({ id }: { id: string }) {
           )}
         </>
       )}
+
+      {/* Bottom content banner — after the content; mirrors the top banner. */}
+      <AdBanner slotId={AD_SLOTS.contentBannerBottom} client={ADSENSE_CLIENT} category={slug} size="leaderboard" />
     </>
   );
 }

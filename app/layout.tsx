@@ -14,6 +14,7 @@ import { SportNav } from '@/components/SportNav';
 import { LazyGutterAd } from '@/components/LazyGutterAd';
 import { DevtoolsGuard } from '@/components/DevtoolsGuard';
 import { required } from '@/lib/env';
+import { ADSENSE_CLIENT, ADSENSE_SCRIPT_SRC, AD_SLOTS } from '@/lib/ads';
 
 const contactEmail = required(process.env.RB_CONTACT_EMAIL, 'RB_CONTACT_EMAIL');
 
@@ -37,7 +38,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <div className="flex gap-5">
                 <aside className="hidden w-40 min-w-0 shrink-0 basis-40 min-[768px]:block" aria-label="Advertisement">
                   <div className="sticky top-5">
-                    <LazyGutterAd slotId="gutter-left" />
+                    <LazyGutterAd slotId={AD_SLOTS.sidebarGutterLeft} client={ADSENSE_CLIENT} />
                   </div>
                 </aside>
                 <div className="min-h-[60vh] min-w-0 flex-1">
@@ -89,7 +90,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 </div>
                 <aside className="hidden w-40 min-w-0 shrink-0 basis-40 min-[768px]:block" aria-label="Advertisement">
                   <div className="sticky top-5">
-                    <LazyGutterAd slotId="gutter-right" />
+                    <LazyGutterAd slotId={AD_SLOTS.sidebarGutterRight} client={ADSENSE_CLIENT} />
                   </div>
                 </aside>
               </div>
@@ -113,6 +114,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               })();
             `,
           }}
+        />
+        {/* Google AdSense loader — injected once for the whole app. Individual
+            ad units queue into `window.adsbygoogle` until it arrives (see
+            components/AdBanner.tsx). */}
+        <Script
+          async
+          id="adsbygoogle-init"
+          src={ADSENSE_SCRIPT_SRC}
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
         />
       </body>
     </html>
