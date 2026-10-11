@@ -89,39 +89,39 @@ function minuteValue(e: MatchEvent): number {
   return n + x * 0.1;
 }
 
-/** Icon + accent text colour + spine dot colour for an event type. All event
- *  glyphs are Lucide icons (no emoji) so they match the rest of the UI and
- *  render consistently across platforms. */
+/** Icon + accent text colour for an event type. All event glyphs are Lucide
+ *  icons (no emoji) so they match the rest of the UI and render consistently
+ *  across platforms. */
 type EventIcon = ComponentType<LucideProps>;
-function eventMeta(code: number): { Icon: EventIcon; cls: string; dot: string; filled?: boolean } {
+function eventMeta(code: number): { Icon: EventIcon; cls: string; filled?: boolean } {
   switch (code) {
     case 101:
     case 103:
     case 10020:
-      return { Icon: Volleyball, cls: 'text-[#16a34a]', dot: 'bg-[#16a34a]' };
+      return { Icon: Volleyball, cls: 'text-[#16a34a]' };
     case 102:
-      return { Icon: Volleyball, cls: 'text-[#dc2626]', dot: 'bg-[#dc2626]' };
+      return { Icon: Volleyball, cls: 'text-[#dc2626]' };
     case 104:
     case 10021:
-      return { Icon: X, cls: 'text-muted', dot: 'bg-[#9ca3af]' };
+      return { Icon: X, cls: 'text-muted' };
     case 106:
-      return { Icon: RectangleVertical, cls: 'text-[#eab308]', dot: 'bg-[#eab308]', filled: true };
+      return { Icon: RectangleVertical, cls: 'text-[#eab308]', filled: true };
     case 107:
     case 108:
-      return { Icon: RectangleVertical, cls: 'text-[#dc2626]', dot: 'bg-[#dc2626]', filled: true };
+      return { Icon: RectangleVertical, cls: 'text-[#dc2626]', filled: true };
     case 105:
-      return { Icon: Repeat, cls: 'text-accent', dot: 'bg-accent' };
+      return { Icon: Repeat, cls: 'text-accent' };
     case 109:
-      return { Icon: Flag, cls: 'text-muted', dot: 'bg-[#9ca3af]' };
+      return { Icon: Flag, cls: 'text-muted' };
     case 10001: // kick off
-      return { Icon: Play, cls: 'text-[#16a34a]', dot: 'bg-[#16a34a]' };
+      return { Icon: Play, cls: 'text-[#16a34a]' };
     case 10002: // full time: EVENT_END / FINISH / extra time / penalty finish
     case 10005:
     case 10010:
     case 10022:
-      return { Icon: CircleStop, cls: 'text-muted', dot: 'bg-[#9ca3af]' };
+      return { Icon: CircleStop, cls: 'text-muted' };
     default:
-      return { Icon: CircleDot, cls: 'text-muted', dot: 'bg-[#9ca3af]' };
+      return { Icon: CircleDot, cls: 'text-muted' };
   }
 }
 
@@ -182,7 +182,7 @@ function EventRow({
   side: 'home' | 'away';
   sportType?: number;
 }) {
-  const { Icon, cls, dot, filled } = eventMeta(e.eventType);
+  const { Icon, cls, filled } = eventMeta(e.eventType);
   const away = side === 'away';
   const player = e.scorer ?? e.offender ?? e.substitutionIn;
   const main =
@@ -210,20 +210,13 @@ function EventRow({
       </span>
     </div>
   );
-  // Centre spine: minute on top, then the score, then a coloured dot that sits
-  // on the vertical line. The dot flows *below* the text (not absolutely
-  // positioned) so it never covers the scoreline. The spine is the middle,
+  // Centre spine: minute on top, then the score. The spine is the middle,
   // equally-flanked 1fr/auto/1fr column at every width, so it stays centred on
   // the line on phones and up.
   const spine = (
       <span className="col-start-2 row-start-1 flex w-11 shrink-0 flex-col items-center">
         <span className="rounded bg-panel px-1.5 text-[12px] font-bold tabular-nums text-muted">{eventMinute(e)}</span>
         {e.score && <span className="mt-0.5 rounded bg-panel px-1 text-[10px] tabular-nums text-muted">{e.score}</span>}
-      {/* Dot with a ring cut out so it punches through the vertical line. */}
-      <span
-        aria-hidden
-        className={`mt-1 h-2.5 w-2.5 rounded-full ring-2 ring-panel ${dot}`}
-      />
     </span>
   );
   // Same centred-spine layout at every width: home cards render to the left of
@@ -241,13 +234,9 @@ function EventRow({
 /** Neutral match-phase marker (kick-off / full-time). Neither event carries a
  *  team or player, so instead of a side card each renders as a text pill on the
  *  spine. The line runs down the centre of the row at every width, so the pill
- *  is centred over it and stacked *above* the dot for kick-off (the timeline
- *  opens there) and *below* it for full-time (it closes there): the pill's own
- *  opaque background masks the line behind it, and because pill and dot are on
- *  separate rows they can never collide. */
+ *  is centred over it: the pill's own opaque background masks the line behind
+ *  it. */
 function MarkerRow({ e }: { e: MatchEvent }) {
-  const { dot } = eventMeta(e.eventType);
-  const opening = e.eventType === KICK_OFF;
   const pill = (
     <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1">
       <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
@@ -261,12 +250,9 @@ function MarkerRow({ e }: { e: MatchEvent }) {
     </span>
   );
   return (
-    // Centred column so the pill stacks above/below the dot, both sitting on the
-    // centre spine at every width.
+    // Centred column so the pill sits on the centre spine at every width.
     <div className="flex flex-col items-center gap-1">
-      {opening && pill}
-      <span aria-hidden className={`h-2.5 w-2.5 rounded-full ring-2 ring-panel ${dot}`} />
-      {!opening && pill}
+      {pill}
     </div>
   );
 }
@@ -331,9 +317,8 @@ export function Timeline({
         </div>
       <div className="relative mt-1">
         {/* Vertical timeline line. It runs down the centre column (both side
-            columns are equal 1fr) so it meets every event's dot — on phones as
-            well as desktop. Each dot's ring masks the line where they overlap,
-            so events still read as distinct nodes. */}
+            columns are equal 1fr) so it stays centred on phones as well as
+            desktop. */}
         <div
           aria-hidden
           className="absolute bottom-4 left-1/2 top-4 z-0 w-px -translate-x-1/2 bg-border"
