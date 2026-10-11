@@ -29,7 +29,7 @@ const MATCH_GROUPS = [
 /* Filter-tab pills (`.filter-tab` / `.filter-count`). Active state is a
  * separate string so its color utilities don't fight the idle ones. */
 const FILTER_TAB =
-  'inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-all';
+  'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-all';
 const FILTER_TAB_IDLE = `${FILTER_TAB} border-border bg-panel text-muted hover:border-[#c7ccd2] hover:text-text`;
 const FILTER_TAB_ACTIVE = `${FILTER_TAB} border-accent bg-accent-soft text-accent`;
 
@@ -238,23 +238,31 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
         </div>
       </div>
 
-      <section className="mb-[18px] flex items-center gap-3">
+      {/* Search + counters. The row is a horizontal scroll container (same
+       *  pattern as the sport nav) so on narrow/mobile screens the input and
+       *  the match/live pills can be swiped into view instead of being
+       *  clipped by the viewport. */}
+      <section className="mb-[18px] flex flex-nowrap items-center gap-3 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <input
-          className="flex-1 rounded-xl border border-border bg-panel px-4 py-[11px] text-sm text-text transition-[border-color,box-shadow] placeholder:text-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
+          className="min-w-[170px] flex-1 rounded-xl border border-border bg-panel px-4 py-[11px] text-sm text-text transition-[border-color,box-shadow] placeholder:text-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
           type="search"
           placeholder="Search teams, leagues, or matches…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         {matches && (
-          <span className="flex gap-2.5 whitespace-nowrap">
+          <span className="flex shrink-0 gap-2.5 whitespace-nowrap">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-panel px-3.5 py-1.5 text-[13px] text-muted [&_strong]:text-text"><strong>{list.length}</strong> matches</span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(239,68,68,0.4)] bg-live-soft px-3.5 py-1.5 text-[13px] text-[#d93025]"><span className="h-[7px] w-[7px] shrink-0 rounded-full bg-current" />{liveCount} live</span>
           </span>
         )}
       </section>
 
-      <section className="mb-4 flex flex-wrap gap-2" role="tablist">
+      {/* Filter tabs. Same horizontal scroll container pattern as the sport
+       *  nav so "All / Live / Upcoming / Finished" stay on a single line and
+       *  can be swiped into view on narrow screens instead of wrapping or
+       *  being clipped by the viewport. */}
+      <section className="mb-4 flex flex-nowrap gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist">
         {FILTER_TABS.map((t) => (
           <button
             key={t.key}
