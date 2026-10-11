@@ -22,12 +22,19 @@ const PANEL =
 const positionAbbr = (code?: number): string =>
   ({ 1: 'FWD', 2: 'MID', 3: 'DEF', 4: 'GK' } as Record<number, string>)[code ?? 0] ?? '';
 
-/** Starting XI first, then substitutes; within each group by position order. */
+/** PBPlayerPositionType → pitch line rank: GK → DEF → MID → FWD (undefined last). */
+const positionRank = (code?: number): number =>
+  ({ 4: 0, 3: 1, 2: 2, 1: 3 } as Record<number, number>)[code ?? 0] ?? 4;
+
+/** Starting XI first, then substitutes; within each group by position line
+ *  (GK → DEF → MID → FWD) and then by the order the API provides per line. */
 function sortLineup(list: LineupPlayer[]): LineupPlayer[] {
   return [...list].sort((a, b) => {
     const aSub = a.appearance === 2 ? 1 : 0;
     const bSub = b.appearance === 2 ? 1 : 0;
     if (aSub !== bSub) return aSub - bSub;
+    const byPosition = positionRank(a.position) - positionRank(b.position);
+    if (byPosition !== 0) return byPosition;
     return (a.positionOrder ?? 999) - (b.positionOrder ?? 999);
   });
 }
