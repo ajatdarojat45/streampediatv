@@ -7,12 +7,11 @@ import {
   ArrowDown,
   ArrowUp,
   CircleDot,
-  CircleStop,
   Flag,
-  Play,
   RectangleVertical,
   Repeat,
   Volleyball,
+  Whistle,
   X,
   type LucideProps,
 } from 'lucide-react';
@@ -53,7 +52,7 @@ function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 
   );
 }
 
-/** Match-phase markers: kick-off opens the timeline, full-time closes it. At
+/** Match-phase markers: kick-off and full-time bracket the in-play events. At
  *  full time the feed emits EVENT_END and FINISH together (sometimes in either
  *  order), so they are collapsed into a single closing marker — see `list`). */
 const KICK_OFF = 10001;
@@ -67,11 +66,12 @@ const VISIBLE = new Set([
   KICK_OFF, ...FULL_TIME,
 ]);
 
-/** Match-phase order: kick-off before every in-play event, full-time after them.
- *  Neither carries a usable minute (kick-off omits it; full-time's "90" would
- *  otherwise sort ahead of 90+ stoppage-time events), so rank them explicitly. */
+/** Match-phase order: full-time caps the top of the spine and kick-off caps the
+ *  bottom (the timeline reads bottom-up: kick-off → full-time). Neither carries a
+ *  usable minute (kick-off omits it; full-time's "90" would otherwise sort within
+ *  the in-play events), so rank them explicitly. */
 const phaseRank = (type: number): number =>
-  type === KICK_OFF ? -1 : FULL_TIME.has(type) ? 1 : 0;
+  FULL_TIME.has(type) ? -1 : type === KICK_OFF ? 1 : 0;
 
 /** True for the neutral phase markers (kick-off / full-time), which have no
  *  team or player and render as a text pill stacked on the spine instead of a
@@ -114,12 +114,12 @@ function eventMeta(code: number): { Icon: EventIcon; cls: string; filled?: boole
     case 109:
       return { Icon: Flag, cls: 'text-muted' };
     case 10001: // kick off
-      return { Icon: Play, cls: 'text-[#16a34a]' };
+      return { Icon: Whistle, cls: 'text-[#16a34a]' };
     case 10002: // full time: EVENT_END / FINISH / extra time / penalty finish
     case 10005:
     case 10010:
     case 10022:
-      return { Icon: CircleStop, cls: 'text-muted' };
+      return { Icon: Whistle, cls: 'text-muted' };
     default:
       return { Icon: CircleDot, cls: 'text-muted' };
   }
@@ -253,29 +253,22 @@ function EventRow({
 }
 
 /** Neutral match-phase marker (kick-off / full-time). Neither event carries a
- *  team or player, so instead of a side card each renders as a text pill: on
- *  desktop it is centred over the spine (its own opaque background masks the line
- *  behind it), on phones it lines up with the event cards right of the left
- *  rail. */
+ *  team or player, so instead of a side card each renders as a bare whistle
+ *  glyph that caps the end of the spine — no pill and no score. A small opaque
+ *  `bg-panel` disc sits behind the glyph so it masks the line and reads as the
+ *  line's terminator. It is centred over the mid spine on desktop and over the
+ *  left rail on phones. The old `Kick Off` / `Full Time` text is kept off-screen
+ *  for screen readers. */
 function MarkerRow({ e }: { e: MatchEvent }) {
-  const pill = (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1">
-      <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
-        {eventTypeLabel(e.eventType)}
-      </span>
-      {e.score && (
-        <span className="rounded bg-panel px-1.5 text-[11px] font-bold tabular-nums text-muted">
-          {e.score}
-        </span>
-      )}
-    </span>
-  );
   return (
-    // Desktop: centred column so the pill sits on the centre spine. Mobile: the
-    // spine is a left rail (44px `w-11` + 10px `gap-2.5` = 54px), so the pill
-    // starts on the same edge as the event cards instead of floating mid-row.
-    <div className="flex flex-col items-center gap-1 max-[640px]:items-start max-[640px]:pl-[54px]">
-      {pill}
+    // Desktop: centred column over the mid spine. Mobile: the spine is a 44px
+    // (`w-11`) left rail, so the column is clamped to that width and the disc
+    // centres on the rail (the line sits at `left-[22px]`).
+    <div className="flex flex-col items-center max-[640px]:w-11">
+      <span className="inline-flex items-center justify-center rounded-full bg-panel p-1">
+        <Whistle size={16} strokeWidth={2.25} className="text-muted" aria-hidden />
+        <span className="sr-only">{eventTypeLabel(e.eventType)}</span>
+      </span>
     </div>
   );
 }
@@ -298,10 +291,12 @@ export function Timeline({
   const final = closing.find((e) => e.score) ?? closing[0];
   const list = events.filter((e) => VISIBLE.has(e.eventType) && !FULL_TIME.has(e.eventType));
   if (final) list.push(final);
-  // Kick-off first, full-time last, in-play events in minute order (stable).
+  // Full-time caps the top and kick-off caps the bottom; the in-play events in
+  // between run newest → oldest (descending minute), so the timeline reads from
+  // the last event back to the earliest. Stable within the same minute.
   list.sort((a, b) => {
     const byPhase = phaseRank(a.eventType) - phaseRank(b.eventType);
-    return byPhase !== 0 ? byPhase : minuteValue(a) - minuteValue(b);
+    return byPhase !== 0 ? byPhase : minuteValue(b) - minuteValue(a);
   });
 
   if (!list.length) return null;
