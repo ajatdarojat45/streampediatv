@@ -388,11 +388,14 @@ export function WatchPageContent({ id }: { id: string }) {
               )}
 
               {paused && (
-                <div className="absolute inset-0 z-5 flex flex-col items-center justify-center gap-3 bg-[rgba(0,0,0,0.55)] p-4">
+                /* `z-10` lifts the pause ad + its close button above the live
+                   channel-list overlay (`z-[5]`) so the X stays clickable even
+                   when the two overlap at the top-right of the player. */
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[rgba(0,0,0,0.55)] p-4">
                   <AdBanner slotId="watch-pause-ad" category={slug} size="leaderboard" className="!mb-0 max-w-[480px]" />
                   <button
                     type="button"
-                    className="absolute right-2.5 top-2.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[rgba(0,0,0,0.6)] text-white hover:bg-[rgba(0,0,0,0.8)]"
+                    className="absolute right-2.5 top-2.5 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[rgba(0,0,0,0.6)] text-white hover:bg-[rgba(0,0,0,0.8)]"
                     onClick={() => setPaused(false)}
                     aria-label="Close ad"
                   >
