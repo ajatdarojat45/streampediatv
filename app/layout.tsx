@@ -12,6 +12,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { FooterCategories } from '@/components/FooterCategories';
 import { SportNav } from '@/components/SportNav';
 import { LazyGutterAd } from '@/components/LazyGutterAd';
+import { DevtoolsGuard } from '@/components/DevtoolsGuard';
 import { required } from '@/lib/env';
 
 const contactEmail = required(process.env.RB_CONTACT_EMAIL, 'RB_CONTACT_EMAIL');
@@ -28,6 +29,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-theme={initialTheme} cz-shortcut-listen="true">
       <body>
+        {/* Client-only guard: redirects to a blank page if devtools is opened. */}
+        <DevtoolsGuard />
         <QueryProvider>
           <RBProvider>
             <div className="mx-auto max-w-[1000px] px-4 pb-16 min-[1025px]:max-w-[calc(60%_+_400px)] max-[640px]:px-3 max-[640px]:pb-12">

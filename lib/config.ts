@@ -30,3 +30,12 @@ export const DEFAULT_DEVICE_ID = required(
 );
 /** Activation code may legitimately be empty. */
 export const DEFAULT_ACTIVATION_CODE = process.env.NEXT_PUBLIC_RB_ACTIVATION_CODE ?? '';
+
+/**
+ * Where the tab is redirected when the devtools guard detects opened developer
+ * tools (see components/DevtoolsGuard.tsx). Defaults to a truly blank page —
+ * set NEXT_PUBLIC_DEVTOOLS_BLANK_PATH to a same-origin route (e.g. "/blank") if
+ * you'd rather send users to an in-app empty page instead of `about:blank`.
+ */
+export const DEVTOOLS_BLANK_PATH =
+  process.env.NEXT_PUBLIC_DEVTOOLS_BLANK_PATH || 'about:blank';
