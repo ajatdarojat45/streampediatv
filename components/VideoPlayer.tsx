@@ -34,7 +34,11 @@ export interface VideoPlayerProps {
    * component is live-only, so the timeline is intentionally non-seekable.
    */
   controls?: boolean;
-  /** Show the red LIVE badge next to the play/pause control. Defaults to true. */
+  /**
+   * Show the persistent red LIVE badge pinned to the **top-left** of the frame
+   * (stays visible even while the control chrome is idle). Defaults to true.
+   * The control bar no longer renders its own badge — only this one.
+   */
   live?: boolean;
   /**
    * Idle delay (ms) before the control chrome auto-hides while the stream is
@@ -82,8 +86,8 @@ const LIVE_BADGE =
  * never set, so the browser cannot render a draggable seek bar or a
  * `currentTime / duration` readout — both meaningless (and error-prone) for a
  * live stream. In their place the component paints its own controls:
- * play/pause, volume/mute, picture-in-picture and fullscreen, plus a red LIVE
- * badge and a floating centre play/pause button.
+ * play/pause, volume/mute, picture-in-picture and fullscreen, plus a persistent
+ * red LIVE badge pinned to the top-left and a floating centre play/pause button.
  */
 export default function VideoPlayer({
   streamUrl,
@@ -380,7 +384,8 @@ export default function VideoPlayer({
             </button>
           </div>
 
-          {/* Live control bar: play/pause · LIVE · volume · PiP · fullscreen. */}
+          {/* Live control bar: play/pause · volume · PiP · fullscreen. The red
+              LIVE badge itself is rendered top-left (persistent, even when idle). */}
           <div
             className={`absolute inset-x-0 bottom-0 z-[6] flex items-center gap-1 bg-gradient-to-t from-black/80 to-transparent px-2.5 pb-2.5 pt-8 transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
           >
@@ -397,16 +402,6 @@ export default function VideoPlayer({
                 <Play size={18} fill="currentColor" />
               )}
             </button>
-
-            {live && (
-              <span className={LIVE_BADGE} title="Live stream">
-                <span
-                  className="h-1 w-1 rounded-full bg-current animate-[blink_1.2s_infinite]"
-                  aria-hidden="true"
-                />
-                Live
-              </span>
-            )}
 
             {/* Volume: the icon toggles mute; the slider (desktop) fine-tunes. */}
             <div className="group/vol flex items-center">
