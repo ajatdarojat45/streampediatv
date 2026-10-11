@@ -69,8 +69,9 @@ export default async function WatchPage({ params }: PageProps) {
   return (
     <>
       {/* Monetag popunder ("Onclick") — armed only while this player page is
-          mounted, and it renders nothing, so no box or overlay is ever drawn
-          over the video player. */}
+          mounted, and only in a production build (NEXT_PUBLIC_RB_PLAYER_ADS,
+          see lib/config.ts). It renders nothing, so no box or overlay is ever
+          drawn over the video player. */}
       <MonetagPopunder />
       <WatchPageContent id={id} />
     </>

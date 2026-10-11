@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import DisableDevtool from 'disable-devtool';
-import { DEVTOOLS_BLANK_PATH } from '@/lib/config';
+import { DEVTOOLS_BLANK_PATH, DEVTOOLS_GUARD_ENABLED } from '@/lib/config';
 
 /**
  * Redirects the current tab to the configured blank page. `location.replace`
@@ -25,9 +25,19 @@ function redirectToBlank(): void {
  *
  * `disable-devtool` touches `window`/`document`, so it is only ever called from
  * an effect — it never runs during the server render.
+ *
+ * **Production only.** The guard is inert while `next dev` runs (see
+ * `DEVTOOLS_GUARD_ENABLED` in lib/config.ts) so local debugging is never
+ * interrupted; set NEXT_PUBLIC_RB_DEVTOOLS_GUARD="true" to arm it under
+ * `next dev` as well.
  */
 export function DevtoolsGuard() {
   useEffect(() => {
+    // Development build (and the flag not explicitly opted in): leave the page
+    // alone — no detectors, no redirect. Read once per mount; the value is a
+    // build-time constant, so it never changes for a running deployment.
+    if (!DEVTOOLS_GUARD_ENABLED) return;
+
     const { success, reason } = DisableDevtool({
       // Fired whenever a detector notices opened devtools. We deliberately do
       // not call `next()` (which closes the window) and instead redirect to a

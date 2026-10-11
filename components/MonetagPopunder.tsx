@@ -1,20 +1,25 @@
 'use client';
 
 import { useEffect } from 'react';
+import { PLAYER_ADS_ENABLED, PLAYER_AD_SCRIPT_SRC, PLAYER_AD_ZONE } from '@/lib/config';
 
-/** Monetag zone id for this site's player-area popunder. */
+/** Monetag zone id for this site's player-area popunder (env override:
+ *  NEXT_PUBLIC_RB_PLAYER_AD_ZONE). */
 export const MONETAG_ZONE = '12007023';
 
-/** Monetag tag URL — the zone itself travels in the `data-zone` attribute. */
+/** Monetag tag URL — the zone itself travels in the `data-zone` attribute
+ *  (env override: NEXT_PUBLIC_RB_PLAYER_AD_SCRIPT_SRC). */
 export const MONETAG_SCRIPT_SRC = 'https://al5sm.com/tag.min.js';
 
 /** Marks the <script> we inject, so duplicate mounts can be detected. */
 const ZONE_ATTR = 'data-monetag-zone';
 
 export interface MonetagPopunderProps {
-  /** Monetag zone id (defaults to `MONETAG_ZONE`). */
+  /** Monetag zone id (defaults to NEXT_PUBLIC_RB_PLAYER_AD_ZONE, or
+   *  `MONETAG_ZONE` while that variable is empty). */
   zone?: string;
-  /** Tag URL (defaults to `MONETAG_SCRIPT_SRC`). */
+  /** Tag URL (defaults to NEXT_PUBLIC_RB_PLAYER_AD_SCRIPT_SRC, or
+   *  `MONETAG_SCRIPT_SRC` while that variable is empty). */
   src?: string;
 }
 
@@ -48,12 +53,22 @@ export interface MonetagPopunderProps {
  * box, frame or overlay, so it can never cover the player. The player surface is
  * intentionally free of any "Advertisement" frame — see the note in
  * components/WatchPageContent.tsx.
+ *
+ * **Production only.** The tag is never armed while `next dev` runs (see
+ * `PLAYER_ADS_ENABLED` in lib/config.ts), so development sessions are never
+ * interrupted by ad tabs; set NEXT_PUBLIC_RB_PLAYER_ADS="true" to load it under
+ * `next dev` as well.
  */
 export function MonetagPopunder({
-  zone = MONETAG_ZONE,
-  src = MONETAG_SCRIPT_SRC,
+  zone = PLAYER_AD_ZONE || MONETAG_ZONE,
+  src = PLAYER_AD_SCRIPT_SRC || MONETAG_SCRIPT_SRC,
 }: MonetagPopunderProps) {
   useEffect(() => {
+    // Development build (and the flag not explicitly opted in): never inject the
+    // tag. Read once per mount; the value is a build-time constant, so it never
+    // changes for a running deployment.
+    if (!PLAYER_ADS_ENABLED) return;
+
     // Already armed: React strict-mode's double effect, a second instance on
     // the page, or client-side navigation back to a player page.
     if (document.querySelector(`script[${ZONE_ATTR}="${zone}"]`)) return;

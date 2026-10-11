@@ -329,7 +329,8 @@ export function WatchPageContent({ id }: { id: string }) {
 
           {/* 2. Main video player. No ad overlay here on purpose: the player
               surface stays 100% clean — player-page monetisation is the
-              Monetag popunder (components/MonetagPopunder.tsx). */}
+              Monetag popunder (components/MonetagPopunder.tsx), which is armed
+              in production builds only. */}
           <section className={PANEL}>
             <div className="relative">
               {playing ? (

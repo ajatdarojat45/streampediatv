@@ -217,7 +217,9 @@ function EventRow({
   const card = (
     <div
       className={`row-start-1 flex min-w-0 items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2 max-[640px]:gap-2 max-[640px]:px-2.5 ${
-        away ? 'col-start-3 flex-row-reverse text-right' : 'col-start-1'
+        away
+          ? 'col-start-3 flex-row-reverse text-right max-[640px]:col-start-2'
+          : 'col-start-1 max-[640px]:col-start-2'
       }`}
     >
       <Icon size={16} strokeWidth={2.25} fill={filled ? 'currentColor' : 'none'} className={`shrink-0 ${cls}`} />
@@ -228,21 +230,22 @@ function EventRow({
       </span>
     </div>
   );
-  // Centre spine: minute on top, then the score. The spine is the middle,
-  // equally-flanked 1fr/auto/1fr column at every width, so it stays centred on
-  // the line on phones and up.
+  // Spine: minute on top, then the score. Desktop keeps it in the middle,
+  // equally-flanked 1fr/auto/1fr column; on phones the rail moves to the left
+  // edge of the row (see the row grid below) and the events stack to its right.
   const spine = (
-      <span className="col-start-2 row-start-1 flex w-11 shrink-0 flex-col items-center">
+      <span className="col-start-2 row-start-1 flex w-11 shrink-0 flex-col items-center max-[640px]:col-start-1">
         <span className="rounded bg-panel px-1.5 text-[12px] font-bold tabular-nums text-muted">{eventMinute(e)}</span>
         {e.score && <span className="mt-0.5 rounded bg-panel px-1 text-[10px] tabular-nums text-muted">{e.score}</span>}
     </span>
   );
-  // Same centred-spine layout at every width: home cards render to the left of
-  // the spine, away cards to the right — on phones as well as desktop. Both
-  // items are pinned to row 1 so the explicit column placement can't spill onto
-  // a second (implicit) row when the home card is declared after the spine.
+  // Desktop: centred spine, home card to its left and away card to its right.
+  // Mobile (≤640px): the spine becomes a left rail and BOTH cards render in the
+  // column right of it, so every event shares the same left edge. Both items are
+  // pinned to row 1 so the explicit column placement can't spill onto a second
+  // (implicit) row when the home card is declared after the spine.
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2.5">
+    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2.5 max-[640px]:grid-cols-[auto_1fr]">
       {spine}
       {card}
     </div>
@@ -250,10 +253,10 @@ function EventRow({
 }
 
 /** Neutral match-phase marker (kick-off / full-time). Neither event carries a
- *  team or player, so instead of a side card each renders as a text pill on the
- *  spine. The line runs down the centre of the row at every width, so the pill
- *  is centred over it: the pill's own opaque background masks the line behind
- *  it. */
+ *  team or player, so instead of a side card each renders as a text pill: on
+ *  desktop it is centred over the spine (its own opaque background masks the line
+ *  behind it), on phones it lines up with the event cards right of the left
+ *  rail. */
 function MarkerRow({ e }: { e: MatchEvent }) {
   const pill = (
     <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1">
@@ -268,8 +271,10 @@ function MarkerRow({ e }: { e: MatchEvent }) {
     </span>
   );
   return (
-    // Centred column so the pill sits on the centre spine at every width.
-    <div className="flex flex-col items-center gap-1">
+    // Desktop: centred column so the pill sits on the centre spine. Mobile: the
+    // spine is a left rail (44px `w-11` + 10px `gap-2.5` = 54px), so the pill
+    // starts on the same edge as the event cards instead of floating mid-row.
+    <div className="flex flex-col items-center gap-1 max-[640px]:items-start max-[640px]:pl-[54px]">
       {pill}
     </div>
   );
@@ -334,12 +339,13 @@ export function Timeline({
           </div>
         </div>
       <div className="relative mt-1">
-        {/* Vertical timeline line. It runs down the centre column (both side
-            columns are equal 1fr) so it stays centred on phones as well as
-            desktop. */}
+        {/* Vertical timeline line: down the centre column on desktop (both side
+            columns are equal 1fr) and down the middle of the 44px (`w-11`) spine
+            rail at the left edge on phones, matching the mobile row grid in
+            `EventRow`. */}
         <div
           aria-hidden
-          className="absolute bottom-4 left-1/2 top-4 z-0 w-px -translate-x-1/2 bg-border"
+          className="absolute bottom-4 left-1/2 top-4 z-0 w-px -translate-x-1/2 bg-border max-[640px]:left-[22px]"
         />
         <div className="relative z-10 flex flex-col gap-1.5">
           {list.map((e, i) =>
