@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CircleCheck, Loader2, RefreshCw, Share2, ThumbsUp, Trophy, Tv, X } from 'lucide-react';
+import { CircleCheck, Loader2, RefreshCw, Share2, ThumbsUp, Trophy, Tv } from 'lucide-react';
 import { useRB } from '@/components/RBProvider';
 import { Countdown, MatchHead } from '@/components/Match';
 import { useUserTimeZone } from '@/components/LocalTime';
@@ -66,7 +66,6 @@ export function WatchPageContent({ id }: { id: string }) {
    *  SSR/first client render and follow the viewer's clock afterwards. */
   const timeZone = useUserTimeZone();
 
-  const [paused, setPaused] = useState(false);
   const [liked, setLiked] = useState(false);
   const [playing, setPlaying] = useState<ResolvedStream | null>(null);
   const [resolveErr, setResolveErr] = useState('');
@@ -130,8 +129,6 @@ export function WatchPageContent({ id }: { id: string }) {
         country: cfg.country,
       });
       setPlaying({ key: i, url: res.url, referer: res.referer, label: streamLabel(s, i) });
-      // Pause on (auto)select so the pause-ad overlay shows first.
-      setPaused(true);
     } catch (e) {
       setResolveErr(e instanceof Error ? e.message : 'Could not resolve stream URL.');
     }
@@ -330,7 +327,9 @@ export function WatchPageContent({ id }: { id: string }) {
             )}
           </MatchHead>
 
-          {/* 2. Main video player + pause ad overlay */}
+          {/* 2. Main video player. No ad overlay here on purpose: the player
+              surface stays 100% clean — player-page monetisation is the
+              Monetag popunder (components/MonetagPopunder.tsx). */}
           <section className={PANEL}>
             <div className="relative">
               {playing ? (
@@ -340,8 +339,6 @@ export function WatchPageContent({ id }: { id: string }) {
                   title={title}
                   autoPlay={false}
                   muted={false}
-                  onPause={() => setPaused(true)}
-                  onPlay={() => setPaused(false)}
                 />
               ) : countdownMs !== null ? (
                 /* Upcoming match — live countdown inside the player frame. */
@@ -388,22 +385,6 @@ export function WatchPageContent({ id }: { id: string }) {
                 </div>
               )}
 
-              {paused && (
-                /* `z-10` lifts the pause ad + its close button above the live
-                   channel-list overlay (`z-[5]`) so the X stays clickable even
-                   when the two overlap at the top-right of the player. */
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[rgba(0,0,0,0.55)] p-4">
-                  <AdBanner slotId="watch-pause-ad" category={slug} size="leaderboard" className="!mb-0 max-w-[480px]" />
-                  <button
-                    type="button"
-                    className="absolute right-2.5 top-2.5 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[rgba(0,0,0,0.6)] text-white hover:bg-[rgba(0,0,0,0.8)]"
-                    onClick={() => setPaused(false)}
-                    aria-label="Close ad"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
             </div>
 
             {resolveErr && <div className={ERROR_BANNER}>{resolveErr}</div>}

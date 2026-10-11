@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getMatchDetail } from '@/app/actions';
+import { MonetagPopunder } from '@/components/MonetagPopunder';
 import { WatchPageContent } from '@/components/WatchPageContent';
 import { matchHeading } from '@/lib/matchProto';
 import { UTC, formatKickoffLong } from '@/lib/datetime';
@@ -65,7 +66,15 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
 export default async function WatchPage({ params }: PageProps) {
   const { id } = await params;
-  return <WatchPageContent id={id} />;
+  return (
+    <>
+      {/* Monetag popunder ("Onclick") — armed only while this player page is
+          mounted, and it renders nothing, so no box or overlay is ever drawn
+          over the video player. */}
+      <MonetagPopunder />
+      <WatchPageContent id={id} />
+    </>
+  );
 }
 
 
