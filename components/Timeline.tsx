@@ -151,8 +151,18 @@ function Avatar({
   );
 }
 
+/** Substitution lines are icon+label flex rows, so `text-align` can't place them
+ *  the way it does plain text. The away side needs them (a) packed against the
+ *  card's right edge — otherwise the label hugs the left edge while the avatar
+ *  sits far away on the right — and (b) mirrored, so the in/out arrow reads to
+ *  the right of the name (`Gonzalo Escalante ↑`) instead of to the left as on
+ *  the home side (`↑ Gonzalo Escalante`).
+ *  With `flex-row-reverse` the main axis starts at the RIGHT edge, so
+ *  `justify-start` is what anchors the row to the right. */
+const rowLayout = (away: boolean): string => (away ? 'flex-row-reverse justify-start' : '');
+
 /** Secondary line under the player name (assist / own goal / sub-out / note). */
-function subLine(e: MatchEvent): ReactNode {
+function subLine(e: MatchEvent, away: boolean): ReactNode {
   if ((e.eventType === 101 || e.eventType === 103) && e.assistant?.name)
     return (
       <span className="w-full truncate text-[11px] leading-tight text-muted">
@@ -163,7 +173,11 @@ function subLine(e: MatchEvent): ReactNode {
     return <span className="w-full truncate text-[11px] leading-tight text-muted">own goal</span>;
   if (e.eventType === 105 && e.substitutionOut?.name)
     return (
-      <span className="inline-flex w-full items-center gap-1 truncate text-[11px] leading-tight text-muted">
+      <span
+        className={`inline-flex w-full items-center gap-1 truncate text-[11px] leading-tight text-muted ${rowLayout(
+          away
+        )}`}
+      >
         <ArrowDown size={11} className="shrink-0 text-[#dc2626]" />
         {e.substitutionOut.name}
       </span>
@@ -187,7 +201,11 @@ function EventRow({
   const player = e.scorer ?? e.offender ?? e.substitutionIn;
   const main =
     e.eventType === 105 ? (
-      <span className="inline-flex w-full items-center gap-1 truncate text-[13px] font-semibold leading-tight">
+      <span
+        className={`inline-flex w-full items-center gap-1 truncate text-[13px] font-semibold leading-tight ${rowLayout(
+          away
+        )}`}
+      >
         <ArrowUp size={13} className="shrink-0 text-[#16a34a]" />
         {e.substitutionIn?.name ?? 'Substitution'}
       </span>
@@ -206,7 +224,7 @@ function EventRow({
       <Avatar name={player?.name} logo={player?.logo} sportType={sportType} />
       <span className={`flex min-w-0 flex-1 flex-col ${away ? 'items-end' : 'items-start'}`}>
         {main}
-        {subLine(e)}
+        {subLine(e, away)}
       </span>
     </div>
   );
