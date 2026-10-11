@@ -133,7 +133,7 @@ export interface MatchLineup {
 export interface MatchEvent {
   /** PBMatchEventType: 101 goal, 102 own goal, 103 penalty goal, 104 penalty missed,
    *  105 substitution, 106 yellow, 107 red, 108 second yellow, 109 corner,
-   *  10001 kick off, 10002 full time, 10003 half time, 10005 finished, ... */
+   *  10001 kick off, 10002 full time, 10003 half time, 10005 full time, ... */
   eventType: number;
   /** Match minute label, e.g. "45+2". */
   minute?: string;

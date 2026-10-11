@@ -434,7 +434,9 @@ export const eventTypeLabel = (code?: number): string =>
     10001: 'Kick Off',
     10002: 'Full Time',
     10003: 'Half Time',
-    10005: 'Finished',
+    10005: 'Full Time',
+    10010: 'Full Time',
+    10022: 'Full Time',
   } as Record<number, string>)[code ?? 0] ?? '';
 
 /** PBDataMatchEvent: 1=match, 2=team, 3=eventType, 4=minute, 5=score,

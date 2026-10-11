@@ -7,7 +7,9 @@ import {
   ArrowDown,
   ArrowUp,
   CircleDot,
+  CircleStop,
   Flag,
+  Play,
   RectangleVertical,
   Repeat,
   Volleyball,
@@ -51,12 +53,30 @@ function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 
   );
 }
 
-/** Events that are worth showing on the timeline (skip the bookkeeping noise
- *  like kick-off / half-time / full-time markers). */
+/** Match-phase markers: kick-off opens the timeline, full-time closes it. At
+ *  full time the feed emits EVENT_END and FINISH together (sometimes in either
+ *  order), so they are collapsed into a single closing marker — see `list`). */
+const KICK_OFF = 10001;
+const FULL_TIME = new Set([10002, 10005, 10010, 10022]);
+
+/** Events that are worth showing on the timeline: player events plus the
+ *  kick-off / full-time markers that bracket the match. */
 const VISIBLE = new Set([
   101, 102, 103, 104, 105, 106, 107, 108, 109,
   10020, 10021,
+  KICK_OFF, ...FULL_TIME,
 ]);
+
+/** Match-phase order: kick-off before every in-play event, full-time after them.
+ *  Neither carries a usable minute (kick-off omits it; full-time's "90" would
+ *  otherwise sort ahead of 90+ stoppage-time events), so rank them explicitly. */
+const phaseRank = (type: number): number =>
+  type === KICK_OFF ? -1 : FULL_TIME.has(type) ? 1 : 0;
+
+/** True for the neutral phase markers (kick-off / full-time), which have no
+ *  team or player and render as a text pill stacked on the spine instead of a
+ *  side card. */
+const isPhaseMarker = (type: number): boolean => type === KICK_OFF || FULL_TIME.has(type);
 
 /** Sort by match minute, preserving original order within the same minute.
  *  Minute strings look like "45+2" — parse to a comparable number. */
@@ -93,6 +113,13 @@ function eventMeta(code: number): { Icon: EventIcon; cls: string; dot: string; f
       return { Icon: Repeat, cls: 'text-accent', dot: 'bg-accent' };
     case 109:
       return { Icon: Flag, cls: 'text-muted', dot: 'bg-[#9ca3af]' };
+    case 10001: // kick off
+      return { Icon: Play, cls: 'text-[#16a34a]', dot: 'bg-[#16a34a]' };
+    case 10002: // full time: EVENT_END / FINISH / extra time / penalty finish
+    case 10005:
+    case 10010:
+    case 10022:
+      return { Icon: CircleStop, cls: 'text-muted', dot: 'bg-[#9ca3af]' };
     default:
       return { Icon: CircleDot, cls: 'text-muted', dot: 'bg-[#9ca3af]' };
   }
@@ -210,6 +237,44 @@ function EventRow({
   );
 }
 
+/** Neutral match-phase marker (kick-off / full-time). Neither event carries a
+ *  team or player, so instead of a side card each renders as a text pill on the
+ *  spine. On ≥640px the line runs down the centre of the row, so the pill is
+ *  centred over it and stacked *above* the dot for kick-off (the timeline opens
+ *  there) and *below* it for full-time (it closes there): the pill's own opaque
+ *  background masks the line behind it, and because pill and dot are on separate
+ *  rows they can never collide. On phones the line hugs the left edge — far too
+ *  close to the panel for a pill centred on it to fit — so the pill keeps the
+ *  usual right-of-the-dot position that every other row uses. */
+function MarkerRow({ e }: { e: MatchEvent }) {
+  const { dot } = eventMeta(e.eventType);
+  const opening = e.eventType === KICK_OFF;
+  const pill = (
+    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1">
+      <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
+        {eventTypeLabel(e.eventType)}
+      </span>
+      {e.score && (
+        <span className="rounded bg-panel px-1.5 text-[11px] font-bold tabular-nums text-muted">
+          {e.score}
+        </span>
+      )}
+    </span>
+  );
+  return (
+    // Mobile: dot pinned on the left spine, pill beside it (54px clear of it).
+    // ≥640px: switch to a column so the pill stacks above/below the dot.
+    <div className="relative flex items-center pl-[54px] sm:flex-col sm:gap-1 sm:pl-0">
+      {opening && pill}
+      <span
+        aria-hidden
+        className={`absolute left-[22px] top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-panel sm:static sm:translate-x-0 sm:translate-y-0 ${dot}`}
+      />
+      {!opening && pill}
+    </div>
+  );
+}
+
 export function Timeline({
   events,
   sportType,
@@ -222,9 +287,17 @@ export function Timeline({
   awayTeam?: Team;
 }) {
   const [open, setOpen] = useState(true);
-  const list = [...events]
-    .filter((e) => VISIBLE.has(e.eventType))
-    .sort((a, b) => minuteValue(a) - minuteValue(b));
+  // The feed emits both EVENT_END and FINISH at full time — keep a single
+  // closing marker, preferring FINISH because it carries the final score.
+  const closing = events.filter((e) => FULL_TIME.has(e.eventType));
+  const final = closing.find((e) => e.score) ?? closing[0];
+  const list = events.filter((e) => VISIBLE.has(e.eventType) && !FULL_TIME.has(e.eventType));
+  if (final) list.push(final);
+  // Kick-off first, full-time last, in-play events in minute order (stable).
+  list.sort((a, b) => {
+    const byPhase = phaseRank(a.eventType) - phaseRank(b.eventType);
+    return byPhase !== 0 ? byPhase : minuteValue(a) - minuteValue(b);
+  });
 
   if (!list.length) return null;
 
@@ -271,14 +344,18 @@ export function Timeline({
           className="absolute bottom-4 left-[22px] top-4 z-0 w-px -translate-x-1/2 bg-border sm:left-1/2"
         />
         <div className="relative z-10 flex flex-col gap-1.5">
-          {list.map((e, i) => (
-            <EventRow
-              key={`${e.eventType}-${e.minute}-${i}`}
-              e={e}
-              side={e.teamSide === 2 ? 'away' : 'home'}
-              sportType={sportType}
-            />
-          ))}
+          {list.map((e, i) =>
+            isPhaseMarker(e.eventType) ? (
+              <MarkerRow key={`${e.eventType}-${i}`} e={e} />
+            ) : (
+              <EventRow
+                key={`${e.eventType}-${e.minute}-${i}`}
+                e={e}
+                side={e.teamSide === 2 ? 'away' : 'home'}
+                sportType={sportType}
+              />
+            )
+          )}
         </div>
       </div>
       </>
