@@ -167,83 +167,34 @@ function TeamHeader({
   );
 }
 
-/** Collapsible "Substitutes" block — label + rule + count with a chevron,
- *  mirrored per side. Collapsed by default so the starting XI stays the focus;
- *  tap the header to reveal the bench. */
-function SubsSection({
-  side,
-  subs,
-  sportType,
-  statsMap,
-}: {
-  side: 'home' | 'away';
-  subs: LineupPlayer[];
-  sportType: number;
-  statsMap?: Map<number, PlayerEventStats>;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className={`my-2 flex w-full cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-border-soft/60 ${
-          side === 'away' ? 'flex-row-reverse' : ''
-        }`}
-      >
-        <span className="text-[11px] font-bold uppercase tracking-wide text-muted">Substitutes</span>
-        <span className="rounded-full border border-border bg-card px-2 py-px text-[11px] font-bold text-muted">
-          {subs.length}
-        </span>
-        <span className="h-px flex-1 bg-border" />
-        <ChevronDown
-          size={14}
-          className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {open && (
-        <div className="flex flex-col gap-0.5">
-          {subs.map((p, i) => (
-            <PlayerRow
-              key={`b-${p.player?.playerId ?? p.number}-${i}`}
-              p={p}
-              sportType={sportType}
-              side={side}
-              stats={statsMap?.get(p.player?.playerId ?? 0)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LineupColumn({
+/** A single side's player list — an optional team header over the rows. Shared
+ *  by the Starting XI grid and the (single-toggle) substitutes grid so both use
+ *  identical row styling; the bench grid omits the header (it sits under the
+ *  same two columns, already introduced by the Starting XI header). */
+function PlayerColumn({
   title,
   logo,
   side,
-  list,
+  players,
   sportType,
   statsMap,
+  showHeader = true,
 }: {
   title?: string;
   logo?: string;
   side: 'home' | 'away';
-  list: LineupPlayer[];
+  players: LineupPlayer[];
   sportType: number;
   statsMap?: Map<number, PlayerEventStats>;
+  showHeader?: boolean;
 }) {
-  const { starters, subs } = splitLineup(list);
   return (
     <div className="min-w-0">
-      <TeamHeader title={title} logo={logo} side={side} />
-
-      {/* Starting XI */}
+      {showHeader && <TeamHeader title={title} logo={logo} side={side} />}
       <div className="flex flex-col gap-0.5">
-        {starters.map((p, i) => (
+        {players.map((p, i) => (
           <PlayerRow
-            key={`s-${p.player?.playerId ?? p.number}-${i}`}
+            key={`${side}-${p.player?.playerId ?? p.number}-${i}`}
             p={p}
             sportType={sportType}
             side={side}
@@ -251,11 +202,6 @@ function LineupColumn({
           />
         ))}
       </div>
-
-      {/* Collapsible substitutes (only when the team actually named subs) */}
-      {subs.length > 0 && (
-        <SubsSection side={side} subs={subs} sportType={sportType} statsMap={statsMap} />
-      )}
     </div>
   );
 }
@@ -278,9 +224,16 @@ export function Lineup({
   awayStats?: Map<number, PlayerEventStats>;
 }) {
   const [open, setOpen] = useState(true);
+  // One shared substitute toggle for BOTH teams: the bench lists live in a
+  // single grid that expands/collapses as a whole, so the two sides stay in sync.
+  const [subsOpen, setSubsOpen] = useState(false);
   if (!lineup.home.length && !lineup.away.length) return null;
   const st = sportType ?? 1;
   const total = lineup.home.length + lineup.away.length;
+
+  const home = splitLineup(lineup.home);
+  const away = splitLineup(lineup.away);
+  const subCount = home.subs.length + away.subs.length;
 
   return (
     <section className={PANEL}>
@@ -303,26 +256,68 @@ export function Lineup({
       </button>
 
       {open && (
-        /* Two sides — home on the left, away on the right — split by a vertical
-           rule. Stacks to a single column on narrow screens. */
-        <div className="grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-[1fr_auto_1fr]">
-          <LineupColumn
-            side="home"
-            title={homeTeam?.name}
-            logo={homeTeam?.logo}
-            list={lineup.home}
-            sportType={st}
-            statsMap={homeStats}
-          />
-          <div aria-hidden className="hidden w-px self-stretch bg-border md:block" />
-          <LineupColumn
-            side="away"
-            title={awayTeam?.name}
-            logo={awayTeam?.logo}
-            list={lineup.away}
-            sportType={st}
-            statsMap={awayStats}
-          />
+        <div>
+          {/* Starting XI — home on the left, away on the right, split by a
+              vertical rule. Stacks to a single column on narrow screens. */}
+          <div className="grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-[1fr_auto_1fr]">
+            <PlayerColumn
+              side="home"
+              title={homeTeam?.name}
+              logo={homeTeam?.logo}
+              players={home.starters}
+              sportType={st}
+              statsMap={homeStats}
+            />
+            <div aria-hidden className="hidden w-px self-stretch bg-border md:block" />
+            <PlayerColumn
+              side="away"
+              title={awayTeam?.name}
+              logo={awayTeam?.logo}
+              players={away.starters}
+              sportType={st}
+              statsMap={awayStats}
+            />
+          </div>
+
+          {/* One shared "Substitutes" toggle spanning both columns (H2H
+              "Past meetings" style): a single control sitting between the
+              Starting XI and the benches, so expanding it reveals BOTH teams. */}
+          {subCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setSubsOpen((v) => !v)}
+              aria-expanded={subsOpen}
+              className="mt-4 flex w-full cursor-pointer items-center justify-between gap-2 border-0 border-t border-border bg-transparent p-0 pt-3 text-left"
+            >
+              <span className="text-[13px] font-semibold text-muted">
+                Substitutes ({subCount})
+              </span>
+              <ChevronDown
+                size={16}
+                className={`shrink-0 text-muted transition-transform duration-200 ${subsOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+          )}
+
+          {subCount > 0 && subsOpen && (
+            <div className="mt-3 grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-[1fr_auto_1fr]">
+              <PlayerColumn
+                side="home"
+                players={home.subs}
+                sportType={st}
+                statsMap={homeStats}
+                showHeader={false}
+              />
+              <div aria-hidden className="hidden w-px self-stretch bg-border md:block" />
+              <PlayerColumn
+                side="away"
+                players={away.subs}
+                sportType={st}
+                statsMap={awayStats}
+                showHeader={false}
+              />
+            </div>
+          )}
         </div>
       )}
     </section>
