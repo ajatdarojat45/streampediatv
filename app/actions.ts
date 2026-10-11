@@ -28,7 +28,7 @@ import { signPlayUrl } from '@/lib/sign';
 import { iterFields, rot47 } from '@/lib/proto';
 import { SPORTS } from '@/lib/sports';
 import { DEFAULT_CONTINENT, DEFAULT_COUNTRY, DEFAULT_SITE_TYPE } from '@/lib/config';
-import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchSource, Stream } from '@/lib/types';
+import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchList, MatchSource, Stream } from '@/lib/types';
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -107,7 +107,7 @@ export async function getMatches(
   // scores still refresh about twice a minute. Only successes are cached —
   // a 429 makes the inner fn throw, so it is never stored and clears next call.
   try {
-    const data = await withCache(`matches:${source}:${sportType}:${language}`, 20_000, async () => {
+    const data = await withCache<MatchList>(`matches:${source}:${sportType}:${language}`, 20_000, async () => {
       const s = await ensureSignatures(sportType);
       const args = { version: s[100], language: num(language), sportType: num(sportType) };
       const r = source === 'live' ? await getLiveMatchLive(args) : await getMatchLive(args);
@@ -127,7 +127,9 @@ export async function getMatches(
 /** Aggregate all currently-live matches across every sport category.
  * Two guards prevent this from nuking the rate limiter:
  *   - per-sport results go through the SAME withCache key as getMatches, so a
- *     sport already fetched elsewhere (or by a concurrent caller) is reused;
+ *     sport already fetched elsewhere (or by a concurrent caller) is reused.
+ *     Both writers store the identical `{ list, source }` (MatchList) shape, so
+ *     the shared key can never hand getMatches() an array instead of a list;
  *   - mapLimit caps in-flight upstream requests (default 4) instead of firing
  *     all 16 sports at once.
  */
@@ -147,12 +149,19 @@ export async function getAllLiveMatches(
       try {
         const s = await ensureSignatures(sport.value);
         const args = { version: s[100], language: 0, sportType: sport.value };
-        // Reuse the shared cache; failures resolve to [] via the catch below.
-        return await withCache(`matches:data:${sport.value}:0`, 20_000, async () => {
+        /* Reuse the shared cache AND the same `{ list, source }` shape that
+         * getMatches stores under "matches:data:<sport>:0". The previous code
+         * cached a bare `Match[]` here, which poisoned that key: a following
+         * getMatches() call got the array back, so `res.data.list` was
+         * undefined and the watch page crashed on `.list.find(...)` whenever a
+         * match was opened within the 20s TTL of the All/Live fan-out.
+         * Failures still resolve to [] via the catch below. */
+        const cached = await withCache<MatchList>(`matches:data:${sport.value}:0`, 20_000, async () => {
           const r = await getMatchLive(args);
           const data = r.pb?.data ?? r.payload;
-          return decodeMatchLiveResp(data, 0);
+          return { list: decodeMatchLiveResp(data, 0), source: 'data' };
         });
+        return cached.list;
       } catch {
         return [];
       }

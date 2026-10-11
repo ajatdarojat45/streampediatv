@@ -8,7 +8,7 @@ import { EmptyMatches } from '@/components/EmptyMatches';
 import { groupMatchesByLeague, LeagueGroupSection } from '@/components/LeagueGroup';
 import { isLiveStatus, matchDateMs } from '@/lib/matchProto';
 import { useSportMatches } from '@/lib/queries';
-import { sportLabel, sportIcon } from '@/lib/sports';
+import { sportLabel, sportIcon, watchHref } from '@/lib/sports';
 import AdBanner from '@/components/AdBanner';
 import type { Match } from '@/lib/types';
 
@@ -200,7 +200,7 @@ function MatchListContent() {
         <Fragment key={g.key}>
           <SportGroupSection
             group={g}
-            onMatchClick={(m) => router.push(`/watch/${m.matchId}?sport=${m.sportType ?? 0}`)}
+            onMatchClick={(m) => router.push(watchHref(m.matchId, m.sportType ?? 0))}
           />
 
           {/* In-feed banner — between the first group and the rest. */}

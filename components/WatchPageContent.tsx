@@ -18,7 +18,7 @@ import {
   matchHeading,
 } from '@/lib/matchProto';
 import { useSportMatches, useMatchDetail, useMatchAnalysis, useMatchLineup, useMatchEvent, useMatchStatistic, useStreamUrl } from '@/lib/queries';
-import { sportSlug } from '@/lib/sports';
+import { sportSlug, sportTypeFromParam, watchHref } from '@/lib/sports';
 import VideoPlayer from '@/components/VideoPlayer';
 import AdBanner from '@/components/AdBanner';
 import { MatchTabs } from '@/components/MatchTabs';
@@ -67,12 +67,15 @@ export function WatchPageContent({ id }: { id: string }) {
   const [resolveErr, setResolveErr] = useState('');
   const autoPlayedRef = useRef(false);
 
-  const sportParam = Number(searchParams.get('sport'));
-  const preferredSport =
-    Number.isFinite(sportParam) && sportParam > 0 ? sportParam : Number(cfg.sportType);
+  /** `?sport=` is the category slug (`football`); a legacy numeric sportType
+   *  (`1`) still resolves, so old shared/indexed links keep working. */
+  const preferredSport = sportTypeFromParam(searchParams.get('sport'), Number(cfg.sportType) || 0);
 
   const matchesQuery = useSportMatches(preferredSport);
-  const listMatch = matchesQuery.data?.list.find((m: Match) => String(m.matchId) === String(matchId));
+  /** `?? []` mirrors the guarded reads elsewhere (line 166, SportCategoryMatches):
+   *  a payload without `list` must not crash the whole page — the detail query
+   *  still resolves and the sport falls back to the URL/default value. */
+  const listMatch = (matchesQuery.data?.list ?? []).find((m: Match) => String(m.matchId) === String(matchId));
   const sportType = listMatch?.sportType ?? preferredSport;
 
   const detailQuery = useMatchDetail(matchId, sportType);
@@ -441,7 +444,7 @@ export function WatchPageContent({ id }: { id: string }) {
                   <LeagueGroupSection
                     key={lg.key}
                     group={lg}
-                    onMatchClick={(m) => router.push(`/watch/${m.matchId}?sport=${m.sportType ?? sportType}`)}
+                    onMatchClick={(m) => router.push(watchHref(m.matchId, m.sportType ?? sportType))}
                   />
                 ))}
               </div>

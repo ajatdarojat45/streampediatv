@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getMatchDetail } from '@/app/actions';
 import { WatchPageContent } from '@/components/WatchPageContent';
 import { formatKickoffLong, matchHeading } from '@/lib/matchProto';
+import { sportTypeFromParam } from '@/lib/sports';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -15,7 +16,8 @@ interface PageProps {
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const { sport } = await searchParams;
-  const sportType = Number(sport) || 1;
+  /** `?sport=` carries the category slug (legacy numeric values still resolve). */
+  const sportType = sportTypeFromParam(sport, 1);
   try {
     const res = await getMatchDetail({ matchId: id, sportType, language: 0, source: 'data' });
     if (!res.ok) throw new Error(res.error);

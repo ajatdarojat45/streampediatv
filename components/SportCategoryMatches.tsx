@@ -10,6 +10,7 @@ import { EmptyMatches, type EmptyKind } from '@/components/EmptyMatches';
 import { groupMatchesByLeague, LeagueGroupSection } from '@/components/LeagueGroup';
 import { isLiveStatus, matchDateMs } from '@/lib/matchProto';
 import { useSportMatches } from '@/lib/queries';
+import { watchHref } from '@/lib/sports';
 import AdBanner from '@/components/AdBanner';
 import type { Match } from '@/lib/types';
 
@@ -307,7 +308,7 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
         <Fragment key={`${tab}-${g.key}`}>
           <StatusGroupSection
             group={g}
-            onMatchClick={(m) => router.push(`/watch/${m.matchId}?sport=${m.sportType ?? sportType}`)}
+            onMatchClick={(m) => router.push(watchHref(m.matchId, m.sportType ?? sportType))}
             // The first non-empty group expands by default: live when it has
             // matches, otherwise upcoming, otherwise finished. An empty Live
             // group stays visible (All tab) but collapsed.

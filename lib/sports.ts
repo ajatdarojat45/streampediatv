@@ -70,4 +70,31 @@ export function sportSlug(code?: number): string {
   return sportByValue.get(code ?? -1)?.slug ?? '';
 }
 
+/** Resolve a `?sport=` query param into a sport definition. The canonical form
+ *  is the category slug (`?sport=football`) so the URL reads as a name instead
+ *  of an opaque enum value; the legacy numeric sportType (`?sport=1`) is still
+ *  accepted because shared links, cached HTML and indexed URLs carry it. */
+export function sportByParam(param?: string | null): Sport | undefined {
+  const raw = param?.trim().toLowerCase();
+  if (!raw) return undefined;
+  const bySlug = sportBySlug(raw);
+  if (bySlug) return bySlug;
+  const value = Number(raw);
+  return Number.isFinite(value) ? sportByValue.get(value) : undefined;
+}
+
+/** Sport code for a `?sport=` param holding a category slug or legacy value.
+ *  Falls back to `fallback` (0 = "All/Live") when the param is unknown. */
+export function sportTypeFromParam(param?: string | null, fallback = 0): number {
+  return sportByParam(param)?.value ?? fallback;
+}
+
+/** Canonical watch URL for a match: the category travels as its readable slug
+ *  (`/watch/42?sport=football`). An unknown/absent code drops the param entirely
+ *  so the detail page falls back to its own default sport. */
+export function watchHref(matchId: number | string | undefined, sportType?: number): string {
+  const slug = sportSlug(sportType);
+  return slug ? `/watch/${matchId}?sport=${slug}` : `/watch/${matchId}`;
+}
+
 
