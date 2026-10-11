@@ -28,7 +28,7 @@
 
 import { iterFields } from './proto';
 import { countryLogoUrl, teamLogoUrl } from './logos';
-import type { Team, League, Contender, Match, Stream, MatchDetail, MatchAnalysis, H2HSummary, LineupPlayer, MatchLineup, MatchEvent, MatchEvents, MatchStat, MatchStats } from './types';
+import type { Team, League, Contender, Match, Stream, MatchDetail, MatchAnalysis, H2HSummary, MatchOutcome, LineupPlayer, MatchLineup, MatchEvent, MatchEvents, MatchStat, MatchStats } from './types';
 
 const dec = new TextDecoder('utf-8', { fatal: false });
 /** Decode a length-delimited field. Never throws on varint input (returns ''). */
@@ -673,34 +673,44 @@ export function matchSides(m?: Match | null): { home: Team[]; away: Team[] } {
   };
 }
 
+/** Result of a single fixture from `ref`'s perspective (win/draw/loss), or `null`
+ *  when `ref` is neither side. Lists alternate home/away, so we locate the
+ *  reference team on either side (by teamId, falling back to name) and compare
+ *  its score — proto3 omits a 0 score, so a missing score field means 0. */
+export function matchOutcome(m: Match, ref: Team | undefined): MatchOutcome | null {
+  const hs = m.homeScore ?? 0;
+  const as = m.awayScore ?? 0;
+  const refId = ref?.teamId;
+  const refName = ref?.name;
+  let refScore: number | undefined;
+  let oppScore: number | undefined;
+  if (refId !== undefined) {
+    if (m.home?.teamId === refId) { refScore = hs; oppScore = as; }
+    else if (m.away?.teamId === refId) { refScore = as; oppScore = hs; }
+  }
+  if (refScore === undefined && refName) {
+    if (m.home?.name === refName) { refScore = hs; oppScore = as; }
+    else if (m.away?.name === refName) { refScore = as; oppScore = hs; }
+  }
+  if (refScore === undefined || oppScore === undefined) return null;
+  if (refScore > oppScore) return 'W';
+  if (refScore < oppScore) return 'L';
+  return 'D';
+}
+
 /** Win / draw / loss summary from a head-to-head list, from `ref`'s perspective.
- *  H2H fixtures alternate home/away, so we locate the reference team on either
- *  side (by teamId, falling back to name) and compare its score. */
+ *  Fixtures whose reference team cannot be located are skipped. */
 export function computeH2HSummary(h2h: Match[], ref: Team | undefined): H2HSummary {
   let wins = 0;
   let draws = 0;
   let losses = 0;
   let total = 0;
-  const refId = ref?.teamId;
-  const refName = ref?.name;
   for (const m of h2h) {
-    // proto3 omits a 0 score, so a missing score field means 0.
-    const hs = m.homeScore ?? 0;
-    const as = m.awayScore ?? 0;
-    let refScore: number | undefined;
-    let oppScore: number | undefined;
-    if (refId !== undefined) {
-      if (m.home?.teamId === refId) { refScore = hs; oppScore = as; }
-      else if (m.away?.teamId === refId) { refScore = as; oppScore = hs; }
-    }
-    if (refScore === undefined && refName) {
-      if (m.home?.name === refName) { refScore = hs; oppScore = as; }
-      else if (m.away?.name === refName) { refScore = as; oppScore = hs; }
-    }
-    if (refScore === undefined || oppScore === undefined) continue;
+    const outcome = matchOutcome(m, ref);
+    if (!outcome) continue;
     total += 1;
-    if (refScore > oppScore) wins += 1;
-    else if (refScore < oppScore) losses += 1;
+    if (outcome === 'W') wins += 1;
+    else if (outcome === 'L') losses += 1;
     else draws += 1;
   }
   const pct = (n: number): number => (total === 0 ? 0 : Math.round((n / total) * 1000) / 10);

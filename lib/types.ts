@@ -100,6 +100,9 @@ export interface MatchAnalysis {
   awayNext: Match[];
 }
 
+/** Result of a single match from one team's perspective: win, draw or loss. */
+export type MatchOutcome = 'W' | 'D' | 'L';
+
 /** Win / draw / loss summary computed from a head-to-head match list. */
 export interface H2HSummary {
   total: number;

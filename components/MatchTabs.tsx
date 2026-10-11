@@ -5,11 +5,12 @@ import type { MatchAnalysis, MatchLineup, MatchEvents, MatchStats, Team } from '
 import type { PlayerEventStats } from '@/lib/matchProto';
 import { computePlayerEventStats, isLiveStatus } from '@/lib/matchProto';
 import { H2H } from '@/components/H2H';
+import { LatestMatches, NextMatches } from '@/components/TeamMatches';
 import { Lineup } from '@/components/Lineup';
 import { Timeline } from '@/components/Timeline';
 import { Stats } from '@/components/Stats';
 
-type TabId = 'overview' | 'h2h' | 'lineup' | 'timeline';
+type TabId = 'overview' | 'h2h' | 'latest' | 'next' | 'lineup' | 'timeline';
 
 /** Split a match-events list into per-team player-stat maps (keyed by playerId).
  *  Attributes each event to home/away by teamSide, reusing the shared
@@ -72,6 +73,11 @@ export function MatchTabs({
 
   const hasStats = !!stats && stats.length > 0;
   const hasH2H = !!analysis && analysis.h2h.length > 0;
+  // Two matches tabs, both from the analysis payload (endpoint 107): each team's
+  // latest results (`homeLatest`/`awayLatest`) and its next fixtures
+  // (`homeNext`/`awayNext`). Shown independently — either can be empty.
+  const hasLatest = !!analysis && (analysis.homeLatest.length > 0 || analysis.awayLatest.length > 0);
+  const hasNext = !!analysis && (analysis.homeNext.length > 0 || analysis.awayNext.length > 0);
   const hasLineup = !!lineup && (lineup.home.length > 0 || lineup.away.length > 0);
   const hasTimeline = !!events && events.some((e) =>
     [101, 102, 103, 104, 105, 106, 107, 108, 109, 10020, 10021].includes(e.eventType)
@@ -79,20 +85,23 @@ export function MatchTabs({
 
   // Tab availability is data-driven; tab ORDER + the default-open tab are
   // phase-driven — the content people reach for first changes with the match.
-  //   upcoming → Lineups & H2H (probable XI, form) lead; stats/timeline are empty
+  //   upcoming → Lineups, H2H & the two matches tabs (probable XI, past meetings,
+  //              latest results / next fixtures) lead; stats/timeline are empty
   //   live     → Timeline (goals/cards as they happen) leads, then live stats
   //   finished → Overview (final stat summary) leads, then the goal recap
   const finished = (matchStatus ?? 0) >= 10000;
   const live = isLiveStatus(matchStatus);
   const phaseOrder: TabId[] = finished
-    ? ['overview', 'timeline', 'h2h', 'lineup']
+    ? ['overview', 'timeline', 'h2h', 'latest', 'next', 'lineup']
     : live
-    ? ['timeline', 'overview', 'lineup', 'h2h']
-    : ['lineup', 'h2h', 'overview', 'timeline'];
+    ? ['timeline', 'overview', 'lineup', 'h2h', 'latest', 'next']
+    : ['lineup', 'h2h', 'latest', 'next', 'overview', 'timeline'];
 
   const defs: Record<TabId, { label: string; show: boolean }> = {
     overview: { label: 'Overview', show: hasStats },
-    h2h: { label: 'H2H', show: hasH2H },
+    h2h: { label: 'Head to Head', show: hasH2H },
+    latest: { label: 'Latest Matches', show: hasLatest },
+    next: { label: 'Next Matches', show: hasNext },
     lineup: { label: 'Lineups', show: hasLineup },
     timeline: { label: 'Timeline', show: hasTimeline },
   };
@@ -108,6 +117,10 @@ export function MatchTabs({
         return <Stats stats={stats!} homeTeam={homeTeam} awayTeam={awayTeam} />;
       case 'h2h':
         return <H2H analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} />;
+      case 'latest':
+        return <LatestMatches analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} />;
+      case 'next':
+        return <NextMatches analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} />;
       case 'lineup':
         return (
           <Lineup
@@ -138,27 +151,30 @@ export function MatchTabs({
   return (
     <div className="mb-4">
       {/* Tab strip — pinned to a single row at every width: the buttons never
-          wrap (`nowrap` + `shrink-0`) and the <640px paddings/type shrink so all
-          four tabs still fit a 320px viewport instead of spilling onto a second
-          line. ≥640px keeps the original size. */}
-      <div className="mb-0 flex flex-nowrap items-stretch gap-1 border-b border-border max-[640px]:gap-0.5">
-        {available.map((t) => {
-          const on = t.id === current;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setActive(t.id)}
-              className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-4 py-2.5 text-[14px] font-semibold transition-colors duration-150 max-[640px]:px-2 max-[640px]:py-2 max-[640px]:text-[13px] ${
-                on
-                  ? 'border-accent text-accent'
-                  : 'border-transparent text-muted hover:text-text'
-              }`}
-            >
-              {t.label}
-            </button>
-          );
-        })}
+          wrap (`nowrap` + `shrink-0`) and the <640px paddings/type shrink. The
+          strip sits in a hidden-scrollbar overflow container so a very narrow
+          viewport scrolls the tabs instead of spilling onto a second line or
+          overflowing the page. ≥640px keeps the original size. */}
+      <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mb-0 flex w-max min-w-full flex-nowrap items-stretch gap-1 border-b border-border max-[640px]:gap-0.5">
+          {available.map((t) => {
+            const on = t.id === current;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActive(t.id)}
+                className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-4 py-2.5 text-[14px] font-semibold transition-colors duration-150 max-[640px]:px-2 max-[640px]:py-2 max-[640px]:text-[13px] ${
+                  on
+                    ? 'border-accent text-accent'
+                    : 'border-transparent text-muted hover:text-text'
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <div className="pt-4">{content(current)}</div>
     </div>
