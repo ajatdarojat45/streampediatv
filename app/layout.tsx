@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Script from 'next/script';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import Link from 'next/link';
 import { Play } from 'lucide-react';
 import './globals.css';
@@ -91,6 +93,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </div>
           </RBProvider>
         </QueryProvider>
+        {/* Vercel Analytics + Speed Insights — auto page views and Core Web
+            Vitals; both no-op in development and on non-Vercel hosts. Enable
+            them for the project in the Vercel dashboard. */}
+        <Analytics />
+        <SpeedInsights />
         <Script
           id="theme-init"
           strategy="beforeInteractive"
