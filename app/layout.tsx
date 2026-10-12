@@ -14,6 +14,7 @@ import { SportNav } from '@/components/SportNav';
 import { LazyGutterAd } from '@/components/LazyGutterAd';
 import { DevtoolsGuard } from '@/components/DevtoolsGuard';
 import { required } from '@/lib/env';
+import { HEAD_ADS_ENABLED } from '@/lib/config';
 import { ADSENSE_CLIENT, ADSENSE_SCRIPT_SRC, AD_SLOTS } from '@/lib/ads';
 
 const contactEmail = required(process.env.RB_CONTACT_EMAIL, 'RB_CONTACT_EMAIL');
@@ -47,6 +48,10 @@ export const metadata: Metadata = {
  * zone — `/watch/[id]` included, which is why the player page no longer mounts
  * components/MonetagPopunder.tsx: that component arms the very same zone, and
  * loading both would arm zone 12007023 twice on player pages.
+ *
+ * Production only — the tag is skipped whenever HEAD_ADS_ENABLED is false (see
+ * lib/config.ts), i.e. during `next dev`, so development page views are never
+ * counted as real ad traffic. NEXT_PUBLIC_RB_HEAD_ADS="true" arms it locally.
  */
 const MONETAG_TAG_SNIPPET =
   "(function(s){s.dataset.zone='12007023',s.src='https://al5sm.com/tag.min.js'})" +
@@ -59,9 +64,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-theme={initialTheme} cz-shortcut-listen="true">
       {/* Document head — the Monetag tag goes in first, exactly where the
-          dashboard snippet says to paste it ("after the <head> tag"). */}
+          dashboard snippet says to paste it ("after the <head> tag"). It is
+          rendered in production builds only (HEAD_ADS_ENABLED), so `next dev`
+          ships an ad-free <head>. */}
       <head>
-        <script dangerouslySetInnerHTML={{ __html: MONETAG_TAG_SNIPPET }} />
+        {HEAD_ADS_ENABLED && (
+          <script dangerouslySetInnerHTML={{ __html: MONETAG_TAG_SNIPPET }} />
+        )}
       </head>
       <body>
         {/* Client-only guard: redirects to a blank page if devtools is opened. */}
