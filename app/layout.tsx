@@ -23,12 +23,41 @@ export const metadata: Metadata = {
   description: 'Live sports streaming',
 };
 
+/**
+ * Monetag ad tag (zone 12007023) — the snippet exactly as issued by the
+ * Monetag dashboard, injected verbatim into the document <head> below so the
+ * zone is armed on every page of the site:
+ *
+ *   <script>(function(s){s.dataset.zone='12007023',
+ *     s.src='https://al5sm.com/tag.min.js'})
+ *     ([document.documentElement, document.body].filter(Boolean).pop()
+ *       .appendChild(document.createElement('script')))</script>
+ *
+ * The snippet is a self-invoking IIFE that builds the tag element
+ * (`<script data-zone="12007023" src="https://al5sm.com/tag.min.js">`) and
+ * appends it to <body>, falling back to <html>. `data-zone` is the attribute
+ * the tag reads to pick its zone, so it has to stay verbatim.
+ *
+ * Living in the root layout makes this the single, site-wide instance of the
+ * zone — `/watch/[id]` included, which is why the player page no longer mounts
+ * components/MonetagPopunder.tsx: that component arms the very same zone, and
+ * loading both would arm zone 12007023 twice on player pages.
+ */
+const MONETAG_TAG_SNIPPET =
+  "(function(s){s.dataset.zone='12007023',s.src='https://al5sm.com/tag.min.js'})" +
+  "([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))";
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   const stored = typeof window !== 'undefined' ? localStorage.getItem('rb-theme') : null;
   const initialTheme: string = stored || (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
   return (
     <html lang="en" data-theme={initialTheme} cz-shortcut-listen="true">
+      {/* Document head — the Monetag tag goes in first, exactly where the
+          dashboard snippet says to paste it ("after the <head> tag"). */}
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: MONETAG_TAG_SNIPPET }} />
+      </head>
       <body>
         {/* Client-only guard: redirects to a blank page if devtools is opened. */}
         <DevtoolsGuard />

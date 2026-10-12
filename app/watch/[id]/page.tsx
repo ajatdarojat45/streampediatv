@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { getMatchDetail } from '@/app/actions';
-import { MonetagPopunder } from '@/components/MonetagPopunder';
 import { WatchPageContent } from '@/components/WatchPageContent';
 import { matchHeading } from '@/lib/matchProto';
 import { UTC, formatKickoffLong } from '@/lib/datetime';
@@ -68,11 +67,12 @@ export default async function WatchPage({ params }: PageProps) {
   const { id } = await params;
   return (
     <>
-      {/* Monetag popunder ("Onclick") — armed only while this player page is
-          mounted, and only in a production build (NEXT_PUBLIC_RB_PLAYER_ADS,
-          see lib/config.ts). It renders nothing, so no box or overlay is ever
-          drawn over the video player. */}
-      <MonetagPopunder />
+      {/* Monetag (zone 12007023) is no longer armed from here: the tag lives in
+          the document <head> of the root layout (see app/layout.tsx →
+          MONETAG_TAG_SNIPPET), so it is already active on every page,
+          including this one. Mounting components/MonetagPopunder.tsx as well
+          would load the same zone twice. It never drew anything on this page,
+          so the player surface stays 100% clean either way. */}
       <WatchPageContent id={id} />
     </>
   );
