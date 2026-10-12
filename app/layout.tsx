@@ -21,6 +21,11 @@ const contactEmail = required(process.env.RB_CONTACT_EMAIL, 'RB_CONTACT_EMAIL');
 export const metadata: Metadata = {
   title: 'StreampediaTV — Live Sports',
   description: 'Live sports streaming',
+  // The tab icon (favicon) is `app/icon.svg` — the same rounded gradient
+  // square + play mark as the header logo below. Next.js serves that file and
+  // links it in the document <head> on its own (`<link rel="icon"
+  // href="/icon.svg" type="image/svg+xml">`), so declaring `icons` here would
+  // only duplicate the tag.
 };
 
 /**
