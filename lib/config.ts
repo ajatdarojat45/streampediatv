@@ -41,13 +41,14 @@ export const DEVTOOLS_BLANK_PATH =
   process.env.NEXT_PUBLIC_DEVTOOLS_BLANK_PATH || 'about:blank';
 
 /* ------------------------------------------------------------------------- *
- * Production-only features — head ads + player ads + the devtools guard.
+ * Production-only features — head ads + analytics + player ads + the devtools
+ * guard.
  *
- * All three are only armed in a production build: `next dev` sessions stay free
- * of ad tags and of the devtools redirect, so the app remains debuggable
- * locally without any extra setup. The NEXT_PUBLIC_* variables below are the
- * explicit overrides, read statically so Next.js can inline them into the
- * bundle.
+ * All of them are only armed in a production build: `next dev` sessions stay
+ * free of ad tags, of analytics beacons and of the devtools redirect, so the
+ * app remains debuggable locally without polluting any dashboard. The
+ * NEXT_PUBLIC_* variables below are the explicit overrides, read statically so
+ * Next.js can inline them into the bundle.
  * ------------------------------------------------------------------------- */
 
 /**
@@ -77,6 +78,15 @@ function productionFlag(value: string | undefined): boolean {
  * zone fire locally), or "false" to keep it out of a production build.
  */
 export const HEAD_ADS_ENABLED = productionFlag(process.env.NEXT_PUBLIC_RB_HEAD_ADS);
+
+/**
+ * Umami analytics (app/layout.tsx) — the `cloud.umami.is` tracking snippet in
+ * the document <head> of every page. Production only, so `next dev` pageviews
+ * never land in the dashboard. Set NEXT_PUBLIC_RB_ANALYTICS="true" to load the
+ * snippet under `next dev` (to confirm local hits are recorded), or "false" to
+ * keep it out of a production build.
+ */
+export const ANALYTICS_ENABLED = productionFlag(process.env.NEXT_PUBLIC_RB_ANALYTICS);
 
 /**
  * Devtools guard (components/DevtoolsGuard.tsx) — arms the `disable-devtool`

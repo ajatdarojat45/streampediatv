@@ -14,7 +14,7 @@ import { SportNav } from '@/components/SportNav';
 import { LazyGutterAd } from '@/components/LazyGutterAd';
 import { DevtoolsGuard } from '@/components/DevtoolsGuard';
 import { required } from '@/lib/env';
-import { HEAD_ADS_ENABLED } from '@/lib/config';
+import { ANALYTICS_ENABLED, HEAD_ADS_ENABLED } from '@/lib/config';
 import { ADSENSE_CLIENT, ADSENSE_SCRIPT_SRC, AD_SLOTS } from '@/lib/ads';
 
 const contactEmail = required(process.env.RB_CONTACT_EMAIL, 'RB_CONTACT_EMAIL');
@@ -57,19 +57,43 @@ const MONETAG_TAG_SNIPPET =
   "(function(s){s.dataset.zone='12007023',s.src='https://al5sm.com/tag.min.js'})" +
   "([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))";
 
+/**
+ * Umami analytics — the snippet exactly as issued by the dashboard, injected
+ * into the document <head> below:
+ *
+ *   <script defer src="https://cloud.umami.is/script.js"
+ *     data-website-id="e8d15974-fdcb-4b6f-8ef8-608582e1e2fe"></script>
+ *
+ * `defer` keeps the request off the critical path (it runs after parsing, i.e.
+ * roughly `afterInteractive`), and the script beacons its pageviews back to the
+ * same `cloud.umami.is` origin, so no extra configuration is needed here. The
+ * website id is public by design (it is visible in the page source of any site
+ * running Umami Cloud).
+ *
+ * Production only — see ANALYTICS_ENABLED in lib/config.ts: `next dev` renders
+ * an untracked <head>, so local pageviews never reach the dashboard. Set
+ * NEXT_PUBLIC_RB_ANALYTICS="true" to test the snippet locally.
+ */
+const ANALYTICS_SCRIPT_SRC = 'https://cloud.umami.is/script.js';
+const ANALYTICS_WEBSITE_ID = 'e8d15974-fdcb-4b6f-8ef8-608582e1e2fe';
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   const stored = typeof window !== 'undefined' ? localStorage.getItem('rb-theme') : null;
   const initialTheme: string = stored || (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
   return (
     <html lang="en" data-theme={initialTheme} cz-shortcut-listen="true">
-      {/* Document head — the Monetag tag goes in first, exactly where the
-          dashboard snippet says to paste it ("after the <head> tag"). It is
-          rendered in production builds only (HEAD_ADS_ENABLED), so `next dev`
-          ships an ad-free <head>. */}
+      {/* Document head — third-party tags land here, exactly where each
+          dashboard snippet says to paste it. Both are production-only:
+          `next dev` ships an untracked, ad-free <head>. */}
       <head>
+        {/* Monetag ad tag (zone 12007023) — HEAD_ADS_ENABLED. */}
         {HEAD_ADS_ENABLED && (
           <script dangerouslySetInnerHTML={{ __html: MONETAG_TAG_SNIPPET }} />
+        )}
+        {/* Umami analytics — ANALYTICS_ENABLED. */}
+        {ANALYTICS_ENABLED && (
+          <script defer src={ANALYTICS_SCRIPT_SRC} data-website-id={ANALYTICS_WEBSITE_ID} />
         )}
       </head>
       <body>
