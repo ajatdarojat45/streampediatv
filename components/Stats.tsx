@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { MatchStats, MatchStat, Team } from '@/lib/types';
 import { statTypeLabel, isPercentStat } from '@/lib/matchProto';
+import { ClubLink } from '@/components/ClubLink';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
 const PANEL =
@@ -25,17 +26,20 @@ function TeamLogo({ name, logo, size = 'h-6 w-6' }: { name?: string; logo?: stri
 
 /** Team label with the logo on the OUTER side of the name: home logo on the
  *  left of the home name, away logo on the right of the away name.
- *  Same position as the Timeline tab header. */
-function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 'home' | 'away' }) {
+ *  Same position as the Timeline tab header. Crest and name are one link into
+ *  the club's own page whenever the feed's name resolved to one (ClubLink). */
+function TeamChip({ team, align }: { team?: Team; align: 'home' | 'away' }) {
   return (
-    <span
+    <ClubLink
+      id={team?.clubId}
+      name={team?.name}
       className={`inline-flex min-w-0 items-center gap-2 ${
         align === 'away' ? 'flex-row-reverse text-right' : ''
       }`}
     >
-      <TeamLogo name={name} logo={logo} />
-      <span className="min-w-0 truncate text-[14px] font-semibold">{name ?? '—'}</span>
-    </span>
+      <TeamLogo name={team?.name} logo={team?.logo} />
+      <span className="min-w-0 truncate text-[14px] font-semibold">{team?.name ?? '—'}</span>
+    </ClubLink>
   );
 }
 
@@ -99,10 +103,10 @@ export function Stats({
         <>
           <div className="mt-3 mb-1 flex items-center gap-2.5">
             <div className="flex min-w-0 flex-1">
-              <TeamChip name={homeTeam?.name} logo={homeTeam?.logo} align="home" />
+              <TeamChip team={homeTeam} align="home" />
             </div>
             <div className="flex min-w-0 flex-1 justify-end">
-              <TeamChip name={awayTeam?.name} logo={awayTeam?.logo} align="away" />
+              <TeamChip team={awayTeam} align="away" />
             </div>
           </div>
           <div className="mt-1 divide-y divide-[rgba(0,0,0,0.06)] [[data-theme=dark]_&]:divide-[rgba(255,255,255,0.08)]">

@@ -18,6 +18,8 @@ import {
 import type { MatchEvent, MatchEvents, Team } from '@/lib/types';
 import { eventMinute, eventTypeLabel } from '@/lib/matchProto';
 import { playerAvatarUrl } from '@/lib/logos';
+import { ClubLink } from '@/components/ClubLink';
+import { PlayerLink } from '@/components/PlayerLink';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
 const PANEL =
@@ -38,17 +40,20 @@ function TeamLogo({ name, logo }: { name?: string; logo?: string }) {
 }
 
 /** Team label with the logo on the OUTER side of the name: home logo on the
- *  left of the home name, away logo on the right of the away name. */
-function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 'home' | 'away' }) {
+ *  left of the home name, away logo on the right of the away name. Crest and
+ *  name link to the club's own page when the feed's name resolved to one. */
+function TeamChip({ team, align }: { team?: Team; align: 'home' | 'away' }) {
   return (
-    <span
+    <ClubLink
+      id={team?.clubId}
+      name={team?.name}
       className={`inline-flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis ${
         align === 'away' ? 'flex-row-reverse text-right' : ''
       }`}
     >
-      <TeamLogo name={name} logo={logo} />
-      <span className="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis text-[14px] font-semibold">{name ?? '—'}</span>
-    </span>
+      <TeamLogo name={team?.name} logo={team?.logo} />
+      <span className="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis text-[14px] font-semibold">{team?.name ?? '—'}</span>
+    </ClubLink>
   );
 }
 
@@ -166,7 +171,10 @@ function subLine(e: MatchEvent, away: boolean): ReactNode {
   if ((e.eventType === 101 || e.eventType === 103) && e.assistant?.name)
     return (
       <span className="w-full truncate text-[11px] leading-tight text-muted">
-        assist: {e.assistant.name}
+        assist:{' '}
+        <PlayerLink id={e.assistant.playerPageId} name={e.assistant.name}>
+          {e.assistant.name}
+        </PlayerLink>
       </span>
     );
   if (e.eventType === 102)
@@ -179,7 +187,13 @@ function subLine(e: MatchEvent, away: boolean): ReactNode {
         )}`}
       >
         <ArrowDown size={11} className="shrink-0 text-[#dc2626]" />
-        {e.substitutionOut.name}
+        <PlayerLink
+          id={e.substitutionOut.playerPageId}
+          name={e.substitutionOut.name}
+          className="min-w-0 truncate"
+        >
+          {e.substitutionOut.name}
+        </PlayerLink>
       </span>
     );
   if (e.description)
@@ -207,11 +221,23 @@ function EventRow({
         )}`}
       >
         <ArrowUp size={13} className="shrink-0 text-[#16a34a]" />
-        {e.substitutionIn?.name ?? 'Substitution'}
+        <PlayerLink
+          id={e.substitutionIn?.playerPageId}
+          name={e.substitutionIn?.name}
+          className="min-w-0 truncate"
+        >
+          {e.substitutionIn?.name ?? 'Substitution'}
+        </PlayerLink>
       </span>
     ) : (
       <span className="w-full truncate text-[13px] font-semibold leading-tight">
-        {player?.name || eventTypeLabel(e.eventType)}
+        {player?.name ? (
+          <PlayerLink id={player.playerPageId} name={player.name}>
+            {player.name}
+          </PlayerLink>
+        ) : (
+          eventTypeLabel(e.eventType)
+        )}
       </span>
     );
   const card = (
@@ -223,7 +249,12 @@ function EventRow({
       }`}
     >
       <Icon size={16} strokeWidth={2.25} fill={filled ? 'currentColor' : 'none'} className={`shrink-0 ${cls}`} />
-      <Avatar name={player?.name} logo={player?.logo} sportType={sportType} />
+      {/* Photo (avatar) and the name below each link to the player's own page —
+          two sibling links, never one inside the other, so the card's own
+          layout and the club links it also carries stay valid HTML. */}
+      <PlayerLink id={player?.playerPageId} name={player?.name} className="flex shrink-0">
+        <Avatar name={player?.name} logo={player?.logo} sportType={sportType} />
+      </PlayerLink>
       <span className={`flex min-w-0 flex-1 flex-col ${away ? 'items-end' : 'items-start'}`}>
         {main}
         {subLine(e, away)}
@@ -327,10 +358,10 @@ export function Timeline({
             left, away on the right, aligned with the event columns below. */}
         <div className="mt-3 mb-3 flex items-center gap-2.5">
           <div className="flex min-w-0 flex-1">
-            <TeamChip name={homeTeam?.name} logo={homeTeam?.logo} align="home" />
+            <TeamChip team={homeTeam} align="home" />
           </div>
           <div className="flex min-w-0 flex-1 justify-end">
-            <TeamChip name={awayTeam?.name} logo={awayTeam?.logo} align="away" />
+            <TeamChip team={awayTeam} align="away" />
           </div>
         </div>
       <div className="relative mt-1">

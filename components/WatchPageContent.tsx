@@ -84,8 +84,26 @@ export function WatchPageContent({ id }: { id: string }) {
 
   const detailQuery = useMatchDetail(matchId, sportType);
   const analysisQuery = useMatchAnalysis(matchId, sportType);
-  const lineupQuery = useMatchLineup(matchId, sportType);
-  const eventQuery = useMatchEvent(matchId, sportType);
+  /** The fixture's two sides by name — the scope the server's player-page bridge
+   *  reads every team-sheet and event name in (lib/goalooSquad). Taken from
+   *  whichever payload has arrived: the detail row when it is in, the list row
+   *  until then. */
+  const sides = detailQuery.data?.match ?? listMatch ?? null;
+  /** Hold the two tabs that carry player names until those names exist — the
+   *  detail request below is in flight anyway, so waiting costs no extra call
+   *  while a cold page would otherwise fetch a team sheet twice: once before the
+   *  sides are known (no player pages) and again after. Any other sport has no
+   *  player pages to scope, so its tabs are never held. */
+  const sidesReady =
+    sportType !== 1 || Boolean(sides?.home?.name && sides?.away?.name) || detailQuery.isFetched;
+  const lineupQuery = useMatchLineup(
+    matchId,
+    sportType,
+    sides?.home?.name,
+    sides?.away?.name,
+    sidesReady
+  );
+  const eventQuery = useMatchEvent(matchId, sportType, sides?.home?.name, sides?.away?.name, sidesReady);
   const statisticQuery = useMatchStatistic(matchId, sportType);
   const streamMutation = useStreamUrl();
 

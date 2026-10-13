@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import { Goal, ThumbsUp } from 'lucide-react';
 import { TeamLogo } from '@/components/Match';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { ClubLink } from '@/components/ClubLink';
+import { PlayerLink } from '@/components/PlayerLink';
 import { totalPlayer, totalTeam } from '@/lib/leagueProto';
 import type { LeaguePlayerTotals, PlayerTotal, Team } from '@/lib/types';
 
@@ -83,20 +85,35 @@ function Board({
             return (
               <li key={`${l.row.playerId ?? 'x'}-${i}`} className={ROW}>
                 <span className={RANK}>{i + 1}</span>
-                <PlayerAvatar path={l.player?.logo} name={name} sportType={sportType} size="sm" />
+                {/* The photo and the name each link to the player's own page —
+                    two sibling links, so the club link below stays valid. */}
+                <PlayerLink id={l.player?.playerPageId} name={name} className="inline-flex shrink-0">
+                  <PlayerAvatar path={l.player?.logo} name={name} sportType={sportType} size="sm" />
+                </PlayerLink>
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="w-full truncate text-[13px] font-semibold leading-tight">{name}</span>
+                  <span className="w-full truncate text-[13px] font-semibold leading-tight">
+                    <PlayerLink id={l.player?.playerPageId} name={name}>
+                      {name}
+                    </PlayerLink>
+                  </span>
                   <span className="mt-0.5 flex min-w-0 items-center gap-1.5">
-                    <TeamLogo
-                      path={l.team?.logo}
+                    {/* The leader's club — crest + name one link into its page. */}
+                    <ClubLink
+                      id={l.team?.clubId}
                       name={l.team?.name}
-                      sportType={sportType}
-                      kind="team"
-                      size="league"
-                    />
-                    <span className="min-w-0 truncate text-[11px] leading-tight text-muted">
-                      {l.team?.name ?? (l.row.teamId !== undefined ? `#${l.row.teamId}` : '—')}
-                    </span>
+                      className="flex min-w-0 items-center gap-1.5"
+                    >
+                      <TeamLogo
+                        path={l.team?.logo}
+                        name={l.team?.name}
+                        sportType={sportType}
+                        kind="team"
+                        size="league"
+                      />
+                      <span className="min-w-0 truncate text-[11px] leading-tight text-muted">
+                        {l.team?.name ?? (l.row.teamId !== undefined ? `#${l.row.teamId}` : '—')}
+                      </span>
+                    </ClubLink>
                   </span>
                   <span className={BAR}>
                     <span

@@ -107,4 +107,20 @@ export function leagueHref(leagueId: number | string | undefined, sportType?: nu
   return slug ? `/competition/${leagueId}?sport=${slug}` : `/competition/${leagueId}`;
 }
 
+/** Club detail URL: `/club/24170`. The page is built off a Goaloo football
+ *  feed, so it carries no category param. Unlike {@link watchHref} — whose ids
+ *  are Rblink match ids, always present — a club id comes from a feed row that
+ *  may publish `0`, and `''` keeps such a row plain text rather than a
+ *  `/club/0` dead link. */
+export function clubHref(teamId: number | string | undefined): string {
+  const id = Number(teamId);
+  return Number.isInteger(id) && id > 0 ? `/club/${id}` : '';
+}
+
+/** Player detail URL: `/player/209310`. Mirrors {@link clubHref}. */
+export function playerHref(playerId: number | string | undefined): string {
+  const id = Number(playerId);
+  return Number.isInteger(id) && id > 0 ? `/player/${id}` : '';
+}
+
 

@@ -125,33 +125,52 @@ export function useMatchAnalysis(matchId: string | number, sportType?: number) {
   });
 }
 
-/** Match lineup for a detail page. No background polling (see useMatchAnalysis). */
-export function useMatchLineup(matchId: string | number, sportType?: number) {
+/** Match lineup for a detail page. `home`/`away` are the fixture's side names:
+ *  they key the query (the payload carries the player pages resolved from them)
+ *  and are the scope the server's player bridge reads each name in. `ready` lets
+ *  the caller hold the request until those names exist — the watch page gates it
+ *  on the detail request it is running anyway, so a cold page never spends one
+ *  upstream call on a team sheet without player pages and then another on the
+ *  same sheet with them. No background polling (see useMatchAnalysis). */
+export function useMatchLineup(
+  matchId: string | number,
+  sportType?: number,
+  home?: string,
+  away?: string,
+  ready = true
+) {
   return useQuery({
-    queryKey: ['match-lineup', matchId, sportType],
+    queryKey: ['match-lineup', matchId, sportType, home ?? '', away ?? ''],
     queryFn: async () => {
-      const res = await getMatchLineup({ matchId, sportType, language: 0 });
+      const res = await getMatchLineup({ matchId, sportType, language: 0, home, away });
       if (!res.ok) throw new Error(res.error);
       return res.data;
     },
-    enabled: Boolean(matchId) && Number(sportType) > 0,
+    enabled: Boolean(matchId) && Number(sportType) > 0 && ready,
     retry: retryPolicy,
     retryDelay,
     ...DETAIL_POLL,
   });
 }
 
-/** Match events (goals, cards, substitutions) for a detail page. No background
- *  polling (see useMatchAnalysis). */
-export function useMatchEvent(matchId: string | number, sportType?: number) {
+/** Match events (goals, cards, substitutions) for a detail page. `home`/`away`
+ *  and `ready` scope and gate the player-page bridge (see useMatchLineup). No
+ *  background polling (see useMatchAnalysis). */
+export function useMatchEvent(
+  matchId: string | number,
+  sportType?: number,
+  home?: string,
+  away?: string,
+  ready = true
+) {
   return useQuery({
-    queryKey: ['match-event', matchId, sportType],
+    queryKey: ['match-event', matchId, sportType, home ?? '', away ?? ''],
     queryFn: async () => {
-      const res = await getMatchEvent({ matchId, sportType, language: 0 });
+      const res = await getMatchEvent({ matchId, sportType, language: 0, home, away });
       if (!res.ok) throw new Error(res.error);
       return res.data;
     },
-    enabled: Boolean(matchId) && Number(sportType) > 0,
+    enabled: Boolean(matchId) && Number(sportType) > 0 && ready,
     retry: retryPolicy,
     retryDelay,
     ...DETAIL_POLL,

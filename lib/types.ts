@@ -16,6 +16,20 @@ export interface Team {
   countryLogo?: string;
   hot?: boolean;
   score?: number;
+  /** Goaloo club page this team belongs to, resolved from its published name by
+   *  lib/goalooTeams when the server action decoded the payload. The Rblink
+   *  feeds carry no club id of their own, so the field is filled in for football
+   *  payloads only and stays ABSENT whenever the name could not be resolved with
+   *  certainty — the club then renders as plain text rather than a wrong link.
+   *  Ignored by the club/player feeds, which already travel with Goaloo ids. */
+  clubId?: number;
+  /** Goaloo player page this row's player belongs to — `/player/{id}` — resolved
+   *  from the published name by lib/goalooSquad, inside the squad of the club
+   *  the row carries. Filled in for football payloads only, and only when that
+   *  squad names the player with certainty; absent means the name renders as
+   *  plain text rather than a wrong profile. Not read for `teamId` rows, which
+   *  are clubs (see {@link clubId}). */
+  playerPageId?: number;
 }
 
 export interface League {
@@ -339,6 +353,376 @@ export interface Sport {
   color: string;
   /** Whether the sport uses a home/away score (defaults to true). */
   scoring?: boolean;
+}
+
+/** One competition in the Goaloo worldwide catalogue (data/competitions.json).
+ *  `path` is the feed's own key — `s<id>` for a round-robin league, `c<id>` for
+ *  a cup — and it is stored rather than derived because the catalogue is the
+ *  only place that knows which of the two a given id is. */
+export interface GoalooCompetition {
+  id: number;
+  /** Long English name, e.g. "England Premier League". */
+  name: string;
+  /** Feed short code, e.g. "ENG PR" (kept for compact lists). */
+  short: string;
+  country: string;
+  /** Goaloo region bucket — see GOALOO_AREAS in lib/goaloo.ts. */
+  area: number;
+  /** 1 = league, 2 = cup. */
+  type: number;
+  /** 1 when the publisher flags it as a headline competition. */
+  hot: number;
+  /** Crest path as shipped by the feed; resolve with goalooCompetitionLogoUrl. */
+  logo: string;
+  color: string;
+  /** Season on display, e.g. "2026-2027". */
+  season: string;
+  /** Season that actually holds the JSON on disk (differs for a handful of
+   *  competitions, where the display season leads the published one). */
+  seasonDir: string;
+  /** `s<id>` / `c<id>`. */
+  path: string;
+}
+
+export interface GoalooTeam {
+  id: number;
+  name: string;
+  /** Absolute crest URL (already resolved). */
+  logo: string;
+}
+
+/** One fixture, normalised out of the feed's positional rows. */
+export interface GoalooFixture {
+  matchId: number;
+  /** Raw status code (0 scheduled, -1 finished, >0 in play). */
+  status?: number;
+  statusKind: 'scheduled' | 'live' | 'finished' | 'unknown';
+  /** Kickoff in epoch ms (converted from the feed's UTC+8 clock). */
+  kickoff: number;
+  homeId: number;
+  awayId: number;
+  home: GoalooTeam;
+  away: GoalooTeam;
+  score: { home: number; away: number } | null;
+  halfScore: { home: number; away: number } | null;
+  /** Stage key the fixture arrived under (`R_7`, `G29090A`). */
+  stageKey: string;
+  /** Aggregate of the tie this leg belongs to (two-legged rounds only). */
+  tie?: { homeId?: number; awayId?: number; aggHome?: number; aggAway?: number };
+  /** "Leg 1" / "Leg 2" inside a two-legged tie. */
+  legLabel?: string;
+}
+
+
+/** A stage — a cup round or a league matchday — with its fixtures. */
+export interface GoalooStage {
+  key: string;
+  label: string;
+  items: GoalooFixture[];
+}
+
+export interface GoalooStandingRow {
+  rank: number;
+  team: GoalooTeam;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDiff: number;
+  points: number;
+}
+
+export interface GoalooStandingsGroup {
+  key: string;
+  name: string;
+  rows: GoalooStandingRow[];
+}
+
+/** Everything one competition page needs, parsed in one pass. */
+export interface GoalooCompetitionDetail {
+  comp: GoalooCompetition;
+  /** The competition's rules blurb (often empty for minor leagues). */
+  about: string;
+  teams: GoalooTeam[];
+  stages: GoalooStage[];
+  standings: GoalooStandingsGroup[];
+}
+
+/** One fixture row on a club or player page.
+ *
+ *  All three Goaloo match feeds (the club's own history, the club's schedule
+ *  ajax and a player's match log) publish the same leading fields in the same
+ *  order, so one shape carries them all. `streamId` is the Rblink matchId the
+ *  row was joined to (see lib/goalooJoin.ts) — `0` when the fixture is not in
+ *  the stream catalogue, in which case the row renders as plain text. */
+export interface GoalooMatchRef {
+  /** Goaloo's own schedule id (the feed keys matches by it). */
+  matchId: number;
+  /** Kickoff in epoch ms (converted from the feed's UTC+8 clock). */
+  kickoff: number;
+  /** Goaloo competition id, e.g. 1122 (Indonesia Super League). */
+  leagueId: number;
+  /** Competition name as published by the feed that carried the row. */
+  competition: string;
+  /** Competition colour as published (feed UI accent, may be empty). */
+  color: string;
+  home: { id: number; name: string };
+  away: { id: number; name: string };
+  /** Final score — `null` for a fixture that has not been played yet. */
+  score: { home: number; away: number } | null;
+  /** Rblink matchId for `/watch/{id}?sport=football`; 0 = no stream. */
+  streamId: number;
+}
+
+/** One member of a club's first team, as listed by the club feed. */
+export interface GoalooClubPerson {
+  id: number;
+  name: string;
+  /** Shirt number exactly as published ("" when the feed leaves it blank). */
+  number: string;
+  /** Absolute photo URL ("" when the feed publishes none). */
+  photo: string;
+  country: string;
+  /** Bucket label in the feed's own words: Goalkeeper/Defender/Midfielder/Striker. */
+  position: string;
+  /** Bucket rank for ordering — 1 striker … 4 goalkeeper, 0 when unlisted. */
+  positionRank: number;
+  /** Date of birth, `YYYY-MM-DD`, "" when unpublished. */
+  dateOfBirth: string;
+  /** Market value as published (hundredths of the feed's £M unit), "" if none. */
+  marketValue: string;
+  /** Contract expiry, "" when unpublished. */
+  contract: string;
+}
+
+/** A transfer in or out, from `/ajax/GetTeamTransferByYear`.
+ *
+ *  The feed ships the counterpart club by id only — no name — so the row links
+ *  that club's crest and no name is invented for it. */
+export interface GoalooTransfer {
+  playerId: number;
+  playerName: string;
+  /** Absolute player photo URL ("" when the feed publishes none). */
+  photo: string;
+  /** Counterpart club id (the club the player came from / moved to). */
+  clubId: number;
+  /** Fee as published, "" when the feed publishes none. */
+  fee: string;
+  /** Date as published (`dd-mm-yyyy`). */
+  date: string;
+  /** Published transfer type: Loan / Free Transfer / Wholly Owned / … */
+  type: string;
+  /** `true` = arrival, `false` = departure. */
+  joined: boolean;
+}
+
+/** Everything one club page needs: the team feed, its schedule and its
+ *  transfers, with every match row joined to the stream catalogue. */
+export interface GoalooClub {
+  id: number;
+  name: string;
+  /** Absolute crest URL. */
+  logo: string;
+  city: string;
+  stadium: string;
+  /** Stadium capacity exactly as published ("" when the feed omits it). */
+  capacity: string;
+  /** Established date as published ("" when the feed omits it). */
+  founded: string;
+  /** Squad value in the feed's £M unit as published, "" when omitted. */
+  marketValue: string;
+  /** Average squad age as published, "" when omitted. */
+  avgAge: string;
+  /** The club's own competition — the one its feed header names. */
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string;
+  /** Rblink leagueId for `/competition/{id}` — 0 when the stream catalogue
+   *  does not pair this competition (the club page then shows it as text). */
+  leagueStreamId: number;
+  coach: GoalooClubPerson | null;
+  /** First team, ordered Goalkeepers → Defenders → Midfielders → Strikers. */
+  squad: GoalooClubPerson[];
+  /** Competitions the feed lists for this club (schedule ajax `SclassList`). */
+  competitions: { id: number; name: string }[];
+  /** Played matches, newest first (the club feed's own history rows). */
+  results: GoalooMatchRef[];
+  /** Not-yet-played fixtures, soonest first (the club's schedule). */
+  fixtures: GoalooMatchRef[];
+  /** Years the feed publishes transfers for, newest first. */
+  transferYears: string[];
+  /** The newest published transfer year — arrivals and departures. */
+  transfers: GoalooTransfer[];
+  /** Feed's own last-update stamp, `YYYY-MM-DD HH:MM:SS` (UTC+8). */
+  updatedAt: string;
+}
+
+/** One appearance in a player's published match log (`playerCount`). */
+export interface GoalooPlayerMatch extends GoalooMatchRef {
+  /** Season label as published, e.g. "2026-2027". */
+  season: string;
+  /** Minutes played; 0 when the feed publishes none. */
+  minutes: number;
+  goals: number;
+  assists: number;
+  yellow: number;
+  red: number;
+  /** Match rating as published; 0 when the feed publishes none. */
+  rating: number;
+}
+
+/** One line of a player's transfer record. */
+export interface GoalooPlayerTransfer {
+  /** Season label as published, e.g. "2021-2022". */
+  season: string;
+  fromId: number;
+  fromName: string;
+  /** Absolute crest URL. */
+  fromLogo: string;
+  toId: number;
+  toName: string;
+  /** Absolute crest URL. */
+  toLogo: string;
+  /** Window start / end as published (`YYYY-MM-DD`). */
+  fromDate: string;
+  toDate: string;
+  /** Fee as published, "" when the feed publishes none. */
+  fee: string;
+  /** Published transfer type: Loan / Free Transfer / Wholly Owned / … */
+  type: string;
+}
+
+/** Per-season totals summed over the appearances a player's feed lists. */
+export interface GoalooPlayerSeason {
+  season: string;
+  matches: number;
+  minutes: number;
+  goals: number;
+  assists: number;
+  yellow: number;
+  red: number;
+}
+
+/** Everything one player page needs. */
+export interface GoalooPlayer {
+  id: number;
+  name: string;
+  /** Absolute photo URL ("" when the feed publishes none). */
+  photo: string;
+  /** Current club — the only club the feed states for the player. */
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+  country: string;
+  /** Absolute flag URL ("" when the feed publishes none). */
+  countryFlag: string;
+  /** Shirt number exactly as published ("" when the feed leaves it blank). */
+  number: string;
+  /** Market value as published (hundredths of the feed's £M unit), "" if none. */
+  marketValue: string;
+  /** Contract expiry as published, "" when omitted. */
+  contract: string;
+  /** Date of birth, `YYYY-MM-DD`, "" when unpublished. */
+  dateOfBirth: string;
+  /** Height in cm as published, "" when omitted. */
+  height: string;
+  /** Weight in kg as published, "" when omitted. */
+  weight: string;
+  /** Preferred foot in the feed's own words: Left/Right/Both ("" if unset). */
+  foot: string;
+  /** The player's competition, as published in his own feed. */
+  leagueId: number;
+  /** Competition name from the static catalogue ("" when it does not list the
+   *  id at all). */
+  leagueName: string;
+  /** Rblink leagueId for `/competition/{id}`; 0 = no stream for it. */
+  leagueStreamId: number;
+  /** Appearances, newest first. */
+  matches: GoalooPlayerMatch[];
+  /** Season totals over those appearances, newest season first. */
+  seasons: GoalooPlayerSeason[];
+  /** Transfer record, newest first. */
+  transfers: GoalooPlayerTransfer[];
+  /** Feed's own last-update stamp, `YYYY-MM-DD HH:MM:SS` (UTC+8). */
+  updatedAt: string;
+}
+
+
+/** One football competition as published by the Rblink catalogue
+ *  (data/rblink-leagues.json, written by tools/gen-rblink-leagues.mjs). This is
+ *  the streaming side of the join: it carries the id the /watch route needs. */
+export interface RblinkLeague {
+  id: number;
+  name: string;
+  /** Country label as published ("England", "Asian", "International"). */
+  country: string;
+  countryId: number;
+  flag: string;
+  logo: string;
+  /** URL slug, e.g. "english-premier-league". */
+  slug: string;
+  teams: number;
+  players: number;
+  /** Published season window, epoch ms (absent for a few rows). */
+  season: { id: number; name: string; start: number; end: number } | null;
+  avgGoals: number;
+  hot: boolean;
+  /** Publisher flags: the competition has fixtures / a table right now. */
+  matches: boolean;
+  standings: boolean;
+}
+
+/** One row of the `/competitions` directory: a competition from the Goaloo
+ *  catalogue plus the Rblink league that streams it, when the matcher paired
+ *  the two feeds. Plain JSON — the page is a server component and hands these
+ *  down as props, so nothing heavier than the fields below leaves the server. */
+export interface CompetitionDirectoryRow {
+  /** Goaloo feed key (`s<id>` / `c<id>`) — React key and deep-link target. */
+  key: string;
+  name: string;
+  /** Publisher headline flag (`GoalooCompetition.hot === 1`). */
+  hot: boolean;
+  /** Rblink leagueId for `/competition/{id}?sport=football`; 0 = no stream. */
+  streamId: number;
+  /** The joined Rblink league publishes fixtures right now. */
+  fixtures: boolean;
+}
+
+/** One country block of the directory ("England", "International", …). */
+export interface CompetitionDirectorySection {
+  country: string;
+  /** Rows carrying a stream — pre-counted so the filter pills need no scan. */
+  streamed: number;
+  rows: CompetitionDirectoryRow[];
+}
+
+/** Card in the headline strip at the top of `/competitions`. */
+export interface CompetitionHighlight {
+  key: string;
+  name: string;
+  country: string;
+  /** Absolute crest URL (already resolved through goalooCompetitionLogoUrl). */
+  logo: string;
+  /** Rblink leagueId — always > 0: highlights are streams by construction. */
+  streamId: number;
+}
+
+/** Everything `/competitions` renders, assembled once per server process. */
+export interface CompetitionDirectory {
+  sections: CompetitionDirectorySection[];
+  highlights: CompetitionHighlight[];
+  /** When the Rblink scan behind the join last ran (shown as provenance). */
+  generatedAt: string;
+  totals: {
+    /** Competitions in the Goaloo catalogue. */
+    competitions: number;
+    /** Distinct countries across those competitions. */
+    countries: number;
+    /** Competitions the matcher could pair with a Rblink stream. */
+    streamed: number;
+  };
 }
 
 export interface AppConfig {

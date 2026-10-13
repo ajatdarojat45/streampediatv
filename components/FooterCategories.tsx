@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { SPORTS } from '@/lib/sports';
 
-/** Footer category links — route to the dedicated /sports/[slug] pages. */
+/** Footer category links — route to the dedicated /sports/[slug] pages, with
+ *  the worldwide competition directory last as the index over all of them. */
 export function FooterCategories() {
   return (
     <ul className="flex flex-row flex-wrap gap-1.5 gap-x-3.5 gap-y-1.5 list-none m-0 p-0 text-[13px]">
@@ -10,6 +11,9 @@ export function FooterCategories() {
           <Link href={`/sports/${s.slug}`} className="text-muted transition-colors hover:text-accent">{s.label}</Link>
         </li>
       ))}
+      <li>
+        <Link href="/competitions" className="text-muted transition-colors hover:text-accent">Competitions</Link>
+      </li>
     </ul>
   );
 }

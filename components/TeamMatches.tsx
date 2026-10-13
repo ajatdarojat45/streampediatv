@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import type { MatchAnalysis, Match, Team, MatchOutcome } from '@/lib/types';
-import { matchOutcome } from '@/lib/matchProto';
+import { matchOutcome, matchLabel } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
+import { ClubLink } from '@/components/ClubLink';
 import { watchHref } from '@/lib/sports';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
@@ -15,6 +16,11 @@ const PANEL =
 /** Logo sizes — kept identical to the match-card `LOGO_SIZE` tokens (see H2H). */
 const TEAM_LOGO_SIZE = 'h-6 w-6';
 const LEAGUE_LOGO_SIZE = 'h-4 w-4';
+
+/** A card's own click target, laid over the card — the clubs inside are links
+ *  of their own (ClubLink) and links never nest, so the card-wide navigation
+ *  cannot be the root element. Same pattern as the H2H meeting rows. */
+const ROW_OVERLAY = 'absolute inset-0 rounded-lg';
 
 /** Outcome → background token, shared by the per-row badge and the form dots. */
 const OUTCOME_BG: Record<MatchOutcome, string> = {
@@ -45,17 +51,21 @@ function TeamLogo({ name, logo, size = TEAM_LOGO_SIZE }: { name?: string; logo?:
   );
 }
 
-/** Compact team label (typography/spacing mirrors the match-card `TeamChip`). */
-function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 'home' | 'away' }) {
+/** Compact team label (typography/spacing mirrors the match-card `TeamChip`);
+ *  crest and name are one link into the club's own page when the feed's name
+ *  resolved to one (ClubLink). */
+function TeamChip({ team, align }: { team?: Team; align: 'home' | 'away' }) {
   return (
-    <span
+    <ClubLink
+      id={team?.clubId}
+      name={team?.name}
       className={`inline-flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis ${
         align === 'home' ? 'flex-row-reverse text-right' : ''
       }`}
     >
-      <span className="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis text-[14px] font-semibold">{name ?? '—'}</span>
-      <TeamLogo name={name} logo={logo} />
-    </span>
+      <span className="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis text-[14px] font-semibold">{team?.name ?? '—'}</span>
+      <TeamLogo name={team?.name} logo={team?.logo} />
+    </ClubLink>
   );
 }
 
@@ -83,9 +93,10 @@ function isSameTeam(t: Team | undefined, ref: Team | undefined): boolean {
  *  for an upcoming tie) with the result badge next to the reference side, and
  *  the kick-off below. The left border carries the result colour (green/win,
  *  grey/draw, red/loss) or the accent for an upcoming fixture — the same
- *  structure as the H2H `MeetingRow`. The card is a link into that fixture's
- *  own detail page (`/watch/[id]`, the route the list rows open); the plain
- *  card is only the defensive fallback when `matchId` is missing. */
+ *  structure as the H2H `MeetingRow`. The card's own click target is that
+ *  fixture's detail page (`/watch/[id]`, the route the list rows open) — an
+ *  overlay link, because the clubs inside the card are links themselves; the
+ *  plain card is only the defensive fallback when `matchId` is missing. */
 function FormRow({ m, refTeam, played, sportType }: { m: Match; refTeam?: Team; played: boolean; sportType?: number }) {
   const league = m.league;
   const stage = m.stage || m.round || m.group;
@@ -121,7 +132,7 @@ function FormRow({ m, refTeam, played, sportType }: { m: Match; refTeam?: Team; 
       )}
       <div className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5">
         <div className="flex min-w-0 items-center justify-end gap-2">
-          <TeamChip name={m.home?.name} logo={m.home?.logo} align="home" />
+          <TeamChip team={m.home} align="home" />
           {played && homeIsRef && <OutcomeBadge outcome={outcome} />}
         </div>
 
@@ -137,7 +148,7 @@ function FormRow({ m, refTeam, played, sportType }: { m: Match; refTeam?: Team; 
 
         <div className="flex min-w-0 items-center gap-2">
           {played && awayIsRef && <OutcomeBadge outcome={outcome} />}
-          <TeamChip name={m.away?.name} logo={m.away?.logo} align="away" />
+          <TeamChip team={m.away} align="away" />
         </div>
       </div>
 
@@ -150,13 +161,13 @@ function FormRow({ m, refTeam, played, sportType }: { m: Match; refTeam?: Team; 
   );
 
   if (m.matchId == null) return <div className={card}>{body}</div>;
+  // Overlay link (not a link root): the clubs in the card are links themselves.
+  const label = matchLabel(m);
   return (
-    <Link
-      href={watchHref(m.matchId, m.sportType ?? sportType)}
-      className={`${card} transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`}
-    >
+    <div className={`relative ${card} transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`}>
       {body}
-    </Link>
+      <Link href={watchHref(m.matchId, m.sportType ?? sportType)} className={ROW_OVERLAY} aria-label={label} />
+    </div>
   );
 }
 
@@ -195,7 +206,7 @@ function TeamGroup({
   return (
     <div className="min-w-0">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <TeamChip name={team?.name} logo={team?.logo} align="home" />
+        <TeamChip team={team} align="home" />
         {form.length > 0 && (
           <span className="flex shrink-0 items-center gap-1" title="Recent form">
             {form.map((o, i) => (

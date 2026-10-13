@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, X } from 'lucide-react';
 import { TeamLogo } from '@/components/Match';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { ClubLink } from '@/components/ClubLink';
+import { PlayerLink } from '@/components/PlayerLink';
 import { totalPlayer, totalTeam } from '@/lib/leagueProto';
 import type { LeaguePlayerTotals, PlayerTotal, Team } from '@/lib/types';
 
@@ -375,15 +377,27 @@ export function CompetitionPlayers({
                   <tr key={`${r.row.playerId ?? 'x'}-${i}`} className={ROW}>
                     <td className={`${CELL} text-left font-bold text-muted`}>{i + 1}</td>
                     <td className="max-w-[240px] px-1.5 py-1.5">
-                      <span className="flex min-w-0 items-center gap-2">
+                      {/* Photo and name travel together into the player's own
+                          page — plain text for a name the squad could not
+                          resolve, or a competition in another sport. */}
+                      <PlayerLink
+                        id={r.player?.playerPageId}
+                        name={r.name}
+                        className="flex min-w-0 items-center gap-2"
+                      >
                         <PlayerAvatar path={r.player?.logo} name={r.name} sportType={sportType} />
                         <span className="min-w-0 truncate font-semibold" title={r.name}>
                           {r.name}
                         </span>
-                      </span>
+                      </PlayerLink>
                     </td>
                     <td className="max-w-[200px] px-1.5 py-1.5">
-                      <span className="flex min-w-0 items-center gap-2">
+                      {/* The club's crest + name link into its own page. */}
+                      <ClubLink
+                        id={r.team?.clubId}
+                        name={r.team?.name ?? r.teamName}
+                        className="flex min-w-0 items-center gap-2"
+                      >
                         <TeamLogo
                           path={r.team?.logo}
                           name={r.team?.name}
@@ -393,7 +407,7 @@ export function CompetitionPlayers({
                         <span className="min-w-0 truncate text-[12px] text-muted" title={r.teamName}>
                           {r.teamName}
                         </span>
-                      </span>
+                      </ClubLink>
                     </td>
                     <td className={`${CELL} font-bold`}>{r.goals}</td>
                     <td className={CELL}>{r.assists}</td>

@@ -713,6 +713,22 @@ export function matchSides(m?: Match | null): { home: Team[]; away: Team[] } {
   };
 }
 
+/** `Home vs Away — Competition`: a fixture as one line of text, i.e. the
+ *  accessible name of the overlay that carries a card's own click target. The
+ *  visible text of such a card belongs to the club links inside it, so the
+ *  overlay has to name itself. Each side lists every competitor, joined with
+ *  ` / ` (a doubles pair), exactly as the card's crest strip shows them. */
+export function matchLabel(m?: Match | null): string {
+  const side = (list: Team[]) => list.map((t) => t.name || '?').join(' / ');
+  const home = side(matchSides(m).home);
+  const away = side(matchSides(m).away);
+  if (home && away) {
+    const league = m?.league?.name;
+    return `${home} vs ${away}${league ? ` — ${league}` : ''}`;
+  }
+  return m?.title || m?.name || m?.league?.name || 'Match';
+}
+
 /** Result of a single fixture from `ref`'s perspective (win/draw/loss), or `null`
  *  when `ref` is neither side. Lists alternate home/away, so we locate the
  *  reference team on either side (by teamId, falling back to name) and compare

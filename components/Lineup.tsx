@@ -13,6 +13,8 @@ import {
 import type { MatchLineup, Team, LineupPlayer } from '@/lib/types';
 import { positionLabel, type PlayerEventStats } from '@/lib/matchProto';
 import { playerAvatarUrl } from '@/lib/logos';
+import { ClubLink } from '@/components/ClubLink';
+import { PlayerLink } from '@/components/PlayerLink';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
 const PANEL =
@@ -122,6 +124,19 @@ function PlayerRow({
       </span>
     </span>
   );
+  /** Photo and name travel together into the player's own page (PlayerLink
+   *  renders the same content as plain text for a name the squad could not
+   *  resolve, or any other sport). */
+  const person = (
+    <PlayerLink
+      id={p.player?.playerPageId}
+      name={p.player?.name}
+      className={`flex min-w-0 flex-1 items-center gap-2 ${side === 'away' ? 'flex-row-reverse' : ''}`}
+    >
+      {avatarEl}
+      {text}
+    </PlayerLink>
+  );
 
   return (
     <div
@@ -130,31 +145,27 @@ function PlayerRow({
       } ${sub ? 'opacity-70' : ''}`}
     >
       {number}
-      {avatarEl}
-      {text}
+      {person}
       <EventBadges stats={stats} />
     </div>
   );
 }
 
-/** Team header (logo + name), mirrored for the away side. */
-function TeamHeader({
-  title,
-  logo,
-  side,
-}: {
-  title?: string;
-  logo?: string;
-  side: 'home' | 'away';
-}) {
+/** Team header (logo + name), mirrored for the away side. Crest and name are a
+ *  single link into the club's own page when the feed's name resolved to one
+ *  (ClubLink renders plain text for a team it could not resolve). */
+function TeamHeader({ team, side }: { team?: Team; side: 'home' | 'away' }) {
+  const title = team?.name;
   return (
-    <div
+    <ClubLink
+      id={team?.clubId}
+      name={title}
       className={`mb-2 flex min-w-0 items-center gap-2 ${
         side === 'away' ? 'flex-row-reverse text-right' : ''
       }`}
     >
-      {logo ? (
-        <img src={logo} alt="" loading="lazy" className="h-6 w-6 shrink-0 rounded object-contain" />
+      {team?.logo ? (
+        <img src={team.logo} alt="" loading="lazy" className="h-6 w-6 shrink-0 rounded object-contain" />
       ) : (
         <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft">
           {(title ?? '?').charAt(0).toUpperCase()}
@@ -163,7 +174,7 @@ function TeamHeader({
       <span className="min-w-0 truncate text-[14px] font-bold">
         {title ?? (side === 'home' ? 'Home' : 'Away')}
       </span>
-    </div>
+    </ClubLink>
   );
 }
 
@@ -172,16 +183,14 @@ function TeamHeader({
  *  identical row styling; the bench grid omits the header (it sits under the
  *  same two columns, already introduced by the Starting XI header). */
 function PlayerColumn({
-  title,
-  logo,
+  team,
   side,
   players,
   sportType,
   statsMap,
   showHeader = true,
 }: {
-  title?: string;
-  logo?: string;
+  team?: Team;
   side: 'home' | 'away';
   players: LineupPlayer[];
   sportType: number;
@@ -190,7 +199,7 @@ function PlayerColumn({
 }) {
   return (
     <div className="min-w-0">
-      {showHeader && <TeamHeader title={title} logo={logo} side={side} />}
+      {showHeader && <TeamHeader team={team} side={side} />}
       <div className="flex flex-col gap-0.5">
         {players.map((p, i) => (
           <PlayerRow
@@ -262,8 +271,7 @@ export function Lineup({
           <div className="grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-[1fr_auto_1fr]">
             <PlayerColumn
               side="home"
-              title={homeTeam?.name}
-              logo={homeTeam?.logo}
+              team={homeTeam}
               players={home.starters}
               sportType={st}
               statsMap={homeStats}
@@ -271,8 +279,7 @@ export function Lineup({
             <div aria-hidden className="hidden w-px self-stretch bg-border md:block" />
             <PlayerColumn
               side="away"
-              title={awayTeam?.name}
-              logo={awayTeam?.logo}
+              team={awayTeam}
               players={away.starters}
               sportType={st}
               statsMap={awayStats}

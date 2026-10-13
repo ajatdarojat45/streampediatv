@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import type { MatchAnalysis, Match, Team } from '@/lib/types';
-import { computeH2HSummary } from '@/lib/matchProto';
+import { computeH2HSummary, matchLabel } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
+import { ClubLink } from '@/components/ClubLink';
 import { watchHref } from '@/lib/sports';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
@@ -16,6 +17,13 @@ const PANEL =
  *  team `h-6 w-6 rounded-md`, league `h-4 w-4 rounded-[4px]`, monogram `text-[11px]`. */
 const TEAM_LOGO_SIZE = 'h-6 w-6';
 const LEAGUE_LOGO_SIZE = 'h-4 w-4';
+
+/** A card's own click target, laid over the card. Every card here hosts links
+ *  of its own (each club's crest + name → ClubLink) and a link may never nest
+ *  inside another, so the card-wide navigation cannot be the root element; it
+ *  is an absolutely positioned link instead, with the club links lifted above
+ *  it (`relative z-10`, see ClubLink). Same pattern as the list rows. */
+const ROW_OVERLAY = 'absolute inset-0 rounded-lg';
 
 /** How many past meetings the list previews before the "Show all" toggle. */
 const H2H_PREVIEW = 5;
@@ -35,17 +43,22 @@ function TeamLogo({ name, logo, size = TEAM_LOGO_SIZE }: { name?: string; logo?:
 }
 
 /** Compact team label used in the W/D/L summary header. Typography/spacing
- *  matches the match-card `TEAM_SIDE`/`TEAM_NAME` constants. */
-function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 'home' | 'away' }) {
+ *  matches the match-card `TEAM_SIDE`/`TEAM_NAME` constants. Crest and name are
+ *  one link into the club's own page when the feed's name resolved to one
+ *  (ClubLink) — in the meeting rows it is what makes the club reachable, since
+ *  the card's own click target is the meeting (see `MeetingRow`). */
+function TeamChip({ team, align }: { team?: Team; align: 'home' | 'away' }) {
   return (
-    <span
+    <ClubLink
+      id={team?.clubId}
+      name={team?.name}
       className={`inline-flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis ${
         align === 'home' ? 'flex-row-reverse text-right' : ''
       }`}
     >
-      <TeamLogo name={name} logo={logo} />
-      <span className="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis text-[14px] font-semibold">{name ?? '—'}</span>
-    </span>
+      <TeamLogo name={team?.name} logo={team?.logo} />
+      <span className="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis text-[14px] font-semibold">{team?.name ?? '—'}</span>
+    </ClubLink>
   );
 }
 
@@ -53,8 +66,9 @@ function TeamChip({ name, logo, align }: { name?: string; logo?: string; align: 
  *  they met in. Structure mirrors the match card: league row on top
  *  (full-width, centred), then the team grid, then the date row — with the
  *  same sizes/margins (mb-2 / min-w-[72px] / mt-2) so positions stay fixed.
- *  The card itself is a link into that meeting's own detail page (`/watch/[id]`,
- *  the route the list rows open) so a result can be drilled into; `matchId` is
+ *  The card's own click target is that meeting's detail page (`/watch/[id]`, the
+ *  route the list rows open) so a result can be drilled into — laid over the
+ *  card because the clubs inside are links of their own. `matchId` is
  *  always present on the analysis payload, the plain card is the defensive
  *  fallback for a malformed entry. */
 function MeetingRow({ m, sportType }: { m: Match; sportType?: number }) {
@@ -83,7 +97,7 @@ function MeetingRow({ m, sportType }: { m: Match; sportType?: number }) {
       )}
       <div className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5">
         <div className="flex min-w-0 justify-end">
-          <TeamChip name={m.home?.name} logo={m.home?.logo} align="home" />
+          <TeamChip team={m.home} align="home" />
         </div>
 
         <div className="flex min-w-[72px] items-center justify-center px-1">
@@ -93,7 +107,7 @@ function MeetingRow({ m, sportType }: { m: Match; sportType?: number }) {
         </div>
 
         <div className="flex min-w-0">
-          <TeamChip name={m.away?.name} logo={m.away?.logo} align="away" />
+          <TeamChip team={m.away} align="away" />
         </div>
       </div>
 
@@ -103,14 +117,22 @@ function MeetingRow({ m, sportType }: { m: Match; sportType?: number }) {
     </div>
   );
 
+  const hover =
+    'transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow';
   if (m.matchId == null) return <div className={card}>{body}</div>;
+  // The clubs inside are links now, so the card-wide navigation is an overlay
+  // link carrying the fixture's own name (the visible text belongs to the club
+  // links and can no longer be the label of this element).
+  const label = matchLabel(m);
   return (
-    <Link
-      href={watchHref(m.matchId, m.sportType ?? sportType)}
-      className={`${card} transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`}
-    >
+    <div className={`relative ${card} ${hover}`}>
       {body}
-    </Link>
+      <Link
+        href={watchHref(m.matchId, m.sportType ?? sportType)}
+        className={ROW_OVERLAY}
+        aria-label={label}
+      />
+    </div>
   );
 }
 
@@ -144,13 +166,13 @@ export function H2H({
       <div className="mb-4">
         <div className="mb-2 flex items-center gap-2.5">
           <div className="flex min-w-0 flex-1">
-            <TeamChip name={homeTeam?.name} logo={homeTeam?.logo} align="home" />
+            <TeamChip team={homeTeam} align="home" />
           </div>
           <span className="shrink-0 rounded-full bg-card px-2.5 py-0.5 text-[11px] text-muted">
             {summary.total} meetings
           </span>
           <div className="flex min-w-0 flex-1 justify-end">
-            <TeamChip name={awayTeam?.name} logo={awayTeam?.logo} align="away" />
+            <TeamChip team={awayTeam} align="away" />
           </div>
         </div>
 

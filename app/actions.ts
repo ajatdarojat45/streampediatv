@@ -39,6 +39,17 @@ import {
   decodeLeaguePlayerTotalListResp,
 } from '@/lib/leagueProto';
 import { SPORTS } from '@/lib/sports';
+import {
+  attachMatchClubIds,
+  attachMatchListClubIds,
+  attachTeamClubIds,
+  goalooClubId,
+} from '@/lib/goalooTeams';
+import {
+  attachLeaguePlayerIds,
+  attachMatchEventPlayerIds,
+  attachMatchLineupPlayerIds,
+} from '@/lib/goalooSquad';
 import { DEFAULT_CONTINENT, DEFAULT_COUNTRY, DEFAULT_SITE_TYPE } from '@/lib/config';
 import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchList, MatchSource, Stream, LeagueDetail, LeaguePlayerTotals, LeagueSeason, LeagueStandings } from '@/lib/types';
 
@@ -93,13 +104,25 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
   return results;
 }
 
+/** Endpoint codes whose version signatures the match family needs: 100 = live
+ *  list, 102 = detail, 104-107 = statistics/event/lineup/analysis. */
+const SIG_CODES = [100, 102, 104, 105, 106, 107] as const;
+
 async function ensureSignatures(sportType: number): Promise<Record<number, string>> {
   const key = String(num(sportType));
+  // A rate-limited upstream can answer /api/common/bs with HTTP 200 and NO
+  // signatures at all. Caching that map pinned every later request to
+  // `version=undefined` — which upstream rejects with HTTP 400 — and, because
+  // `sigCache` has no TTL, the entire match family (the watch page included)
+  // stayed broken until the server was restarted. Only a COMPLETE map is
+  // cached; an incomplete one throws, so the very next call retries upstream.
   const cached = sigCache.get(key);
-  if (cached) return cached;
+  if (cached && SIG_CODES.every((code) => cached[code])) return cached;
   // Coalesce concurrent signature fetches for the same sport.
   return withCache(`sig:${key}`, 10 * 60_000, async () => {
-    const r = await getDataBS([100, 102, 104, 105, 106, 107], num(sportType));
+    const r = await getDataBS([...SIG_CODES], num(sportType));
+    const missing = SIG_CODES.filter((code) => !r.signatures[code]);
+    if (missing.length) throw new Error(`missing signature codes: ${missing.join(', ')}`);
     sigCache.set(key, r.signatures);
     return r.signatures;
   });
@@ -114,11 +137,15 @@ async function ensureLeagueSignature(sportType: number): Promise<string> {
   const sigs = await withCache<Record<number, string>>(
     `sigleague:${num(sportType)}`,
     10 * 60_000,
-    async () => (await getDataBS([200], num(sportType))).signatures
+    async () => {
+      const { signatures } = await getDataBS([200], num(sportType));
+      // Validate BEFORE returning: `withCache` stores whatever resolves, so
+      // throwing here keeps an empty map out of the cache (same trap as above).
+      if (!signatures[200]) throw new Error('missing league signature (code 200)');
+      return signatures;
+    }
   );
-  const version = sigs[200];
-  if (!version) throw new Error('missing league signature (code 200)');
-  return version;
+  return sigs[200];
 }
 
 export interface LeagueParams {
@@ -152,6 +179,10 @@ export async function getMatches(
         source === 'live'
           ? decodeLiveMatchList(raw)
           : decodeMatchLiveResp(raw, num(language));
+      // Club pages for the football rows (lib/goalooTeams) — resolved from the
+      // names the feed publishes, so a card can link its clubs with no extra
+      // request. Rows of another category are left untouched.
+      attachMatchListClubIds(list, num(sportType));
       return { list, source };
     });
     return { ok: true, data };
@@ -197,6 +228,9 @@ export async function getAllLiveMatches(
           const data = r.pb?.data ?? r.payload;
           return { list: decodeMatchLiveResp(data, 0), source: 'data' };
         });
+        /* Each sport knows its own category, so the club pages of this batch are
+         * resolved with the feed's own code (lib/goalooTeams). */
+        attachMatchListClubIds(cached.list, sport.value);
         return cached.list;
       } catch {
         return [];
@@ -215,6 +249,12 @@ export interface MatchDetailParams {
   sportType?: number;
   language?: number;
   source?: MatchSource;
+  /** The fixture's two sides, by the names the payload publishes them with.
+   *  Optional, and only the player bridge reads them: a team sheet and an event
+   *  list name players without saying which club squad they belong to, so
+   *  lib/goalooSquad is handed the side (see the two actions below). */
+  home?: string;
+  away?: string;
 }
 
 export async function getMatchDetail(
@@ -234,6 +274,10 @@ export async function getMatchDetail(
       source === 'live'
         ? decodeLiveMatchDetail(data)
         : decodeMatchDetailResp(data, num(language));
+    // The clubs of this match get their club pages attached here: the watch
+    // page's head, its H2H/lineup/timeline headers and its related rows all
+    // read the very same `home`/`away` objects.
+    attachMatchClubIds(detail.match, num(sportType));
     return { ok: true, data: detail };
   } catch (e) {
     return { ok: false, error: errMsg(e) };
@@ -254,15 +298,24 @@ export async function getMatchAnalysis(
     };
     const r = await apiGetMatchAnalysis(args);
     const data = r.pb?.data ?? r.payload;
-    return { ok: true, data: decodeMatchAnalysisResp(data, num(language)) };
+    const analysis = decodeMatchAnalysisResp(data, num(language));
+    // Five match lists travel in this payload — the head-to-head and both
+    // teams' recent/upcoming fixtures, i.e. every club name inside the H2H tab.
+    attachMatchListClubIds(analysis.h2h, num(sportType));
+    attachMatchListClubIds(analysis.homeLatest, num(sportType));
+    attachMatchListClubIds(analysis.awayLatest, num(sportType));
+    attachMatchListClubIds(analysis.homeNext, num(sportType));
+    attachMatchListClubIds(analysis.awayNext, num(sportType));
+    return { ok: true, data: analysis };
   } catch (e) {
     return { ok: false, error: errMsg(e) };
   }
 }
 
-/** Match lineup (endpoint code 106). */
+/** Match lineup (endpoint code 106). `home`/`away` are the fixture's side names
+ *  (see {@link MatchDetailParams}) — they scope the player-page bridge. */
 export async function getMatchLineup(
-  { matchId, sportType = 1, language = 0 }: MatchDetailParams
+  { matchId, sportType = 1, language = 0, home, away }: MatchDetailParams
 ): Promise<Result<MatchLineup>> {
   try {
     const s = await ensureSignatures(sportType);
@@ -274,15 +327,25 @@ export async function getMatchLineup(
     };
     const r = await apiGetMatchLineup(args);
     const data = r.pb?.data ?? r.payload;
-    return { ok: true, data: decodeMatchLineupResp(data, num(language)) };
+    const lineup = decodeMatchLineupResp(data, num(language));
+    // A team sheet is one side's players each, but says nothing about which
+    // club they play for: the club bridge turns the fixture's two published
+    // names into club ids and lib/goalooSquad reads each squad from there, so a
+    // row links to its own player page and never to a namesake's.
+    await attachMatchLineupPlayerIds(lineup, num(sportType), {
+      home: goalooClubId(home),
+      away: goalooClubId(away),
+    });
+    return { ok: true, data: lineup };
   } catch (e) {
     return { ok: false, error: errMsg(e) };
   }
 }
 
-/** Match events (endpoint code 105): goals, cards, substitutions. */
+/** Match events (endpoint code 105): goals, cards, substitutions. `home`/`away`
+ *  scope the player-page bridge exactly as they do for the lineup. */
 export async function getMatchEvent(
-  { matchId, sportType = 1, language = 0 }: MatchDetailParams
+  { matchId, sportType = 1, language = 0, home, away }: MatchDetailParams
 ): Promise<Result<MatchEvents>> {
   try {
     const s = await ensureSignatures(sportType);
@@ -294,7 +357,15 @@ export async function getMatchEvent(
     };
     const r = await apiGetMatchEvent(args);
     const data = r.pb?.data ?? r.payload;
-    return { ok: true, data: decodeMatchEventResp(data, num(language)) };
+    const events = decodeMatchEventResp(data, num(language));
+    // Every event names its players (scorer, assistant, offender, both halves
+    // of a substitution) and the side it happened on; the bridge reads each of
+    // them in that side's squad.
+    await attachMatchEventPlayerIds(events, num(sportType), {
+      home: goalooClubId(home),
+      away: goalooClubId(away),
+    });
+    return { ok: true, data: events };
   } catch (e) {
     return { ok: false, error: errMsg(e) };
   }
@@ -409,7 +480,10 @@ export async function getLeagueMatches(
           language: num(language),
           seasonId: seasonId ? num(seasonId) : undefined,
         });
-        return decodeLeagueMatchListResp(r.pb?.data ?? r.payload, num(language));
+        const matches = decodeLeagueMatchListResp(r.pb?.data ?? r.payload, num(language));
+        // The competition's fixtures — the club links of the Fixtures tab.
+        attachMatchListClubIds(matches, num(sportType));
+        return matches;
       }
     );
     return { ok: true, data };
@@ -459,7 +533,11 @@ export async function getLeagueStandings(
           language: num(language),
           seasonId: seasonId ? num(seasonId) : undefined,
         });
-        return decodeLeagueTeamStandingListResp(r.pb?.data ?? r.payload, num(language));
+        const standings = decodeLeagueTeamStandingListResp(r.pb?.data ?? r.payload, num(language));
+        // The table's own team list (`teams`) is what every row's crest and
+        // name are read from, so it is where the club links are attached.
+        attachTeamClubIds(Object.values(standings.teams), num(sportType));
+        return standings;
       }
     );
     return { ok: true, data };
@@ -488,7 +566,13 @@ export async function getLeaguePlayerTotals(
           seasonId: seasonId ? num(seasonId) : undefined,
         });
         if (r.pb?.code) throw new Error(r.pb.message || `upstream code ${r.pb.code}`);
-        return decodeLeaguePlayerTotalListResp(r.pb?.data ?? r.payload, num(language));
+        const totals = decodeLeaguePlayerTotalListResp(r.pb?.data ?? r.payload, num(language));
+        // Each leaderboard row points at its club through this team list, and
+        // that club is also the squad its player is read in: resolve the clubs
+        // first, then hand the whole table to the player bridge.
+        attachTeamClubIds(Object.values(totals.teams), num(sportType));
+        await attachLeaguePlayerIds(totals, num(sportType));
+        return totals;
       }
     );
     return { ok: true, data };

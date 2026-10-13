@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { CalendarDays, ChevronRight, Goal, Star, Trophy } from 'lucide-react';
 import { MatchRow, TeamLogo } from '@/components/Match';
+import { ClubLink } from '@/components/ClubLink';
 import { standingTeam } from '@/lib/leagueProto';
 import { matchDateMs } from '@/lib/datetime';
 import { isStarted } from '@/lib/matchProto';
@@ -175,7 +176,12 @@ function StandingsSnapshot({
                       {i + 1}
                     </td>
                     <td className="px-1.5 py-1.5">
-                      <span className="flex min-w-0 items-center gap-2">
+                      {/* Crest + name of the row's club, linked into its page. */}
+                      <ClubLink
+                        id={team?.clubId}
+                        name={team?.name}
+                        className="flex min-w-0 items-center gap-2"
+                      >
                         <TeamLogo
                           path={team?.logo}
                           name={team?.name}
@@ -186,7 +192,7 @@ function StandingsSnapshot({
                         <span className="min-w-0 truncate font-semibold">
                           {team?.name ?? (row.teamId !== undefined ? `#${row.teamId}` : '—')}
                         </span>
-                      </span>
+                      </ClubLink>
                     </td>
                     <td className={cell}>{row.total ?? 0}</td>
                     <td className={cell}>{diff > 0 ? `+${diff}` : diff}</td>

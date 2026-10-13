@@ -3,8 +3,9 @@
 import { useState, useEffect, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Flame } from 'lucide-react';
-import { statusLabel, isLiveStatus, isStarted } from '@/lib/matchProto';
+import { statusLabel, isLiveStatus, isStarted, matchLabel } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
+import { ClubLink } from '@/components/ClubLink';
 import { countryLogoUrl, teamLogoUrl } from '@/lib/logos';
 import { sportColor, sportLabel, sportIsScoring, leagueHref } from '@/lib/sports';
 import type { Match, Team } from '@/lib/types';
@@ -66,8 +67,8 @@ function LiveLabel() {
 /** The `sport · league` line of a card. When `href` is set (only the watch-page
  *  head passes one — see `CardContent`) the line is a link into the competition
  *  page, so a match can be traced back up to its league/standings. List rows
- *  keep plain text: the row is a `<button>` and a nested link would be invalid
- *  markup, so there the league header above the cards carries the link. */
+ *  keep it plain text: the row already navigates to the match itself, and the
+ *  league's own link sits on the group header above the cards. */
 function LeagueLine({
   href,
   name,
@@ -105,8 +106,15 @@ const ROW = `${ROW_BASE} border-border border-l-[color:var(--sport-color,transpa
 /** `.match-row.is-live` — live is the exception: the whole border (all sides)
  *  turns red, not just the left accent. */
 const ROW_LIVE = `${ROW_BASE} border-[color:var(--live)]`;
-/** `.match-row` finished — muted gray left accent only (other sides normal). */
+/** `.match-row.finished` — muted gray left accent only (other sides normal). */
 const ROW_FINISHED = `${ROW_BASE} border-border border-l-[#9ca3af]`;
+/** The row's own click target: an invisible overlay covering the card. The row
+ *  must host links of its own (each club's crest + name), and an anchor may
+ *  never wrap another link, so the row-wide navigation cannot be the card's
+ *  root element any more — it sits on top of the card instead, exactly like the
+ *  club page's fixture rows (`ROW_OVERLAY` in ClubPageContent). The club links
+ *  are lifted above it with `relative z-10` (see `ClubLink`). */
+const ROW_OVERLAY = 'absolute inset-0 cursor-pointer rounded-lg';
 
 /** `MatchHead` (watch page) — the same three states, but read-only: no hover
  *  lift/border-highlight because the card is not clickable. */
@@ -183,17 +191,23 @@ function TeamSide({
       {list.map((t, i) => (
         <span className={TEAM_MEMBER} key={t.teamId ?? t.playerId ?? i}>
           {i > 0 && <span className="mr-1.5 font-bold opacity-60">/</span>}
-          {align === 'home' ? (
-            <>
-              <span className={TEAM_NAME}>{t.name || '?'}</span>
-              <TeamLogo path={t.logo} name={t.name} sportType={sportType} size={size} />
-            </>
-          ) : (
-            <>
-              <TeamLogo path={t.logo} name={t.name} sportType={sportType} size={size} />
-              <span className={TEAM_NAME}>{t.name || '?'}</span>
-            </>
-          )}
+          {/* Crest and name travel together into the club's own page. The link
+              keeps the member's flex order, and a team whose name the index
+              could not resolve (or any other sport) renders exactly the same
+              content as plain text — see ClubLink. */}
+          <ClubLink id={t.clubId} name={t.name} className={TEAM_MEMBER}>
+            {align === 'home' ? (
+              <>
+                <span className={TEAM_NAME}>{t.name || '?'}</span>
+                <TeamLogo path={t.logo} name={t.name} sportType={sportType} size={size} />
+              </>
+            ) : (
+              <>
+                <TeamLogo path={t.logo} name={t.name} sportType={sportType} size={size} />
+                <span className={TEAM_NAME}>{t.name || '?'}</span>
+              </>
+            )}
+          </ClubLink>
         </span>
       ))}
     </span>
@@ -369,15 +383,17 @@ export function MatchRow({ match, onClick }: MatchRowProps) {
   /** Finished / cancelled / cut → muted gray border instead of the sport accent. */
   const finished = (match.status ?? 0) >= 10000;
   const color = sportColor(match.sportType);
+  // The card's clubs are links of their own now, so the row's own navigation is
+  // an overlay button that names itself: the fixture, plus its competition.
+  const label = matchLabel(match);
   return (
-    <button
-      type="button"
-      className={live ? ROW_LIVE : finished ? ROW_FINISHED : ROW}
+    <div
+      className={`relative ${live ? ROW_LIVE : finished ? ROW_FINISHED : ROW}`}
       style={{ '--sport-color': color } as CSSProperties}
-      onClick={onClick}
     >
       <CardContent match={match} />
-    </button>
+      <button type="button" className={ROW_OVERLAY} onClick={onClick} aria-label={label} />
+    </div>
   );
 }
 

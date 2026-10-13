@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CalendarDays, ChevronDown, Flame, Goal, Loader2, RefreshCw, Star, Trophy, Users, Wallet } from 'lucide-react';
 import { MatchRow, MatchRowSkeleton, TeamLogo } from '@/components/Match';
+import { ClubLink } from '@/components/ClubLink';
 import { CompetitionOverview } from '@/components/CompetitionOverview';
 import { CompetitionPlayers } from '@/components/CompetitionPlayers';
 import { CompetitionStats } from '@/components/CompetitionStats';
@@ -247,7 +248,12 @@ function StandingsTable({
                       {i + 1}
                     </td>
                     <td className="px-1.5 py-1.5">
-                      <span className="flex min-w-0 items-center gap-2">
+                      {/* Crest + name of the row's club, linked into its page. */}
+                      <ClubLink
+                        id={team?.clubId}
+                        name={team?.name}
+                        className="flex min-w-0 items-center gap-2"
+                      >
                         <TeamLogo
                           path={team?.logo}
                           name={team?.name}
@@ -257,7 +263,7 @@ function StandingsTable({
                         <span className="min-w-0 truncate font-semibold">
                           {team?.name ?? (row.teamId !== undefined ? `#${row.teamId}` : '—')}
                         </span>
-                      </span>
+                      </ClubLink>
                     </td>
                     <td className={cell}>{row.total ?? 0}</td>
                     <td className={cell}>{row.won ?? 0}</td>
