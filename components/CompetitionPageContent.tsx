@@ -476,15 +476,8 @@ export function CompetitionPageContent({
 
   return (
     <>
-      {/* Breadcrumb — directory → the category the competition was opened from →
-       *  competition. The middle crumb keeps its original target (so "back" still
-       *  returns to the sport), while the leading crumb puts the competition
-       *  directory within reach of a competition page too. */}
+      {/* Breadcrumb — back to the category the competition was opened from. */}
       <p className="mb-3 flex items-center gap-1.5 text-[13px] text-muted">
-        <Link href="/competitions" className="no-underline transition-colors hover:text-accent">
-          Competitions
-        </Link>
-        <span aria-hidden="true">/</span>
         <Link href={backHref} className="no-underline transition-colors hover:text-accent">
           {slug ? sportLabel(sportType) : 'Live'}
         </Link>

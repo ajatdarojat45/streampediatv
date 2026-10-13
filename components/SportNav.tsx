@@ -23,9 +23,7 @@ const ICON_BTN =
   'bg-transparent px-1.5 py-0.5 text-[13px] text-muted hover:text-text [[data-theme=dark]_&]:text-text';
 
 /** Header navigation bar — mirrors the home page toolbar: a "Live" tab, the
- *  popular sports, and a "More" button that opens the full sport picker. The
- *  competition directory is reached from the site header menu
- *  (components/CompetitionsMenu), not from this sport list. */
+ *  popular sports, and a "More" button that opens the full sport picker. */
 export function SportNav() {
   const pathname = usePathname();
   const prefetchCategory = usePrefetchCategory();

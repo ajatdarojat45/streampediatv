@@ -39,7 +39,6 @@ import {
   decodeLeaguePlayerTotalListResp,
 } from '@/lib/leagueProto';
 import { SPORTS } from '@/lib/sports';
-import { collectCompetitions, mergeCompetitions, type CompetitionEntry } from '@/lib/competitions';
 import { DEFAULT_CONTINENT, DEFAULT_COUNTRY, DEFAULT_SITE_TYPE } from '@/lib/config';
 import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchList, MatchSource, Stream, LeagueDetail, LeaguePlayerTotals, LeagueSeason, LeagueStandings } from '@/lib/types';
 
@@ -206,104 +205,6 @@ export async function getAllLiveMatches(
 
     const list = perSport.flat().filter((m) => isLiveStatus(m.status));
     return { ok: true, data: { list, source: 'data' } };
-  } catch (e) {
-    return { ok: false, error: errMsg(e) };
-  }
-}
-
-/** Freshness window of a built directory — long, because building one fans out
- *  to every sport (see getCompetitions). */
-const COMPETITIONS_TTL_MS = 10 * 60_000;
-
-/** Competitions the match feed has seen at least once, keyed by league id.
- *
- *  The feed only covers a short window around now, so a competition would drop
- *  out of `/competitions` — taking its only entry point with it — as soon as its
- *  last fixture left that window. The registry keeps the identity (id, name,
- *  logo, country, hot) so the directory can still link it; those rows carry no
- *  fixtures and are flagged `stale`. Module state lasts as long as the server
- *  instance, the same assumption sigCache/respCache already rely on. */
-const leagueRegistry = new Map<number, CompetitionEntry>();
-const LEAGUE_REGISTRY_LIMIT = 400;
-
-export interface GetCompetitionsParams {
-  /** 0 = every sport (fan-out), any other value = that sport only. */
-  sportType?: number;
-  concurrency?: number;
-}
-
-/** Every competition the current feed can see, as directory rows.
- *
- *  No upstream endpoint lists competitions, so they are derived from the match
- *  feeds — one request per sport (16 for the "all sports" view), each reusing
- *  the very same cache key/shape as getMatches("data"), so a feed already warm
- *  from the home or category view costs nothing extra. Same guards as
- *  getAllLiveMatches: a failed sport resolves to [] instead of rejecting the
- *  whole batch (retry amplification is what trips the rate limiter), and the
- *  result as a whole is cached for COMPETITIONS_TTL_MS so a page view never
- *  re-fans-out. */
-export async function getCompetitions(
-  { sportType = 0, concurrency = 4 }: GetCompetitionsParams = {}
-): Promise<Result<{ entries: CompetitionEntry[] }>> {
-  try {
-    const entries = await withCache(`competitions:${num(sportType)}`, COMPETITIONS_TTL_MS, async () => {
-      const sports = sportType > 0 ? [num(sportType)] : SPORTS.map((s) => s.value);
-      const perSport = await mapLimit(sports, concurrency, async (st): Promise<Match[]> => {
-        try {
-          const cached = await withCache<MatchList>(`matches:data:${st}:0`, 20_000, async () => {
-            const s = await ensureSignatures(st);
-            const r = await getMatchLive({ version: s[100], language: 0, sportType: st });
-            const data = r.pb?.data ?? r.payload;
-            return { list: decodeMatchLiveResp(data, 0), source: 'data' as MatchSource };
-          });
-          return cached.list;
-        } catch {
-          return [];
-        }
-      });
-
-      const fresh = collectCompetitions(perSport.flat());
-      // Refresh the registry: re-setting an existing key moves it to the end,
-      // so the size prune below always drops the least recently seen leagues.
-      for (const e of fresh) {
-        leagueRegistry.delete(e.leagueId);
-        leagueRegistry.set(e.leagueId, e);
-      }
-      while (leagueRegistry.size > LEAGUE_REGISTRY_LIMIT) {
-        const oldest = leagueRegistry.keys().next().value;
-        if (oldest === undefined) break;
-        leagueRegistry.delete(oldest);
-      }
-
-      const freshIds = new Set(fresh.map((e) => e.leagueId));
-      const stale = [...leagueRegistry.values()]
-        .filter((e) => !freshIds.has(e.leagueId) && (sportType <= 0 || e.sportType === num(sportType)))
-        .map<CompetitionEntry>((e) => ({
-          leagueId: e.leagueId,
-          name: e.name,
-          logo: e.logo,
-          country: e.country,
-          sportType: e.sportType,
-          hot: e.hot,
-          liveCount: 0,
-          upcomingCount: 0,
-          finishedCount: 0,
-          totalCount: 0,
-          stale: true,
-        }));
-
-      /* A fan-out in which EVERY sport failed must never be cached as a
-       * 10-minute empty directory. Throwing resolves nothing, so withCache
-       * stores nothing (its contract: only successes are cached) and the next
-       * render retries upstream. Rows from the registry are not a failure —
-       * they are genuinely all we know about those competitions right now. */
-      if (fresh.length === 0 && stale.length === 0) {
-        throw new Error('The match feed returned no competitions.');
-      }
-
-      return mergeCompetitions(fresh, stale);
-    });
-    return { ok: true, data: { entries } };
   } catch (e) {
     return { ok: false, error: errMsg(e) };
   }

@@ -9,7 +9,6 @@ import './globals.css';
 import { QueryProvider } from '@/components/QueryProvider';
 import { RBProvider } from '@/components/RBProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { CompetitionsMenu } from '@/components/CompetitionsMenu';
 import { FooterCategories } from '@/components/FooterCategories';
 import { SportNav } from '@/components/SportNav';
 import { LazyGutterAd } from '@/components/LazyGutterAd';
@@ -119,8 +118,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                       </div>
                     </Link>
                     <div className="inline-flex items-center gap-2">
-                      <CompetitionsMenu />
                       <ThemeToggle />
+                      <span className="inline-flex items-center gap-[7px] rounded-full border border-[rgba(239,68,68,0.4)] bg-live-soft px-3.5 py-[7px] text-xs font-bold tracking-[0.08em] text-[#d93025] max-[640px]:px-[11px] max-[640px]:py-1.5 max-[640px]:text-[11px] [[data-theme=dark]_&]:border-[rgba(239,68,68,0.5)] [[data-theme=dark]_&]:text-[#fca5a5]"><span className="h-[7px] w-[7px] shrink-0 rounded-full bg-current" />LIVE</span>
                     </div>
                   </header>
                   <SportNav />
