@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery, useMutation } from '@tanstack/react-query';
-import { getMatches, getMatchDetail, getMatchAnalysis, getMatchLineup, getMatchEvent, getMatchStatistic, getStreamUrl, getAllLiveMatches } from '@/app/actions';
+import { getMatches, getMatchDetail, getMatchAnalysis, getMatchLineup, getMatchEvent, getMatchStatistic, getStreamUrl, getAllLiveMatches, getLeagueDetail, getLeagueMatches, getLeagueSeasons, getLeagueStandings, getLeaguePlayerTotals } from '@/app/actions';
 
 /** Never auto-retry a rate-limit (HTTP 429): re-hitting immediately makes the
  * upstream limiter angrier and starves the UI. Other errors get one retry. */
@@ -192,5 +192,104 @@ export function useStreamUrl() {
       if (!res.ok) throw new Error(res.error);
       return res.data;
     },
+  });
+}
+
+/* ---------- competition (league) family ----------
+ * Same shape as the match-detail hooks above: read-then-leave pages, so no
+ * background polling — the /api/league/* endpoints share the rate-limited
+ * DT_LEAGUE budget and a competition page opens four of them at once. */
+
+export interface LeagueInput {
+  leagueId: string | number;
+  sportType?: number;
+  /** Omit for the competition's current season. */
+  seasonId?: number | string;
+  /** Gate the request (e.g. only the visible tab fetches) — defaults to on. */
+  enabled?: boolean;
+}
+
+/** Common gate: a valid id + sport, plus the caller's own switch. */
+const leagueReady = (leagueId: string | number, sportType: number | undefined, on?: boolean): boolean =>
+  (on ?? true) && Boolean(leagueId) && Number(sportType) > 0;
+
+/** Competition header: name, crest, country, season and aggregate stats. */
+export function useLeagueDetail({ leagueId, sportType, seasonId, enabled }: LeagueInput) {
+  return useQuery({
+    queryKey: ['league', leagueId, sportType, seasonId ?? 0],
+    queryFn: async () => {
+      const res = await getLeagueDetail({ leagueId, sportType, language: 0, seasonId });
+      if (!res.ok) throw new Error(res.error);
+      return res.data;
+    },
+    enabled: leagueReady(leagueId, sportType, enabled),
+    retry: retryPolicy,
+    retryDelay,
+    ...DETAIL_POLL,
+  });
+}
+
+/** Competition fixtures (grouped by stage/round on the page). */
+export function useLeagueMatches({ leagueId, sportType, seasonId, enabled }: LeagueInput) {
+  return useQuery({
+    queryKey: ['league-matches', leagueId, sportType, seasonId ?? 0],
+    queryFn: async () => {
+      const res = await getLeagueMatches({ leagueId, sportType, language: 0, seasonId });
+      if (!res.ok) throw new Error(res.error);
+      return res.data;
+    },
+    enabled: leagueReady(leagueId, sportType, enabled),
+    retry: retryPolicy,
+    retryDelay,
+    ...DETAIL_POLL,
+  });
+}
+
+/** Competition seasons, newest first (season picker). */
+export function useLeagueSeasons({ leagueId, sportType, enabled }: LeagueInput) {
+  return useQuery({
+    queryKey: ['league-seasons', leagueId, sportType],
+    queryFn: async () => {
+      const res = await getLeagueSeasons({ leagueId, sportType });
+      if (!res.ok) throw new Error(res.error);
+      return res.data;
+    },
+    enabled: leagueReady(leagueId, sportType, enabled),
+    retry: retryPolicy,
+    retryDelay,
+    ...DETAIL_POLL,
+  });
+}
+
+/** Competition standings table. */
+export function useLeagueStandings({ leagueId, sportType, seasonId, enabled }: LeagueInput) {
+  return useQuery({
+    queryKey: ['league-standings', leagueId, sportType, seasonId ?? 0],
+    queryFn: async () => {
+      const res = await getLeagueStandings({ leagueId, sportType, language: 0, seasonId });
+      if (!res.ok) throw new Error(res.error);
+      return res.data;
+    },
+    enabled: leagueReady(leagueId, sportType, enabled),
+    retry: retryPolicy,
+    retryDelay,
+    ...DETAIL_POLL,
+  });
+}
+
+/** Competition player statistics (top scorers, assists, cards). The payload is
+ *  the heaviest of the league family, so it is gated on the Statistics tab. */
+export function useLeaguePlayerTotals({ leagueId, sportType, seasonId, enabled }: LeagueInput) {
+  return useQuery({
+    queryKey: ['league-player-totals', leagueId, sportType, seasonId ?? 0],
+    queryFn: async () => {
+      const res = await getLeaguePlayerTotals({ leagueId, sportType, language: 0, seasonId });
+      if (!res.ok) throw new Error(res.error);
+      return res.data;
+    },
+    enabled: leagueReady(leagueId, sportType, enabled),
+    retry: retryPolicy,
+    retryDelay,
+    ...DETAIL_POLL,
   });
 }

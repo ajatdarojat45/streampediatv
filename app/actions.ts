@@ -10,6 +10,11 @@ import {
   getMatchLineup as apiGetMatchLineup,
   getMatchEvent as apiGetMatchEvent,
   getMatchStatistic as apiGetMatchStatistic,
+  getLeagueDetail as apiGetLeagueDetail,
+  getLeagueMatchList as apiGetLeagueMatchList,
+  getLeagueSeasonList as apiGetLeagueSeasonList,
+  getLeagueTeamStandingList as apiGetLeagueTeamStandingList,
+  getLeaguePlayerTotalList as apiGetLeaguePlayerTotalList,
   getStreamDetailFull,
 } from '@/lib/api';
 import {
@@ -26,9 +31,16 @@ import {
 } from '@/lib/matchProto';
 import { signPlayUrl } from '@/lib/sign';
 import { iterFields, rot47 } from '@/lib/proto';
+import {
+  decodeLeagueDetailResp,
+  decodeLeagueMatchListResp,
+  decodeLeagueSeasonListResp,
+  decodeLeagueTeamStandingListResp,
+  decodeLeaguePlayerTotalListResp,
+} from '@/lib/leagueProto';
 import { SPORTS } from '@/lib/sports';
 import { DEFAULT_CONTINENT, DEFAULT_COUNTRY, DEFAULT_SITE_TYPE } from '@/lib/config';
-import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchList, MatchSource, Stream } from '@/lib/types';
+import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchList, MatchSource, Stream, LeagueDetail, LeaguePlayerTotals, LeagueSeason, LeagueStandings } from '@/lib/types';
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -91,6 +103,30 @@ async function ensureSignatures(sportType: number): Promise<Record<number, strin
     sigCache.set(key, r.signatures);
     return r.signatures;
   });
+}
+
+/** Signature for the competition (league) family: DT_LEAGUE (endpoint code 200).
+ *  Every /api/league/* path — detail, fixtures, seasons, standings — is signed
+ *  with this ONE version string (verified against the live DataAPI), so it is
+ *  fetched once per sport and shared. Kept out of `ensureSignatures` so a
+ *  problem with the league code can never break the match list. */
+async function ensureLeagueSignature(sportType: number): Promise<string> {
+  const sigs = await withCache<Record<number, string>>(
+    `sigleague:${num(sportType)}`,
+    10 * 60_000,
+    async () => (await getDataBS([200], num(sportType))).signatures
+  );
+  const version = sigs[200];
+  if (!version) throw new Error('missing league signature (code 200)');
+  return version;
+}
+
+export interface LeagueParams {
+  leagueId: string | number;
+  sportType?: number;
+  language?: number;
+  /** Omit to let the API resolve the competition's current season. */
+  seasonId?: number | string;
 }
 
 export interface GetMatchesParams {
@@ -318,6 +354,144 @@ export async function getStreamUrl(
     const signed = r.rbSession ? await signPlayUrl(decoded, r.rbSession) : decoded;
     const referer = stream.headers?.referer || stream.headers?.Referer || stream.pageUrl || '';
     return { ok: true, data: { url: signed, referer } };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+
+/* ---------- Competition (league) family — endpoint code 200 (DT_LEAGUE) ----
+ * `seasonId` is optional everywhere: when the page has not picked a season the
+ * API answers with the competition's current one. */
+
+/** Competition detail (name, crest, country, current season, aggregate stats). */
+export async function getLeagueDetail(
+  { leagueId, sportType = 1, language = 0, seasonId }: LeagueParams
+): Promise<Result<LeagueDetail>> {
+  try {
+    const data = await withCache<LeagueDetail>(
+      `league:detail:${num(leagueId)}:${num(sportType)}:${num(language)}:${num(seasonId)}`,
+      5 * 60_000,
+      async () => {
+        const version = await ensureLeagueSignature(sportType);
+        const r = await apiGetLeagueDetail({
+          version,
+          leagueId: num(leagueId),
+          sportType: num(sportType),
+          language: num(language),
+          seasonId: seasonId ? num(seasonId) : undefined,
+        });
+        // A bad id answers 400404 "League Not Found" with an empty data field —
+        // surfacing that as an error keeps the page from rendering a blank shell.
+        if (r.pb?.code) throw new Error(r.pb.message || `upstream code ${r.pb.code}`);
+        return decodeLeagueDetailResp(r.pb?.data ?? r.payload, num(language));
+      }
+    );
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+
+/** Competition fixtures (PBDataMatch list, same shape as the match feed). */
+export async function getLeagueMatches(
+  { leagueId, sportType = 1, language = 0, seasonId }: LeagueParams
+): Promise<Result<Match[]>> {
+  try {
+    const data = await withCache<Match[]>(
+      `league:matches:${num(leagueId)}:${num(sportType)}:${num(language)}:${num(seasonId)}`,
+      60_000,
+      async () => {
+        const version = await ensureLeagueSignature(sportType);
+        const r = await apiGetLeagueMatchList({
+          version,
+          leagueId: num(leagueId),
+          sportType: num(sportType),
+          language: num(language),
+          seasonId: seasonId ? num(seasonId) : undefined,
+        });
+        return decodeLeagueMatchListResp(r.pb?.data ?? r.payload, num(language));
+      }
+    );
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+
+/** Competition seasons, newest first — powers the page's season picker. */
+export async function getLeagueSeasons(
+  { leagueId, sportType = 1 }: Pick<LeagueParams, 'leagueId' | 'sportType'>
+): Promise<Result<LeagueSeason[]>> {
+  try {
+    const data = await withCache<LeagueSeason[]>(
+      `league:seasons:${num(leagueId)}:${num(sportType)}`,
+      10 * 60_000,
+      async () => {
+        const version = await ensureLeagueSignature(sportType);
+        const r = await apiGetLeagueSeasonList({
+          version,
+          leagueId: num(leagueId),
+          sportType: num(sportType),
+        });
+        return decodeLeagueSeasonListResp(r.pb?.data ?? r.payload, 0);
+      }
+    );
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+
+/** Competition standings (table rows + the teams/promotion bands they point at). */
+export async function getLeagueStandings(
+  { leagueId, sportType = 1, language = 0, seasonId }: LeagueParams
+): Promise<Result<LeagueStandings>> {
+  try {
+    const data = await withCache<LeagueStandings>(
+      `league:standings:${num(leagueId)}:${num(sportType)}:${num(language)}:${num(seasonId)}`,
+      60_000,
+      async () => {
+        const version = await ensureLeagueSignature(sportType);
+        const r = await apiGetLeagueTeamStandingList({
+          version,
+          leagueId: num(leagueId),
+          sportType: num(sportType),
+          language: num(language),
+          seasonId: seasonId ? num(seasonId) : undefined,
+        });
+        return decodeLeagueTeamStandingListResp(r.pb?.data ?? r.payload, num(language));
+      }
+    );
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+
+/** Competition player statistics — top scorers, assists and cards. The payload
+ *  is large (every player the feed ranks) so it is fetched only when the
+ *  Statistics tab is opened, and the 60s TTL keeps tab flips from re-fetching. */
+export async function getLeaguePlayerTotals(
+  { leagueId, sportType = 1, language = 0, seasonId }: LeagueParams
+): Promise<Result<LeaguePlayerTotals>> {
+  try {
+    const data = await withCache<LeaguePlayerTotals>(
+      `league:player-totals:${num(leagueId)}:${num(sportType)}:${num(language)}:${num(seasonId)}`,
+      60_000,
+      async () => {
+        const version = await ensureLeagueSignature(sportType);
+        const r = await apiGetLeaguePlayerTotalList({
+          version,
+          leagueId: num(leagueId),
+          sportType: num(sportType),
+          language: num(language),
+          seasonId: seasonId ? num(seasonId) : undefined,
+        });
+        if (r.pb?.code) throw new Error(r.pb.message || `upstream code ${r.pb.code}`);
+        return decodeLeaguePlayerTotalListResp(r.pb?.data ?? r.payload, num(language));
+      }
+    );
+    return { ok: true, data };
   } catch (e) {
     return { ok: false, error: errMsg(e) };
   }

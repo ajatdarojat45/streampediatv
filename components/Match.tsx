@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, type CSSProperties, type ReactNode } from 'react';
+import Link from 'next/link';
 import { Flame } from 'lucide-react';
 import { statusLabel, isLiveStatus, isStarted } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
 import { countryLogoUrl, teamLogoUrl } from '@/lib/logos';
-import { sportColor, sportLabel, sportIsScoring } from '@/lib/sports';
+import { sportColor, sportLabel, sportIsScoring, leagueHref } from '@/lib/sports';
 import type { Match, Team } from '@/lib/types';
 /* ------------------------------------------------------------------------- *
  * Shared Tailwind class strings — replacements for the retired custom CSS
@@ -59,6 +60,34 @@ function LiveLabel() {
       <span className="h-1 w-1 rounded-full bg-current animate-[blink_1.2s_infinite]" />
       Live
     </span>
+  );
+}
+
+/** The `sport · league` line of a card. When `href` is set (only the watch-page
+ *  head passes one — see `CardContent`) the line is a link into the competition
+ *  page, so a match can be traced back up to its league/standings. List rows
+ *  keep plain text: the row is a `<button>` and a nested link would be invalid
+ *  markup, so there the league header above the cards carries the link. */
+function LeagueLine({
+  href,
+  name,
+  className,
+  children,
+}: {
+  href: string;
+  name: string;
+  className: string;
+  children: ReactNode;
+}) {
+  if (!href) return <span className={className}>{children}</span>;
+  return (
+    <Link
+      href={href}
+      title={`${name} — fixtures, results & standings`}
+      className={`${className} no-underline transition-colors hover:text-accent hover:underline`}
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -257,6 +286,9 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
   const eventName = match.title || match.name || match.league?.name || '—';
   const sportName = sportLabel(match.sportType);
   const scoring = sportIsScoring(match.sportType);
+  /** Competition page for this match — only on the watch-page head (`heading`),
+   *  which is a read-only `div` card. A list row can't host it (nested link). */
+  const compHref = heading ? leagueHref(match.league?.leagueId, match.sportType) : '';
   const Box = heading ? 'div' : 'span';
   const Grid = heading ? 'h1' : 'span';
   /** Explicit `m-0` on the `<h1>` variants, mirroring the h1 resets used
@@ -275,7 +307,15 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
           <Box className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
               {match.hot && <Flame className="h-3.5 w-3.5 shrink-0 text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]" />}
               <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
-              <Box className="min-w-0 max-w-[260px] truncate">{sportName}{' · '}{league}</Box>
+              <LeagueLine
+                href={compHref}
+                name={league}
+                className="min-w-0 max-w-[260px] truncate"
+              >
+                {sportName}
+                {' · '}
+                {league}
+              </LeagueLine>
               {live && <LiveLabel />}
           </Box>
           <Grid className={`${reset}grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5`}>
@@ -305,7 +345,11 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
         <Box className="flex min-w-0 flex-col gap-1">
           <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-muted">
             <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
-            <span className="truncate">{sportName}{' · '}{league}</span>
+            <LeagueLine href={compHref} name={league} className="truncate">
+              {sportName}
+              {' · '}
+              {league}
+            </LeagueLine>
             {live && <LiveLabel />}
           </span>
           <Grid className={`${reset}truncate text-[15px] font-bold`} title={eventName}>{eventName}</Grid>

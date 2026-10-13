@@ -7,6 +7,8 @@ export type MatchSource = 'data' | 'live';
 export interface Team {
   teamId?: number;
   playerId?: number;
+  /** PBSportType — carried by PBDataTeam/PBDataPlayer field 2. */
+  sportType?: number;
   name?: string;
   nameMap?: Record<number, string>;
   logo?: string;
@@ -18,6 +20,8 @@ export interface Team {
 
 export interface League {
   leagueId?: number;
+  /** PBSportType — carried by PBDataLeague field 2. */
+  sportType?: number;
   name?: string;
   nameMap?: Record<number, string>;
   logo?: string;
@@ -177,6 +181,149 @@ export interface MatchStat {
 
 /** Match statistics payload (PBMatchStatisticResp, code 104): 1 = repeated PBDataMatchStatistic. */
 export type MatchStats = MatchStat[];
+
+/* ---------- competition (league) family ----------
+ * Backed by the /api/league/* endpoints (data.proto → league/*.proto). All of
+ * them are signed with the SAME endpoint signature: DT_LEAGUE (code 200). */
+
+/** PBDataSeason: 1=seasonId, 2=sportType, 3=name map, 10=beginDate, 11=endDate. */
+export interface LeagueSeason {
+  seasonId?: number;
+  sportType?: number;
+  nameMap?: Record<number, string>;
+  name?: string;
+  /** Plain season slug carried by PBDataSeasonExtraFtb (field 50.1), e.g. "26-27". */
+  extraName?: string;
+  /** Season window (ms epoch) as sent by the API. */
+  beginDate?: number;
+  endDate?: number;
+}
+
+/** PBDataStage: 1=stageId, 2=sportType, 3=name map. */
+export interface LeagueStage {
+  stageId?: number;
+  sportType?: number;
+  nameMap?: Record<number, string>;
+  name?: string;
+}
+
+/** PBLeagueExtraFtb.HasData (field 60) — which competition sub-views exist.
+ *  The page uses this to hide a tab the feed has no data for. */
+export interface LeagueHasData {
+  standings?: boolean;
+  matches?: boolean;
+  playerTotal?: boolean;
+  teamTotal?: boolean;
+  knockout?: boolean;
+}
+
+/** PBLeagueExtraFtb — competition-level aggregates rendered as stat chips.
+ *  The percent/`value` fields are STRINGS exactly as the API sends them
+ *  (e.g. win "54.0", avgGoals "3.1", teamMarketValue "18.6B€"). */
+export interface LeagueExtra {
+  /** Share of matches won by the home side (percent, string). */
+  win?: string;
+  /** Share of draws (percent, string). */
+  draw?: string;
+  /** Share of losses (percent, string). */
+  loss?: string;
+  teamCount?: number;
+  playerCount?: number;
+  teamMarketValue?: string;
+  teamForeignPlayers?: string;
+  avgAge?: string;
+  avgGoals?: string;
+  redCards?: string;
+  yellowCards?: string;
+  /** MVP (best player) of the competition — PBDataPlayer. */
+  mvpPlayer?: Team;
+  hasData?: LeagueHasData;
+  /** Web slug of the competition, e.g. "uefa-champions-league". */
+  leagueLink?: string;
+  leagueSeasonNameLink?: string;
+}
+
+/** Competition detail payload — /api/league/detail, endpoint code 200. */
+export interface LeagueDetail {
+  league?: League & { level?: number; season?: LeagueSeason };
+  extra?: LeagueExtra;
+}
+
+/** One table row (PBDataTeamStanding): overall + home/away splits, keyed to a
+ *  team by `teamId` (the team itself arrives in the response's own team list). */
+export interface TeamStanding {
+  teamId?: number;
+  stageId?: number;
+  groupName?: string;
+  promotionId?: number;
+  total?: number;
+  won?: number;
+  draw?: number;
+  loss?: number;
+  goals?: number;
+  goalsAgainst?: number;
+  points?: number;
+  homeTotal?: number;
+  homeWon?: number;
+  homeDraw?: number;
+  homeLoss?: number;
+  homeGoals?: number;
+  homeGoalsAgainst?: number;
+  homePoints?: number;
+  awayTotal?: number;
+  awayWon?: number;
+  awayDraw?: number;
+  awayLoss?: number;
+  awayGoals?: number;
+  awayGoalsAgainst?: number;
+  awayPoints?: number;
+}
+
+/** Promotion band (PBDatLeaguePromotion): 1=promotionId, 2=name, 3=color.
+ *  `color` is a hex string ("#97D867") used as the row's promotion stripe. */
+export interface LeaguePromotion {
+  promotionId?: number;
+  name?: string;
+  color?: string;
+}
+
+/** Standings payload — /api/league/team/standing/list, endpoint code 200. */
+export interface LeagueStandings {
+  rows: TeamStanding[];
+  /** teamId → team, so a row can render its crest + name. */
+  teams: Record<number, Team>;
+  stage?: LeagueStage;
+  /** promotionId → band (name + colour). */
+  promotions: Record<number, LeaguePromotion>;
+}
+
+/** One player's competition totals (PBDataPlayerTotal). The feed is sparse:
+ *  a counter the player never recorded is omitted, so every number here is
+ *  optional and the UI reads a missing field as 0. */
+export interface PlayerTotal {
+  playerId?: number;
+  teamId?: number;
+  goals?: number;
+  /** Goals from the penalty spot — a subset of `goals`. */
+  penaltyKick?: number;
+  assists?: number;
+  yellowCards?: number;
+  redCards?: number;
+  /** Per-game strings exactly as the API sends them (e.g. "2.0"). */
+  shotsPerGame?: string;
+  minutesPerGame?: string;
+}
+
+/** Competition player statistics — /api/league/player/total/list, code 200.
+ *  The response ships the totals plus its own player/team lists so a row can
+ *  render an avatar, a name and a crest without extra requests. */
+export interface LeaguePlayerTotals {
+  rows: PlayerTotal[];
+  /** playerId → player (name + avatar). */
+  players: Record<number, Team>;
+  /** teamId → team (name + crest). */
+  teams: Record<number, Team>;
+}
 
 export interface MatchList {
   list: Match[];

@@ -97,4 +97,14 @@ export function watchHref(matchId: number | string | undefined, sportType?: numb
   return slug ? `/watch/${matchId}?sport=${slug}` : `/watch/${matchId}`;
 }
 
+/** Canonical competition URL: `/competition/5078?sport=football`. Mirrors
+ *  {@link watchHref} — the category travels as its slug so the competition page
+ *  resolves the sport without an extra round-trip. `''` for a missing id (the
+ *  caller renders plain text instead of a dead link). */
+export function leagueHref(leagueId: number | string | undefined, sportType?: number): string {
+  if (leagueId === undefined || leagueId === null || leagueId === '') return '';
+  const slug = sportSlug(sportType);
+  return slug ? `/competition/${leagueId}?sport=${slug}` : `/competition/${leagueId}`;
+}
+
 

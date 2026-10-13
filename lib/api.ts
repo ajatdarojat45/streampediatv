@@ -210,3 +210,60 @@ export function getMatchStatistic({ version, matchId, sportType, language }: Mat
   const params = md5(qs).slice(0, 6);
   return getProtobuf(`${DATA_API}/sfver${params}${version}/api/match/statistic?${qs}`);
 }
+
+/* ---------- DataAPI — competition (league) family ----------
+ * Every /api/league/* path is signed with the SAME endpoint signature:
+ * DT_LEAGUE (code 200) from /api/common/bs. `seasonId` is optional on the
+ * detail/fixtures/standings paths (omitted → the API resolves the current
+ * season itself) and is ignored by the season list. */
+
+export interface LeagueQuery {
+  version: string;
+  leagueId: number;
+  sportType: number;
+  language: number;
+  /** Omit for the current season. */
+  seasonId?: number;
+}
+
+const leagueQs = ({ sportType, language, leagueId, seasonId }: Omit<LeagueQuery, 'version'>) =>
+  `language=${language}&sportType=${sportType}&leagueId=${leagueId}` +
+  `${seasonId ? `&seasonId=${seasonId}` : ''}&stream=true`;
+
+/** Competition detail — endpoint code 200 (DT_LEAGUE). */
+export function getLeagueDetail({ version, ...q }: LeagueQuery) {
+  const qs = leagueQs(q);
+  const params = md5(qs).slice(0, 6);
+  return getProtobuf(`${DATA_API}/sfver${params}${version}/api/league/detail?${qs}`);
+}
+
+/** Competition fixtures — endpoint code 200 (DT_LEAGUE). */
+export function getLeagueMatchList({ version, ...q }: LeagueQuery) {
+  const qs = leagueQs(q);
+  const params = md5(qs).slice(0, 6);
+  return getProtobuf(`${DATA_API}/sfver${params}${version}/api/league/match/list?${qs}`);
+}
+
+/** Competition seasons (for the season picker) — endpoint code 200 (DT_LEAGUE). */
+export function getLeagueSeasonList({ version, ...q }: Omit<LeagueQuery, 'language'>) {
+  const qs = leagueQs({ ...q, language: 0 });
+  const params = md5(qs).slice(0, 6);
+  return getProtobuf(`${DATA_API}/sfver${params}${version}/api/league/season/list?${qs}`);
+}
+
+/** Competition standings — endpoint code 200 (DT_LEAGUE). */
+export function getLeagueTeamStandingList({ version, ...q }: LeagueQuery) {
+  const qs = leagueQs(q);
+  const params = md5(qs).slice(0, 6);
+  return getProtobuf(`${DATA_API}/sfver${params}${version}/api/league/team/standing/list?${qs}`);
+}
+
+/** Competition player statistics (goals, assists, cards, per-game rates) —
+ *  endpoint code 200 (DT_LEAGUE). Answers only WITH a seasonId (a season-less
+ *  call is rejected with HTTP 499, exactly like fixtures/standings), and the
+ *  payload carries the whole competition (1k+ rows) in one response. */
+export function getLeaguePlayerTotalList({ version, ...q }: LeagueQuery) {
+  const qs = leagueQs(q);
+  const params = md5(qs).slice(0, 6);
+  return getProtobuf(`${DATA_API}/sfver${params}${version}/api/league/player/total/list?${qs}`);
+}

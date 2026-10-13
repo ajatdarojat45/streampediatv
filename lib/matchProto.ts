@@ -28,7 +28,7 @@
 
 import { iterFields } from './proto';
 import { countryLogoUrl, teamLogoUrl } from './logos';
-import type { Team, League, Contender, Match, Stream, MatchDetail, MatchAnalysis, H2HSummary, MatchOutcome, LineupPlayer, MatchLineup, MatchEvent, MatchEvents, MatchStat, MatchStats } from './types';
+import type { Team, League, Contender, Match, Stream, MatchDetail, MatchAnalysis, H2HSummary, MatchOutcome, LineupPlayer, MatchLineup, MatchEvent, MatchEvents, MatchStat, MatchStats, LeagueSeason, LeagueStage } from './types';
 
 const dec = new TextDecoder('utf-8', { fatal: false });
 /** Decode a length-delimited field. Never throws on varint input (returns ''). */
@@ -71,7 +71,7 @@ export const isStarted = (code?: number): boolean =>
   isLiveStatus(code) || (code ?? 0) >= 10000;
 
 /** name in data.proto = map<languageCode, string>; each entry is {1: key, 2: value}. */
-function decodeNameEntry(buf: Uint8Array): [number, string] | null {
+export function decodeNameEntry(buf: Uint8Array): [number, string] | null {
   let key: number | undefined;
   let val: string | undefined;
   for (const e of iterFields(buf)) {
@@ -110,7 +110,7 @@ export function resolveMatchLogos(m: Match): Match {
 
 /* ---------- data.proto (DataAPI) ---------- */
 /** PBDataCountry (field 80): 1=countryId, 3=name map, 4=logo. */
-function decodeDataCountry(buf: Uint8Array, lang: number): { name: string; logo: string } {
+export function decodeDataCountry(buf: Uint8Array, lang: number): { name: string; logo: string } {
   let logo = '';
   const nameMap: Record<number, string> = {};
   for (const f of iterFields(buf)) {
@@ -122,10 +122,11 @@ function decodeDataCountry(buf: Uint8Array, lang: number): { name: string; logo:
   return { name: pickLocalName(nameMap, lang), logo };
 }
 
-function decodeDataTeam(buf: Uint8Array, lang: number): Team {
+export function decodeDataTeam(buf: Uint8Array, lang: number): Team {
   const t: Team = {};
   for (const f of iterFields(buf)) {
     if (f.field === 1) t.teamId = f.value as number;
+    else if (f.field === 2) t.sportType = f.value as number;
     else if (f.field === 3 && f.wire === 2) {
       const e = decodeNameEntry(f.value as Uint8Array);
       if (e) (t.nameMap ??= {})[e[0]] = e[1];
@@ -141,11 +142,12 @@ function decodeDataTeam(buf: Uint8Array, lang: number): Team {
   return t;
 }
 
-/** PBDataPlayer: 1=playerId, 3=name map, 4=avatar, 80=country, 90=hot. */
-function decodeDataPlayer(buf: Uint8Array, lang: number): Team {
+/** PBDataPlayer: 1=playerId, 2=sportType, 3=name map, 4=avatar, 80=country, 90=hot. */
+export function decodeDataPlayer(buf: Uint8Array, lang: number): Team {
   const t: Team = {};
   for (const f of iterFields(buf)) {
     if (f.field === 1) t.playerId = f.value as number;
+    else if (f.field === 2) t.sportType = f.value as number;
     else if (f.field === 3 && f.wire === 2) {
       const e = decodeNameEntry(f.value as Uint8Array);
       if (e) (t.nameMap ??= {})[e[0]] = e[1];
@@ -183,10 +185,11 @@ function decodeDataContender(buf: Uint8Array, lang: number): Contender | null {
   return c;
 }
 
-function decodeDataLeague(buf: Uint8Array, lang: number): League {
+export function decodeDataLeague(buf: Uint8Array, lang: number): League {
   const l: League = {};
   for (const f of iterFields(buf)) {
     if (f.field === 1) l.leagueId = f.value as number;
+    else if (f.field === 2) l.sportType = f.value as number;
     else if (f.field === 3 && f.wire === 2) {
       const e = decodeNameEntry(f.value as Uint8Array);
       if (e) (l.nameMap ??= {})[e[0]] = e[1];
@@ -200,6 +203,50 @@ function decodeDataLeague(buf: Uint8Array, lang: number): League {
   }
   l.name = pickLocalName(l.nameMap, lang);
   return l;
+}
+
+/** PBDataSeason (PBDataMatch field 11 / PBDataLeague field 20):
+ *  1=seasonId, 2=sportType, 3=name map, 10=beginDate, 11=endDate,
+ *  50=PBDataSeasonExtraFtb (field 1 = plain season slug, e.g. "26-27"). */
+export function decodeDataSeason(buf: Uint8Array, lang: number): LeagueSeason {
+  const s: LeagueSeason = {};
+  for (const f of iterFields(buf)) {
+    if (f.field === 1) s.seasonId = f.value as number;
+    else if (f.field === 2) s.sportType = f.value as number;
+    else if (f.field === 3 && f.wire === 2) {
+      const e = decodeNameEntry(f.value as Uint8Array);
+      if (e) (s.nameMap ??= {})[e[0]] = e[1];
+    } else if (f.field === 10) s.beginDate = f.value as number;
+    else if (f.field === 11) s.endDate = f.value as number;
+    else if (f.field === 50 && f.wire === 2) {
+      for (const y of iterFields(f.value as Uint8Array)) {
+        if (y.field === 1 && y.wire === 2) s.extraName = str(y.value);
+      }
+    }
+  }
+  s.name = pickLocalName(s.nameMap, lang) || s.extraName || '';
+  return s;
+}
+
+/** PBDataStage (PBDataMatch field 12 / standings field 3):
+ *  1=stageId, 2=sportType, 3=name map. Tolerates a legacy plain-string stage
+ *  (older payloads carried the stage text directly) by returning the raw text. */
+export function decodeDataStage(buf: Uint8Array, lang: number): LeagueStage {
+  const st: LeagueStage = {};
+  for (const f of iterFields(buf)) {
+    if (f.field === 1) st.stageId = f.value as number;
+    else if (f.field === 2) st.sportType = f.value as number;
+    else if (f.field === 3 && f.wire === 2) {
+      const e = decodeNameEntry(f.value as Uint8Array);
+      if (e) (st.nameMap ??= {})[e[0]] = e[1];
+    }
+  }
+  st.name = pickLocalName(st.nameMap, lang);
+  if (!st.name && st.stageId === undefined) {
+    const raw = str(buf);
+    if (raw && /^[\x20-\x7e]+$/.test(raw)) st.name = raw;
+  }
+  return st;
 }
 
 export function decodeDataMatch(buf: Uint8Array, lang: number): Match {
@@ -216,22 +263,15 @@ export function decodeDataMatch(buf: Uint8Array, lang: number): Match {
       case 4: m.status = f.value as number; break;
       case 10: m.league = decodeDataLeague(f.value as Uint8Array, lang); break;
       case 11:
-        if (f.wire === 2) {
-          const nameMap: Record<number, string> = {};
-          for (const s of iterFields(f.value as Uint8Array)) {
-            if (s.field === 3 && s.wire === 2) {
-              const e = decodeNameEntry(s.value as Uint8Array);
-              if (e) nameMap[e[0]] = e[1];
-            } else if (s.field === 50 && s.wire === 2) {
-              for (const y of iterFields(s.value as Uint8Array)) {
-                if (y.field === 1 && y.wire === 2) m.season = str(y.value);
-              }
-            }
-          }
-          m.season = pickLocalName(nameMap, lang) || m.season;
-        }
+        // PBDataSeason is a nested message (NOT a plain string): the row shows
+        // its localised name, falling back to the plain slug at field 50.
+        if (f.wire === 2) m.season = decodeDataSeason(f.value as Uint8Array, lang).name || m.season;
         break;
-      case 12: m.stage = str(f.value); break;
+      case 12:
+        // PBDataStage is a nested message too (1=stageId, 3=name map) — read its
+        // name instead of rendering the raw message bytes.
+        if (f.wire === 2) m.stage = decodeDataStage(f.value as Uint8Array, lang).name;
+        break;
       case 19: m.name = str(f.value); break;
       case 20: if (f.wire === 2) m.home = decodeDataTeam(f.value as Uint8Array, lang); break;
       case 21: if (f.wire === 2) m.away = decodeDataTeam(f.value as Uint8Array, lang); break;
