@@ -886,31 +886,7 @@ export interface RblinkLeague {
   standings: boolean;
 }
 
-/** One row of the `/competitions` directory: a competition from the Goaloo
- *  catalogue plus the Rblink league that streams it, when the matcher paired
- *  the two feeds. Plain JSON — the page is a server component and hands these
- *  down as props, so nothing heavier than the fields below leaves the server. */
-export interface CompetitionDirectoryRow {
-  /** Goaloo feed key (`s<id>` / `c<id>`) — React key and deep-link target. */
-  key: string;
-  name: string;
-  /** Publisher headline flag (`GoalooCompetition.hot === 1`). */
-  hot: boolean;
-  /** Rblink leagueId for `/competition/{id}?sport=football`; 0 = no stream. */
-  streamId: number;
-  /** The joined Rblink league publishes fixtures right now. */
-  fixtures: boolean;
-}
-
-/** One country block of the directory ("England", "International", …). */
-export interface CompetitionDirectorySection {
-  country: string;
-  /** Rows carrying a stream — pre-counted so the filter pills need no scan. */
-  streamed: number;
-  rows: CompetitionDirectoryRow[];
-}
-
-/** Card in the headline strip at the top of `/competitions`. */
+/** Card in the headline strip on `/competitions`, right under the hero. */
 export interface CompetitionHighlight {
   key: string;
   name: string;
@@ -921,9 +897,66 @@ export interface CompetitionHighlight {
   streamId: number;
 }
 
+/** One competition inside a federation panel on `/competitions`. The `short`
+ *  code is the label that panel shows ("ENG PR") — how the feed itself names a
+ *  competition in a compact grid — with the long name kept for the tooltip and
+ *  the accessible name. Plain JSON, like every other field that crosses to the
+ *  browser from this page. */
+export interface FederationCompetition {
+  /** Goaloo feed key (`s<id>` / `c<id>`) — React key. */
+  key: string;
+  name: string;
+  /** Feed short code; falls back to the long name when the feed ships none. */
+  short: string;
+  /** Headline flag of either catalogue (`GoalooCompetition.hot === 1`, or the
+   *  scan's own `hot` for a paired league). */
+  hot: boolean;
+  /** Rblink leagueId for `/competition/{id}?sport=football`; 0 = no stream. */
+  streamId: number;
+  /** The joined Rblink league publishes fixtures right now. */
+  fixtures: boolean;
+}
+
+/** One federation item of the `/competitions` grid. A "federation" is the
+ *  catalogue's own country label — the association behind the competitions
+ *  ("England", "Italy", …) — plus the region buckets the publisher files the
+ *  continental and world competitions under ("Europe" for the UEFA cups,
+ *  "International" for the FIFA ones). */
+export interface CompetitionFederation {
+  country: string;
+  /** Goaloo region bucket — the continent tab this card lives under. */
+  area: number;
+  /** Label of that bucket ("Europe"), so a card can name its own continent. */
+  areaLabel: string;
+  /** Country badge, already resolved through `countryLogoUrl`; "" when the
+   *  stream scan carries no badge for the federation (the card then draws the
+   *  federation's initial instead). */
+  logo: string;
+  /** Every competition of this federation, ordered: streamed ones first, in the
+   *  scan's own (importance) order, then the unpaired ones alphabetically. */
+  competitions: FederationCompetition[];
+  /** Competitions of this federation with a stream — pre-counted. */
+  streamed: number;
+}
+
+/** One continent tab of the `/competitions` grid. */
+export interface CompetitionArea {
+  /** Goaloo region bucket; 0 is the publisher's own world/neutral bucket. */
+  area: number;
+  label: string;
+  /** Federations and competitions the bucket holds, in the catalogue. */
+  federations: number;
+  competitions: number;
+}
+
 /** Everything `/competitions` renders, assembled once per server process. */
 export interface CompetitionDirectory {
-  sections: CompetitionDirectorySection[];
+  /** The catalogue keyed by federation, in the order the grid draws it (the
+   *  federations the stream scan covers best come first). */
+  federations: CompetitionFederation[];
+  /** Continent tabs, in display order (west to east, the publisher's own world
+   *  bucket last). */
+  areas: CompetitionArea[];
   highlights: CompetitionHighlight[];
   /** When the Rblink scan behind the join last ran (shown as provenance). */
   generatedAt: string;

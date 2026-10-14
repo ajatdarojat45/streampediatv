@@ -11,7 +11,7 @@ const directory = competitionDirectory();
 /** Static SEO metadata, derived from the same totals the page renders. */
 export const metadata: Metadata = {
   title: 'Competitions — live streams, fixtures & standings',
-  description: `${directory.totals.competitions} football competitions from ${directory.totals.countries} countries — ${directory.totals.streamed} of them with live streams. Browse every competition's fixtures, results and standings.`,
+  description: `${directory.totals.competitions} football competitions from ${directory.totals.countries} federations across ${directory.areas.length} continents — ${directory.totals.streamed} of them with live streams. Browse by continent and federation, with every competition's fixtures, results and standings.`,
 };
 
 export default function CompetitionsPage() {

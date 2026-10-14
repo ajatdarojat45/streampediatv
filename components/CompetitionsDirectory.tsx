@@ -1,15 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Flame, Play, Trophy } from 'lucide-react';
-import { EmptyMatches } from '@/components/EmptyMatches';
+import { ChevronDown, Flame, Globe, Play, Trophy } from 'lucide-react';
 import { LocalTime } from '@/components/LocalTime';
 import { leagueHref } from '@/lib/sports';
 import type {
   CompetitionDirectory,
-  CompetitionDirectoryRow,
+  CompetitionFederation,
   CompetitionHighlight,
+  FederationCompetition,
 } from '@/lib/types';
 
 /** The Rblink catalogue behind the join was scanned with `sportType=1`
@@ -28,19 +28,38 @@ const TAB_ACTIVE = `${TAB} border-accent bg-accent-soft text-accent`;
 const TAB_COUNT = 'min-w-5 rounded-full px-2 py-px text-center text-[11px] font-bold';
 const TAB_COUNT_IDLE = `${TAB_COUNT} bg-[#f1f3f4] text-muted [[data-theme=dark]_&]:bg-border-soft`;
 const TAB_COUNT_ACTIVE = `${TAB_COUNT} bg-[rgba(26,115,232,0.2)] text-accent`;
-/** Row chrome — a link when the competition streams, a plain row when not. */
-const ROW = 'flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-2.5 py-2 text-[13px]';
-const ROW_IDLE = `${ROW} text-muted`;
-const ROW_LINK = `${ROW} text-text transition-colors hover:bg-card`;
 const BADGE =
   'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-semibold text-muted';
 /** The one accent-coloured pill: this competition has a stream behind it. */
 const WATCH_BADGE =
   'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-bold text-accent';
 const HOT = 'h-3.5 w-3.5 shrink-0 text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]';
-/** Country block header — the toggle that collapses one block. */
-const SECTION_HEAD =
-  'flex w-full items-center gap-2.5 border-b border-border-soft bg-transparent px-2.5 pb-2 pt-3 text-left';
+/** Continent tab row — the same swipeable pill row the feed uses, so the tabs
+ *  stay on one line and can be swiped into view on a narrow screen. */
+const TAB_ROW =
+  'flex flex-nowrap gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+/** Federation card: the hover/focus target whose panel lists the federation's
+ *  competitions. The open state borrows the tab pair's active colours, so "this
+ *  one is open" reads the same on a card as on a pill. */
+const CARD =
+  'flex w-full flex-col items-center gap-1.5 rounded-[var(--radius-sm)] border px-2.5 py-3 text-center transition-all';
+const CARD_IDLE = `${CARD} border-border bg-card hover:border-[#c7ccd2] hover:bg-accent-soft`;
+const CARD_OPEN = `${CARD} border-accent bg-accent-soft`;
+/** Badge box of a card: a fixed square, so the wide country flags and the
+ *  publisher's round region badges (Europe, International) share a baseline. */
+const CARD_BADGE = 'flex h-10 w-full items-center justify-center';
+/** Federation panel. It floats, so opening one never moves the grid out from
+ *  under the pointer — a panel that pushed the rows down would drag the card
+ *  away from the cursor and flicker. The card swaps `left-0`/`right-0` when a
+ *  full-width panel would run past the viewport. */
+const MENU =
+  'absolute top-[calc(100%+6px)] z-30 w-[min(88vw,640px)] rounded-[var(--radius-sm)] border border-border bg-panel p-3 shadow-[0_12px_32px_rgba(0,0,0,0.16)]';
+const MENU_HEAD =
+  'm-0 mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-border-soft pb-2 text-[12px] text-muted';
+const MENU_LIST = 'm-0 list-none columns-2 gap-x-4 min-[560px]:columns-3 min-[900px]:columns-4';
+const MENU_ITEM = 'mb-1 break-inside-avoid text-[12.5px] leading-[1.55]';
+const MENU_LINK = `${MENU_ITEM} font-semibold text-text underline decoration-dotted underline-offset-2 transition-colors hover:text-accent`;
+const MENU_PLAIN = `${MENU_ITEM} text-muted`;
 
 /** Crest of a headline card. Deliberately not `TeamLogo`: that helper rewrites
  *  the host to the current Rblink logo host, while these crests live on the
@@ -71,42 +90,156 @@ function Crest({ src, name }: { src: string; name: string }) {
   );
 }
 
-/** One directory row. A streamed competition links to its competition page —
- *  a league owns a season of fixtures, not a single match id, so the
- *  `/watch/{matchId}?sport=football` deep-link is one hop further on, from the
- *  fixture rows that page renders. */
-function Row({ row }: { row: CompetitionDirectoryRow }) {
+/** Federation badge — the country badge the app already draws beside a league
+ *  row (the scan's own `flag` column), or the publisher's region badge for the
+ *  buckets it files the UEFA/world competitions under. Unlike the competition
+ *  crest above it is not square (flags are wide), so it only gets a max height
+ *  and lets the box centre it. A federation the scan does not list, or one
+ *  whose image fails to load, falls back to its initial. */
+function FederationBadge({ src, name }: { src: string; name: string }) {
+  const [broken, setBroken] = useState(false);
+  if (!src || broken) {
+    return (
+      <span
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#e8eaed] text-[15px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft"
+        aria-hidden="true"
+      >
+        {(name || '?').trim().charAt(0).toUpperCase() || '?'}
+      </span>
+    );
+  }
+  return (
+    <img
+      className="max-h-10 max-w-full object-contain"
+      src={src}
+      alt=""
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={() => setBroken(true)}
+    />
+  );
+}
+
+/** One competition inside a federation panel. The feed's short code is the
+ *  label — that is how the feed itself names a competition in a compact grid —
+ *  with the long name as the tooltip and the accessible name, so a screen
+ *  reader never has to guess what "ENG LCH" is. A competition the matcher could
+ *  not pair with a stream stays plain text, exactly like a row of the list. */
+function FederationEntry({ item }: { item: FederationCompetition }) {
   const content = (
     <>
-      <span className={`min-w-0 flex-1 truncate ${row.streamId > 0 ? 'font-semibold' : ''}`}>
-        {row.name}
-      </span>
-      {row.hot && <Flame className={HOT} aria-label="Trending competition" />}
-      {row.streamId > 0 && !row.fixtures && (
-        <span className="shrink-0 text-[12px] text-muted max-[640px]:hidden">No fixtures now</span>
-      )}
-      {row.streamId > 0 ? (
-        <span className={WATCH_BADGE}>
-          <Play size={11} aria-hidden="true" />
-          Watch
-        </span>
-      ) : (
-        <span className={BADGE}>No stream</span>
-      )}
+      {item.short}
+      {item.hot && <Flame className={`${HOT} ml-1 inline-block align-[-2px]`} aria-label="Headline competition" />}
     </>
   );
+  if (item.streamId <= 0) {
+    return (
+      <li className={MENU_PLAIN} title={`${item.name} — no stream`}>
+        {content}
+      </li>
+    );
+  }
   return (
-    <li className="m-0 list-none">
-      {row.streamId > 0 ? (
-        <Link
-          href={leagueHref(row.streamId, FOOTBALL)}
-          className={ROW_LINK}
-          title={`${row.name} — fixtures, results & live streams`}
-        >
-          {content}
-        </Link>
-      ) : (
-        <span className={ROW_IDLE}>{content}</span>
+    <li className={MENU_ITEM}>
+      <Link
+        href={leagueHref(item.streamId, FOOTBALL)}
+        className="font-semibold text-text underline decoration-dotted underline-offset-2 transition-colors hover:text-accent"
+        title={`${item.name} — fixtures, results & live streams`}
+        aria-label={item.name}
+      >
+        {content}
+      </Link>
+    </li>
+  );
+}
+
+/** One federation card: badge, name, and how many competitions it runs — plus
+ *  the panel listing them, which is what the card exists for.
+ *
+ *  Opens on hover and on focus, so a pointer and a keyboard both reach it, and
+ *  a click toggles it as well, which is what a touch screen has (there is no
+ *  hover there). The panel is rendered only while open — 128 federations
+ *  therefore cost 128 cards and no hidden menus — and the crawlable copy of
+ *  every competition lives in the country list below, so nothing here has to
+ *  carry SEO weight. */
+function FederationCard({
+  federation,
+  open,
+  align,
+  onOpen,
+  onClose,
+}: {
+  federation: CompetitionFederation;
+  open: boolean;
+  align: 'start' | 'end';
+  onOpen: (card: HTMLLIElement | null) => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLLIElement>(null);
+  const { country, areaLabel, logo, competitions, streamed } = federation;
+  /** "1 competition" / "3 competitions" — a federation with a single
+   *  competition is common in this catalogue (Angola, Guam), and the card's
+   *  accessible name and its panel head both quote it. */
+  const count = `${competitions.length} ${competitions.length === 1 ? 'competition' : 'competitions'}`;
+  return (
+    <li
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => onOpen(ref.current)}
+      onMouseLeave={onClose}
+      onFocusCapture={() => onOpen(ref.current)}
+      onBlurCapture={(e) => {
+        // Focus moving *inside* the card (into the panel's links) keeps it open;
+        // only a blur that leaves the card closes it.
+        if (!ref.current?.contains(e.relatedTarget as Node | null)) onClose();
+      }}
+    >
+      <button
+        type="button"
+        className={open ? CARD_OPEN : CARD_IDLE}
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-label={`${country} — ${count}${streamed > 0 ? `, ${streamed} with streams` : ''}`}
+        onClick={() => (open ? onClose() : onOpen(ref.current))}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onClose();
+        }}
+      >
+        <span className={CARD_BADGE}>
+          <FederationBadge src={logo} name={country} />
+        </span>
+        <span className="flex w-full items-center justify-center gap-1">
+          <span className="min-w-0 truncate text-[13px] font-semibold text-text">{country}</span>
+          <ChevronDown
+            className={`h-3.5 w-3.5 shrink-0 transition-transform ${open ? 'rotate-180 text-accent' : 'text-muted'}`}
+            aria-hidden="true"
+          />
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className={BADGE}>{competitions.length}</span>
+          {streamed > 0 && (
+            <span className={WATCH_BADGE}>
+              <Play size={10} aria-hidden="true" />
+              {streamed}
+            </span>
+          )}
+        </span>
+      </button>
+      {open && (
+        <div className={`${MENU} ${align === 'end' ? 'right-0' : 'left-0'}`}>
+          <p className={MENU_HEAD}>
+            <span className="text-[13px] font-bold text-text">{country}</span>
+            <span>
+              {areaLabel} · {count}
+              {streamed > 0 ? ` · ${streamed} with streams` : ''}
+            </span>
+          </p>
+          <ul className={MENU_LIST}>
+            {competitions.map((c) => (
+              <FederationEntry key={c.key} item={c} />
+            ))}
+          </ul>
+        </div>
       )}
     </li>
   );
@@ -135,33 +268,89 @@ function HighlightCard({ item }: { item: CompetitionHighlight }) {
   );
 }
 
-/** The `/competitions` directory: the whole Goaloo catalogue, grouped by
- *  country, with each competition the matcher could pair to a Rblink league
- *  linking out to its competition page. Search matches a competition name or
- *  the country block it sits in; the pill switches between the streamable
- *  subset and the full catalogue. */
+/** The `/competitions` directory: the headline strip on top, then the federation
+ *  grid.
+ *
+ *  The grid is browsed by continent and federation — pick a continent tab,
+ *  hover a federation and its panel lists every competition it runs, each entry
+ *  a link to its competition page.
+ *
+ *  A continent tab and the search box compose: the tab picks the region and the
+ *  query narrows the federations and their panels — a federation whose every
+ *  competition drops out leaves the grid with it. The tab counts are read off
+ *  the filtered set itself, so a pill never promises a card the grid cannot
+ *  draw. */
 export function CompetitionsDirectory({ directory }: { directory: CompetitionDirectory }) {
   const [query, setQuery] = useState('');
-  const [streamsOnly, setStreamsOnly] = useState(false);
-  const { totals, highlights, generatedAt } = directory;
+  /** `'all'` rather than an area id: 0 is the publisher's own world bucket, so
+   *  a numeric sentinel would collide with a real tab. */
+  const [tab, setTab] = useState<'all' | number>('all');
+  /** The federation whose panel is open, by country — one at a time, so the
+   *  grid can never end up with two panels fighting for the pointer. */
+  const [openCountry, setOpenCountry] = useState('');
+  /** Which edge the open panel hangs from: a card in the right-hand columns
+   *  would push a full-width panel past the viewport, so it flips. */
+  const [panelEdge, setPanelEdge] = useState<'start' | 'end'>('start');
+  const { totals, highlights, areas, generatedAt } = directory;
 
-  /** One pass per keystroke. Rows are references, never copies, and empty
-   *  blocks drop out, so the filtered view costs a scan and nothing else. */
-  const sections = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return directory.sections
-      .map((s) => {
-        const countryHit = q ? s.country.toLowerCase().includes(q) : false;
-        const rows = s.rows.filter(
-          (r) => (!streamsOnly || r.streamId > 0) && (!q || countryHit || r.name.toLowerCase().includes(q)),
-        );
-        return { ...s, rows };
-      })
-      .filter((s) => s.rows.length > 0);
-  }, [directory.sections, query, streamsOnly]);
+  const q = query.trim().toLowerCase();
+  const searching = q.length > 0;
 
-  const searching = query.trim().length > 0;
-  const shown = sections.reduce((n, s) => n + s.rows.length, 0);
+  /** One pass per keystroke. Federations and entries are references, never
+   *  copies, and a federation left without a match drops out, so a query costs
+   *  a scan and nothing else. */
+  const matched = useMemo(
+    () =>
+      directory.federations
+        .map((f) => {
+          const countryHit = q ? f.country.toLowerCase().includes(q) : false;
+          const competitions = f.competitions.filter(
+            (c) => !q || countryHit || c.name.toLowerCase().includes(q),
+          );
+          return { ...f, competitions, streamed: competitions.filter((c) => c.streamId > 0).length };
+        })
+        .filter((f) => f.competitions.length > 0),
+    [directory.federations, q],
+  );
+
+  /** Tab counts, read off the same set: a pill's number is exactly what the
+   *  grid shows once that pill is picked. */
+  const tabs = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const f of matched) counts.set(f.area, (counts.get(f.area) ?? 0) + 1);
+    return { all: matched.length, counts };
+  }, [matched]);
+
+  const federations = useMemo(
+    () => (tab === 'all' ? matched : matched.filter((f) => f.area === tab)),
+    [matched, tab],
+  );
+  const activeArea = tab === 'all' ? undefined : areas.find((a) => a.area === tab);
+  const gridCompetitions = federations.reduce((n, f) => n + f.competitions.length, 0);
+
+  /** Open a federation's panel, flipping it against whichever viewport edge the
+   *  card is closer to. The measured width mirrors the panel's own
+   *  `w-[min(88vw,640px)]`. */
+  const openFederation = (country: string, card: HTMLLIElement | null) => {
+    if (card) {
+      const width = Math.min(640, window.innerWidth * 0.88);
+      setPanelEdge(card.getBoundingClientRect().left + width > window.innerWidth - 8 ? 'end' : 'start');
+    }
+    setOpenCountry(country);
+  };
+  const closeFederation = () => setOpenCountry('');
+
+  /** Any change of view closes the open panel: its entries are the old set. */
+  const pickTab = (next: 'all' | number) => {
+    setTab(next);
+    closeFederation();
+  };
+  const pickQuery = (next: string) => {
+    setQuery(next);
+    closeFederation();
+  };
+
+  /** When the scan behind the join last ran — the hero's provenance line. */
   const scan = Date.parse(generatedAt);
 
   return (
@@ -179,42 +368,16 @@ export function CompetitionsDirectory({ directory }: { directory: CompetitionDir
           fixtures, results and standings.
         </p>
 
-        {/* Search + filter pills — the same swipeable row the feed uses, so the
-         *  input and the pills stay reachable on a narrow screen. */}
-        <div className="mt-3 flex flex-nowrap items-center gap-3 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <input
-            className="min-w-[170px] flex-1 rounded-xl border border-border bg-panel px-4 py-[11px] text-sm text-text transition-[border-color,box-shadow] placeholder:text-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
-            type="search"
-            placeholder="Search competitions or countries…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <span className="flex shrink-0 gap-2.5 whitespace-nowrap">
-            <button
-              type="button"
-              className={streamsOnly ? TAB_ACTIVE : TAB_IDLE}
-              onClick={() => setStreamsOnly(true)}
-              aria-pressed={streamsOnly}
-            >
-              <Play size={13} aria-hidden="true" />
-              With streams
-              <span className={streamsOnly ? TAB_COUNT_ACTIVE : TAB_COUNT_IDLE}>
-                {totals.streamed}
-              </span>
-            </button>
-            <button
-              type="button"
-              className={streamsOnly ? TAB_IDLE : TAB_ACTIVE}
-              onClick={() => setStreamsOnly(false)}
-              aria-pressed={!streamsOnly}
-            >
-              All competitions
-              <span className={streamsOnly ? TAB_COUNT_IDLE : TAB_COUNT_ACTIVE}>
-                {totals.competitions}
-              </span>
-            </button>
-          </span>
-        </div>
+        {/* The catalogue-wide search — the only control this page needs now: it
+         *  narrows the grid below, panels included, so the row carries no filter
+         *  pills of its own. */}
+        <input
+          className="mt-3 w-full rounded-xl border border-border bg-panel px-4 py-[11px] text-sm text-text transition-[border-color,box-shadow] placeholder:text-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
+          type="search"
+          placeholder="Search competitions or countries…"
+          value={query}
+          onChange={(e) => pickQuery(e.target.value)}
+        />
 
         <p className="m-0 mt-2 text-[12px] leading-[1.6] text-muted">
           A competition is only marked <em>Watch</em> when the Goaloo catalogue and the Rblink
@@ -223,7 +386,11 @@ export function CompetitionsDirectory({ directory }: { directory: CompetitionDir
         </p>
       </section>
 
-      {highlights.length > 0 && !searching && (
+      {/* The headline strip — a way into the most-watched competitions, right
+       *  under the directory hero. It rides on the unfiltered view only: a
+       *  continent tab has its own federations to browse, and a search has its
+       *  own results. */}
+      {highlights.length > 0 && !searching && tab === 'all' && (
         <section className={PANEL}>
           <h2 className="m-0 mb-3 text-[15px] font-bold">Headline competitions</h2>
           <div className="grid gap-2.5 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
@@ -234,90 +401,80 @@ export function CompetitionsDirectory({ directory }: { directory: CompetitionDir
         </section>
       )}
 
-      {shown > 0 && (
-        <section className={PANEL}>
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="m-0 text-[15px] font-bold">All competitions</h2>
-            <span className="text-[12px] text-muted">
-              {shown} of {totals.competitions} shown
-              {searching ? ` for “${query.trim()}”` : ''}
-              {streamsOnly ? ' · streams only' : ''}
-            </span>
-          </div>
-          <ul className="m-0 list-none p-0">
-            {sections.map((s) => (
-              <CountryBlock
-                key={s.country}
-                country={s.country}
-                rows={s.rows}
-                streamed={s.streamed}
-                searching={searching}
+      {/* Browse by continent, then by federation: the tab picks the region, the
+       *  cards are that region's federations, and opening one lists the
+       *  competitions it runs. */}
+      <section className={PANEL}>
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <h2 className="m-0 flex items-center gap-2 text-[15px] font-bold">
+            <Globe className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+            Browse by federation
+          </h2>
+          <span className="text-[12px] text-muted">
+            {federations.length} federations · {gridCompetitions} competitions
+            {activeArea ? ` · ${activeArea.label}` : ''}
+          </span>
+        </div>
+        <p className="m-0 mt-1.5 max-w-[760px] text-[13px] leading-[1.65] text-muted">
+          Pick a continent, then hover a federation to see every competition it runs — the ones with a
+          stream open their competition page, the rest are listed for reference.
+        </p>
+
+        <div className={`mt-3 ${TAB_ROW}`} role="tablist" aria-label="Continents">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'all'}
+            className={tab === 'all' ? TAB_ACTIVE : TAB_IDLE}
+            onClick={() => pickTab('all')}
+          >
+            All
+            <span className={tab === 'all' ? TAB_COUNT_ACTIVE : TAB_COUNT_IDLE}>{tabs.all}</span>
+          </button>
+          {areas.map((a) => (
+            <button
+              key={a.area}
+              type="button"
+              role="tab"
+              aria-selected={tab === a.area}
+              className={tab === a.area ? TAB_ACTIVE : TAB_IDLE}
+              onClick={() => pickTab(a.area)}
+              title={`${a.competitions} competitions in ${a.federations} federations`}
+            >
+              {a.label}
+              <span className={tab === a.area ? TAB_COUNT_ACTIVE : TAB_COUNT_IDLE}>
+                {tabs.counts.get(a.area) ?? 0}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {federations.length > 0 ? (
+          <ul className="m-0 mt-1 grid list-none gap-2 p-0 [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
+            {federations.map((f) => (
+              <FederationCard
+                key={f.country}
+                federation={f}
+                open={openCountry === f.country}
+                align={panelEdge}
+                onOpen={(card) => openFederation(f.country, card)}
+                onClose={closeFederation}
               />
             ))}
           </ul>
-        </section>
-      )}
-
-      {shown === 0 && (
-        <EmptyMatches
-          kind={searching ? 'search' : 'filter'}
-          title={searching ? 'No competitions found' : 'No streams in this view'}
-          desc={
-            searching
-              ? `No competition matches “${query.trim()}”. Try another keyword, or clear the search.`
-              : 'No competition here has a stream right now. Switch to All competitions for the full catalogue.'
-          }
-          onClear={searching ? () => setQuery('') : undefined}
-        />
-      )}
-    </>
-  );
-}
-
-/** One country block. Open by default — this is a directory, so the entries
- *  should be readable without a click — and forced open while a search runs,
- *  so a hit can never hide behind a collapsed block. */
-function CountryBlock({
-  country,
-  rows,
-  streamed,
-  searching,
-}: {
-  country: string;
-  rows: CompetitionDirectoryRow[];
-  streamed: number;
-  searching: boolean;
-}) {
-  const [open, setOpen] = useState(true);
-  const expanded = open || searching;
-  return (
-    <li className="m-0 list-none">
-      <button
-        type="button"
-        className={SECTION_HEAD}
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={expanded}
-      >
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 text-muted transition-transform ${expanded ? '' : '-rotate-90'}`}
-          aria-hidden="true"
-        />
-        <span className="text-[14px] font-bold text-text">{country}</span>
-        <span className={BADGE}>{rows.length}</span>
-        {streamed > 0 && streamed < rows.length && (
-          <span className={WATCH_BADGE}>
-            <Play size={11} aria-hidden="true" />
-            {streamed} streams
-          </span>
+        ) : (
+          <div className="mt-2 rounded-[var(--radius-sm)] border border-dashed border-border px-4 py-8 text-center">
+            <p className="m-0 text-[13px] text-muted">
+              No federation{activeArea ? ` in ${activeArea.label}` : ''} matches this view.
+            </p>
+            {searching && (
+              <button type="button" className={`mt-3 ${TAB_IDLE}`} onClick={() => pickQuery('')}>
+                Clear search
+              </button>
+            )}
+          </div>
         )}
-      </button>
-      {expanded && (
-        <ul className="m-0 list-none p-0">
-          {rows.map((r) => (
-            <Row key={r.key} row={r} />
-          ))}
-        </ul>
-      )}
-    </li>
+      </section>
+    </>
   );
 }

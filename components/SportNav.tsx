@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Radio, MoreHorizontal, Globe } from 'lucide-react';
+import { Radio, MoreHorizontal } from 'lucide-react';
 import { POPULAR_SPORTS, MORE_SPORTS } from '@/lib/sports';
 import { usePrefetchCategory } from '@/lib/streamingQueries';
 
@@ -31,12 +31,6 @@ export function SportNav() {
 
   const isActive = (href: string): boolean => pathname === href;
 
-  /** Section match for a tab that also owns its detail routes — `/competition`
-   *  covers the `/competitions` directory *and* every `/competition/{id}` page,
-   *  so the tab stays lit while a visitor reads one competition. */
-  const isSection = (prefix: string): boolean =>
-    pathname === prefix || pathname.startsWith(`${prefix}/`);
-
   return (
     <>
       <nav className="mb-4" aria-label="Sport categories">
@@ -47,16 +41,6 @@ export function SportNav() {
           <Link href="/" className={isActive('/') ? TAB_LIVE_ACTIVE : TAB_IDLE}>
             <Radio className="h-4 w-4 shrink-0" />
             Live
-          </Link>
-
-          <Link
-            href="/competitions"
-            role="tab"
-            aria-selected={isSection('/competition')}
-            className={isSection('/competition') ? TAB_ACTIVE : TAB_IDLE}
-          >
-            <Globe className="h-4 w-4 shrink-0" />
-            Competitions
           </Link>
 
           {POPULAR_SPORTS.map((s) => {
