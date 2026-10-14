@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery, useMutation } from '@tanstack/react-query';
-import { getMatches, getMatchDetail, getMatchAnalysis, getMatchLineup, getMatchEvent, getMatchStatistic, getStreamUrl, getAllLiveMatches, getLeagueDetail, getLeagueMatches, getLeagueSeasons, getLeagueStandings, getLeaguePlayerTotals } from '@/app/actions';
+import { getMatches, getMatchDetail, getMatchAnalysis, getMatchLineup, getMatchEvent, getMatchStatistic, getMatchTrend, getStreamUrl, getAllLiveMatches, getLeagueDetail, getLeagueMatches, getLeagueSeasons, getLeagueStandings, getLeaguePlayerTotals, getLeagueTeamTotals } from '@/app/actions';
 
 /** Never auto-retry a rate-limit (HTTP 429): re-hitting immediately makes the
  * upstream limiter angrier and starves the UI. Other errors get one retry. */
@@ -194,6 +194,30 @@ export function useMatchStatistic(matchId: string | number, sportType?: number) 
   });
 }
 
+/** Momentum trend for one match — the series the Match Chart is drawn from.
+ *  `enabled` lets the caller hold the request until its chart is actually on
+ *  screen (a hidden chart must not cost an upstream call). No background
+ *  polling, same reason as above: the endpoint shares the detail family's
+ *  signature and the page's Refresh re-reads it on demand. */
+export function useMatchTrend(
+  matchId: string | number,
+  sportType?: number,
+  enabled = true
+) {
+  return useQuery({
+    queryKey: ['match-trend', matchId, sportType],
+    queryFn: async () => {
+      const res = await getMatchTrend({ matchId, sportType, language: 0 });
+      if (!res.ok) throw new Error(res.error);
+      return res.data;
+    },
+    enabled: Boolean(matchId) && Number(sportType) > 0 && enabled,
+    retry: retryPolicy,
+    retryDelay,
+    ...DETAIL_POLL,
+  });
+}
+
 export interface StreamUrlInput {
   matchId: string | number;
   streamId: number;
@@ -303,6 +327,23 @@ export function useLeaguePlayerTotals({ leagueId, sportType, seasonId, enabled }
     queryKey: ['league-player-totals', leagueId, sportType, seasonId ?? 0],
     queryFn: async () => {
       const res = await getLeaguePlayerTotals({ leagueId, sportType, language: 0, seasonId });
+      if (!res.ok) throw new Error(res.error);
+      return res.data;
+    },
+    enabled: leagueReady(leagueId, sportType, enabled),
+    retry: retryPolicy,
+    retryDelay,
+    ...DETAIL_POLL,
+  });
+}
+
+/** Competition team statistics — the "Team" half of the Tech Stat tab. Gated
+ *  exactly like the player totals: only the subtab that is on screen fetches. */
+export function useLeagueTeamTotals({ leagueId, sportType, seasonId, enabled }: LeagueInput) {
+  return useQuery({
+    queryKey: ['league-team-totals', leagueId, sportType, seasonId ?? 0],
+    queryFn: async () => {
+      const res = await getLeagueTeamTotals({ leagueId, sportType, language: 0, seasonId });
       if (!res.ok) throw new Error(res.error);
       return res.data;
     },

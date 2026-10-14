@@ -211,6 +211,14 @@ export function getMatchStatistic({ version, matchId, sportType, language }: Mat
   return getProtobuf(`${DATA_API}/sfver${params}${version}/api/match/statistic?${qs}`);
 }
 
+/** Match momentum trend (PBMatchTrendResp, endpoint code 102 — the SAME
+ *  signature the match detail/analysis paths use, so no extra signature fetch). */
+export function getMatchTrend({ version, matchId, sportType, language }: MatchDetailQuery) {
+  const qs = `matchId=${matchId}&sportType=${sportType}&language=${language}`;
+  const params = md5(qs).slice(0, 6);
+  return getProtobuf(`${DATA_API}/sfver${params}${version}/api/match/trend?${qs}`);
+}
+
 /* ---------- DataAPI — competition (league) family ----------
  * Every /api/league/* path is signed with the SAME endpoint signature:
  * DT_LEAGUE (code 200) from /api/common/bs. `seasonId` is optional on the
@@ -266,4 +274,14 @@ export function getLeaguePlayerTotalList({ version, ...q }: LeagueQuery) {
   const qs = leagueQs(q);
   const params = md5(qs).slice(0, 6);
   return getProtobuf(`${DATA_API}/sfver${params}${version}/api/league/player/total/list?${qs}`);
+}
+
+/** Competition team statistics (goals, possession, shots, cards, per-game
+ *  rates) — endpoint code 200 (DT_LEAGUE). Same season requirement as the
+ *  player totals: a season-less call is rejected with HTTP 499, so the page
+ *  passes the season it resolved. */
+export function getLeagueTeamTotalList({ version, ...q }: LeagueQuery) {
+  const qs = leagueQs(q);
+  const params = md5(qs).slice(0, 6);
+  return getProtobuf(`${DATA_API}/sfver${params}${version}/api/league/team/total/list?${qs}`);
 }

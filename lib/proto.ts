@@ -78,6 +78,44 @@ export function* iterFields(buf: Uint8Array): Generator<Field, void, undefined> 
   }
 }
 
+/** {@link iterFields} WITHOUT the wire-5 skip: a float comes through as a
+ *  number (and a wire-1 double is read as one too). The plain walker drops them
+ *  because every other decoder in the app reads integer/string fields only, so
+ *  it never has to decide what a float means. The momentum trend is the one
+ *  payload whose payload IS floats, so it walks with this instead.
+ *  Unknown wire types still stop the walk — same safety valve as above. */
+export function* iterFieldsAll(buf: Uint8Array): Generator<Field, void, undefined> {
+  let pos = 0;
+  while (pos < buf.length) {
+    const [tag, p1] = readVarint(buf, pos);
+    const field = tag >> 3;
+    const wire = tag & 7;
+    pos = p1;
+    if (wire === 0) {
+      const [v, p2] = readVarint(buf, pos);
+      pos = p2;
+      yield { field, wire, value: v };
+    } else if (wire === 2) {
+      const [len, p2] = readVarint(buf, pos);
+      pos = p2 + len;
+      yield { field, wire, value: buf.subarray(p2, pos) };
+    } else if (wire === 5) {
+      if (pos + 4 > buf.length) return; // truncated — stop rather than throw
+      const v = new DataView(buf.buffer, buf.byteOffset + pos, 4).getFloat32(0, true);
+      pos += 4;
+      yield { field, wire, value: v };
+    } else if (wire === 1) {
+      if (pos + 8 > buf.length) return;
+      const v = new DataView(buf.buffer, buf.byteOffset + pos, 8).getFloat64(0, true);
+      pos += 8;
+      yield { field, wire, value: v };
+    } else {
+      return; // unknown wire type — stop to avoid an infinite loop
+    }
+  }
+}
+
+
 const b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 export function bytesToBase64(bytes: Uint8Array): string {

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { CalendarDays, ChevronRight, Goal, Star, Trophy } from 'lucide-react';
 import { MatchRow, TeamLogo } from '@/components/Match';
 import { ClubLink } from '@/components/ClubLink';
+import { PlayerLink } from '@/components/PlayerLink';
 import { standingTeam } from '@/lib/leagueProto';
 import { matchDateMs } from '@/lib/datetime';
 import { isStarted } from '@/lib/matchProto';
@@ -333,13 +334,23 @@ export function CompetitionOverview({
               Leaders
             </span>
             <button type="button" className={JUMP} onClick={() => onOpenTab('stats')}>
-              Statistics
+              Stat
               <ChevronRight size={13} aria-hidden="true" />
             </button>
           </div>
           <div className={CARD}>
+            {/* The MVP's name is a player link like every other name in the
+                competition views. The feed names the player but ships no
+                player-page id for him (the leaderboard rows resolve one from the
+                squad of their club, which the MVP has none of), so the link
+                appears the moment an id is present — `PlayerLink` renders the
+                very same content as plain text until then. */}
             {extra?.mvpPlayer?.name ? (
-              <div className="flex items-center gap-3">
+              <PlayerLink
+                id={extra.mvpPlayer.playerPageId}
+                name={extra.mvpPlayer.name}
+                className="flex items-center gap-3"
+              >
                 <TeamLogo
                   path={extra.mvpPlayer.logo}
                   name={extra.mvpPlayer.name}
@@ -355,7 +366,7 @@ export function CompetitionOverview({
                     <span className="block truncate text-[12px] text-muted">{extra.mvpPlayer.country}</span>
                   )}
                 </span>
-              </div>
+              </PlayerLink>
             ) : (
               <p className={EMPTY}>No MVP published for this competition.</p>
             )}
@@ -366,7 +377,7 @@ export function CompetitionOverview({
                 className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-accent underline"
                 onClick={() => onOpenTab('stats')}
               >
-                Statistics tab
+                Stat tab
               </button>
               .
             </p>

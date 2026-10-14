@@ -9,6 +9,8 @@ import { ClubLink } from '@/components/ClubLink';
 import { CompetitionOverview } from '@/components/CompetitionOverview';
 import { CompetitionPlayers } from '@/components/CompetitionPlayers';
 import { CompetitionStats } from '@/components/CompetitionStats';
+import { CompetitionTeamStats } from '@/components/CompetitionTeamStats';
+import { CompetitionBracket } from '@/components/CompetitionBracket';
 import { EmptyMatches } from '@/components/EmptyMatches';
 import {
   useLeagueDetail,
@@ -16,8 +18,9 @@ import {
   useLeaguePlayerTotals,
   useLeagueSeasons,
   useLeagueStandings,
+  useLeagueTeamTotals,
 } from '@/lib/queries';
-import { standingTeam, groupFixtures, type StageGroup } from '@/lib/leagueProto';
+import { standingTeam, groupFixtures, buildBracket, type StageGroup } from '@/lib/leagueProto';
 import { matchDateMs } from '@/lib/datetime';
 import { isStarted } from '@/lib/matchProto';
 import { sportLabel, sportSlug, watchHref } from '@/lib/sports';
@@ -41,8 +44,12 @@ const TAB_COUNT_IDLE = `${TAB_COUNT} bg-[#f1f3f4] text-muted [[data-theme=dark]_
 const TAB_COUNT_ACTIVE = `${TAB_COUNT} bg-[rgba(26,115,232,0.2)] text-accent`;
 
 /** Tab body switch keys: the tab the page opens on, the full fixture list, the
- *  table, the squad browser and the per-player leaderboards. */
-type TabKey = 'overview' | 'matches' | 'standings' | 'players' | 'stats';
+ *  table, the squad/club statistics (Tech Stat), the leaderboards (Stat) and the
+ *  competition bracket (Match Chart). */
+type TabKey = 'overview' | 'matches' | 'standings' | 'players' | 'stats' | 'chart';
+
+/** Tech Stat paints two tables — the squad browser and the club averages. */
+type TechKey = 'player' | 'team';
 
 /** DOM id of a fixture bucket — the auto-focus scroll target. Index-based so a
  *  label with spaces/pipes (\"|Round 1|\") can never produce a bad selector. */
@@ -298,15 +305,18 @@ function StandingsTable({
     </div>
   );
 }
+
 /** Competition (league) detail page body.
  *
- * Opens four /api/league/* endpoints (all signed with code 200 / DT_LEAGUE):
- * the header detail, the season list, the fixtures and the standings table.
- * Only the visible tab actually fetches — switching to Standings fires the
- * standings request then, not on mount — so opening the page costs three
- * upstream calls and a tab switch adds one. The Players and Statistics tabs
- * share the player-totals endpoint (one browser, one set of leaderboards), so
- * whichever is opened first pays for it and the other reuses the cache. */
+ * Opens /api/league/* endpoints (all signed with code 200 / DT_LEAGUE): the
+ * header detail, the season list, the fixtures, the standings table, the player
+ * totals and — for the Tech Stat tab's Team half — the club totals. Only the
+ * visible tab actually fetches (switching to Standing fires the standings
+ * request then, not on mount), so opening the page costs three upstream calls
+ * and a tab switch adds one. The league-payload tabs share endpoints: the
+ * Players and Stat tabs share the player-totals call (one browser, one set of
+ * leaderboards) and the Match Chart tab rebuilds its bracket from the fixtures
+ * the Schedule already pays for. */
 export function CompetitionPageContent({
   leagueId,
   sportType,
@@ -319,6 +329,8 @@ export function CompetitionPageContent({
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<TabKey>('overview');
+  /** Which half of Tech Stat is on screen — the squad or the clubs. */
+  const [techTab, setTechTab] = useState<TechKey>('player');
   const [season, setSeason] = useState(seasonId ?? '');
 
   // The detail call also answers without a seasonId (it falls back to the
@@ -344,7 +356,8 @@ export function CompetitionPageContent({
     leagueId,
     sportType,
     seasonId: resolvedSeason,
-    enabled: (tab === 'overview' || tab === 'matches') && Boolean(resolvedSeason),
+    enabled:
+      (tab === 'overview' || tab === 'matches' || tab === 'chart') && Boolean(resolvedSeason),
   });
   const standingsQuery = useLeagueStandings({
     leagueId,
@@ -361,11 +374,21 @@ export function CompetitionPageContent({
     seasonId: resolvedSeason,
     enabled: (tab === 'players' || tab === 'stats') && Boolean(resolvedSeason),
   });
+  /** Club totals are the Team half of Tech Stat — a far smaller payload than the
+   *  player list, but season-scoped all the same (no seasonId = HTTP 499), so it
+   *  waits for the same gate. */
+  const teamTotalsQuery = useLeagueTeamTotals({
+    leagueId,
+    sportType,
+    seasonId: resolvedSeason,
+    enabled: tab === 'players' && Boolean(resolvedSeason),
+  });
 
   const extra = detail?.extra;
   const matches = useMemo(() => matchesQuery.data ?? [], [matchesQuery.data]);
   const standings = standingsQuery.data;
   const totals = totalsQuery.data;
+  const teamTotals = teamTotalsQuery.data;
   /** Roster size for the Players tab bubble — the payload's own player list when
    *  it ships one, otherwise the row count. */
   const playerCount = useMemo(() => {
@@ -374,6 +397,14 @@ export function CompetitionPageContent({
     return known > 0 ? known : totals.rows.length;
   }, [totals]);
   const fixtureGroups = useMemo(() => groupFixtures(matches), [matches]);
+  /** The Match Chart tab's bracket — derived from the same fixtures, so it costs
+   *  no extra request. The page owns the memo so the pill's tie count and the
+   *  grid the body paints can never disagree. */
+  const bracket = useMemo(() => buildBracket(matches), [matches]);
+  const bracketTies = useMemo(
+    () => bracket.reduce((n, round) => n + round.ties.length, 0),
+    [bracket]
+  );
 
   /* ---------- fixtures: land straight on the nearest kick-off ----------
    * `now` is filled in AFTER mount: a clock read during render would let the
@@ -432,7 +463,8 @@ export function CompetitionPageContent({
     seasonsQuery.isFetching ||
     matchesQuery.isFetching ||
     standingsQuery.isFetching ||
-    totalsQuery.isFetching;
+    totalsQuery.isFetching ||
+    teamTotalsQuery.isFetching;
 
   const refresh = (): void => {
     void detailQuery.refetch();
@@ -440,6 +472,7 @@ export function CompetitionPageContent({
     void matchesQuery.refetch();
     void standingsQuery.refetch();
     void totalsQuery.refetch();
+    void teamTotalsQuery.refetch();
   };
 
   /** Open a fixture — the row and the overview both land on the watch page. */
@@ -478,7 +511,6 @@ export function CompetitionPageContent({
       label: 'Cards',
       value: `${extra.yellowCards ?? '0'}Y · ${extra.redCards ?? '0'}R`,
     });
-
 
   return (
     <>
@@ -603,8 +635,9 @@ export function CompetitionPageContent({
         </section>
       )}
 
-      {/* 3. Tabs — the overview, the fixtures, the table, the squads and the
-          player leaderboards. */}
+      {/* 3. Tabs — the overview snapshot, the fixtures (Schedule), the table
+          (Standing), the squad + club statistics (Tech Stat), the leaderboards
+          (Stat) and the competition bracket (Match Chart). */}
       <section
         className="mb-4 flex flex-nowrap items-center gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="tablist"
@@ -613,24 +646,38 @@ export function CompetitionPageContent({
           Overview
         </TabButton>
         <TabButton active={tab === 'matches'} onClick={() => setTab('matches')}>
-          Matches
+          Schedule
           {matchesQuery.data && <TabCount active={tab === 'matches'} value={matches.length} />}
         </TabButton>
         <TabButton active={tab === 'standings'} onClick={() => setTab('standings')}>
-          Standings
+          Standing
           {standings && standings.rows.length > 0 && (
             <TabCount active={tab === 'standings'} value={standings.rows.length} />
           )}
         </TabButton>
         <TabButton active={tab === 'players'} onClick={() => setTab('players')}>
-          Players
-          {playerCount > 0 && <TabCount active={tab === 'players'} value={playerCount} />}
+          Tech Stat
+          {/* The bubble counts whichever half of the tab is selected, so the pill
+              never promises a table the payload does not carry. */}
+          {techTab === 'team'
+            ? teamTotals &&
+              teamTotals.rows.length > 0 && (
+                <TabCount active={tab === 'players'} value={teamTotals.rows.length} />
+              )
+            : playerCount > 0 && <TabCount active={tab === 'players'} value={playerCount} />}
         </TabButton>
         <TabButton active={tab === 'stats'} onClick={() => setTab('stats')}>
-          Statistics
+          Stat
           {totals && totals.rows.length > 0 && (
             <TabCount active={tab === 'stats'} value={totals.rows.length} />
           )}
+        </TabButton>
+        <TabButton active={tab === 'chart'} onClick={() => setTab('chart')}>
+          Match Chart
+          {/* The bubble counts the TIES of the bracket, not the season's
+              fixtures: a league has no bracket at all, so the pill carries no
+              number there rather than a fixture count it cannot show. */}
+          {bracketTies > 0 && <TabCount active={tab === 'chart'} value={bracketTies} />}
         </TabButton>
         <button
           type="button"
@@ -709,20 +756,60 @@ export function CompetitionPageContent({
         )}
 
         {tab === 'players' && (
-          <TabState
-            loading={!resolvedSeason || totalsQuery.isLoading}
-            error={message(totalsQuery.error)}
-            // An empty roster renders CompetitionPlayers' own message.
-            empty={false}
-          >
-            {totals && (
-              <CompetitionPlayers
-                totals={totals}
-                sportType={sportType}
-                seasonLabel={activeSeason ? seasonName(activeSeason) : ''}
-              />
+          <>
+            {/* Tech Stat carries two tables — the squad browser and the club
+                averages — so a second pill row picks which one is painted. */}
+            <div
+              className="mb-3.5 flex flex-wrap items-center gap-2"
+              role="tablist"
+              aria-label="Tech Stat view"
+            >
+              <TabButton active={techTab === 'player'} onClick={() => setTechTab('player')}>
+                Player
+                {playerCount > 0 && (
+                  <TabCount active={techTab === 'player'} value={playerCount} />
+                )}
+              </TabButton>
+              <TabButton active={techTab === 'team'} onClick={() => setTechTab('team')}>
+                Team
+                {teamTotals && teamTotals.rows.length > 0 && (
+                  <TabCount active={techTab === 'team'} value={teamTotals.rows.length} />
+                )}
+              </TabButton>
+            </div>
+
+            {techTab === 'player' ? (
+              <TabState
+                loading={!resolvedSeason || totalsQuery.isLoading}
+                error={message(totalsQuery.error)}
+                // An empty roster renders CompetitionPlayers' own message.
+                empty={false}
+              >
+                {totals && (
+                  <CompetitionPlayers
+                    totals={totals}
+                    sportType={sportType}
+                    seasonLabel={activeSeason ? seasonName(activeSeason) : ''}
+                  />
+                )}
+              </TabState>
+            ) : (
+              <TabState
+                loading={!resolvedSeason || teamTotalsQuery.isLoading}
+                error={message(teamTotalsQuery.error)}
+                // An empty payload renders CompetitionTeamStats' own message.
+                empty={false}
+              >
+                {teamTotals && (
+                  <CompetitionTeamStats
+                    totals={teamTotals}
+                    sportType={sportType}
+                    seasonLabel={activeSeason ? seasonName(activeSeason) : ''}
+                  />
+                )}
+              </TabState>
             )}
-          </TabState>
+          </>
         )}
 
         {tab === 'stats' && (
@@ -733,6 +820,24 @@ export function CompetitionPageContent({
             empty={false}
           >
             {totals && <CompetitionStats totals={totals} sportType={sportType} />}
+          </TabState>
+        )}
+
+        {tab === 'chart' && (
+          <TabState
+            // The bracket is rebuilt from the season fixtures the Schedule tab
+            // shares, so its own loading/error is that query's.
+            loading={!resolvedSeason || matchesQuery.isLoading}
+            error={message(matchesQuery.error)}
+            // An empty fixture list renders CompetitionBracket's own message.
+            empty={false}
+          >
+            <CompetitionBracket
+              rounds={bracket}
+              sportType={sportType}
+              seasonLabel={activeSeason ? seasonName(activeSeason) : ''}
+              onOpenMatch={openMatch}
+            />
           </TabState>
         )}
       </section>

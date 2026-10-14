@@ -10,11 +10,13 @@ import {
   getMatchLineup as apiGetMatchLineup,
   getMatchEvent as apiGetMatchEvent,
   getMatchStatistic as apiGetMatchStatistic,
+  getMatchTrend as apiGetMatchTrend,
   getLeagueDetail as apiGetLeagueDetail,
   getLeagueMatchList as apiGetLeagueMatchList,
   getLeagueSeasonList as apiGetLeagueSeasonList,
   getLeagueTeamStandingList as apiGetLeagueTeamStandingList,
   getLeaguePlayerTotalList as apiGetLeaguePlayerTotalList,
+  getLeagueTeamTotalList as apiGetLeagueTeamTotalList,
   getStreamDetailFull,
 } from '@/lib/api';
 import {
@@ -26,6 +28,7 @@ import {
   decodeMatchLineupResp,
   decodeMatchEventResp,
   decodeMatchStatisticResp,
+  decodeMatchTrendResp,
   decodeDataStream,
   isLiveStatus,
 } from '@/lib/matchProto';
@@ -37,6 +40,7 @@ import {
   decodeLeagueSeasonListResp,
   decodeLeagueTeamStandingListResp,
   decodeLeaguePlayerTotalListResp,
+  decodeLeagueTeamTotalListResp,
 } from '@/lib/leagueProto';
 import { SPORTS } from '@/lib/sports';
 import {
@@ -51,7 +55,7 @@ import {
   attachMatchLineupPlayerIds,
 } from '@/lib/goalooSquad';
 import { DEFAULT_CONTINENT, DEFAULT_COUNTRY, DEFAULT_SITE_TYPE } from '@/lib/config';
-import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchList, MatchSource, Stream, LeagueDetail, LeaguePlayerTotals, LeagueSeason, LeagueStandings } from '@/lib/types';
+import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchTrend, MatchList, MatchSource, Stream, LeagueDetail, LeaguePlayerTotals, LeagueTeamTotals, LeagueSeason, LeagueStandings, TeamStanding } from '@/lib/types';
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -105,7 +109,7 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
 }
 
 /** Endpoint codes whose version signatures the match family needs: 100 = live
- *  list, 102 = detail, 104-107 = statistics/event/lineup/analysis. */
+ *  list, 102 = detail/trend, 104-107 = statistics/event/lineup/analysis. */
 const SIG_CODES = [100, 102, 104, 105, 106, 107] as const;
 
 async function ensureSignatures(sportType: number): Promise<Record<number, string>> {
@@ -391,6 +395,29 @@ export async function getMatchStatistic(
   }
 }
 
+/** Match momentum trend (endpoint code 102 — the detail's own signature): the
+ *  per-minute series the Match Chart draws plus the goal/card markers it
+ *  annotates. The values are float32, which is why the decoder walks the
+ *  payload with the float-aware field iterator (see lib/proto). */
+export async function getMatchTrend(
+  { matchId, sportType = 1, language = 0 }: MatchDetailParams
+): Promise<Result<MatchTrend>> {
+  try {
+    const s = await ensureSignatures(sportType);
+    const args = {
+      version: s[102],
+      matchId: num(matchId),
+      sportType: num(sportType),
+      language: num(language),
+    };
+    const r = await apiGetMatchTrend(args);
+    const data = r.pb?.data ?? r.payload;
+    return { ok: true, data: decodeMatchTrendResp(data) };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+
 export interface StreamUrlParams {
   matchId: string | number;
   streamId: number;
@@ -516,6 +543,40 @@ export async function getLeagueSeasons(
   }
 }
 
+/** The table's own order: points, then goal difference, then goals scored.
+ *
+ *  The payload's row order is ARBITRARY — the live Premier League table listed a
+ *  3-point side above a 10-point one — while every consumer paints `rows[0..]`
+ *  as the table (the Standing tab numbers its `#` column by position and the
+ *  overview shows `slice(0, 5)`), so the order is settled here, once.
+ *
+ *  Rows are ordered WITHIN their group only, written back into the positions the
+ *  group already occupied: a competition whose table is split into groups/stages
+ *  keeps the feed's own group sequence (the Standing tab buckets by `groupName`,
+ *  and grouping is first-appearance order), while a single-table competition —
+ *  every row sharing one key — is simply ordered end to end. `Array#sort` is
+ *  stable and every tie-breaker is a real column, so a season that has not
+ *  kicked off yet (all zeros) keeps the feed's order untouched. */
+function sortStandings(rows: TeamStanding[]): void {
+  const byRank = (a: TeamStanding, b: TeamStanding): number =>
+    (b.points ?? 0) - (a.points ?? 0) ||
+    (b.goals ?? 0) - (b.goalsAgainst ?? 0) - ((a.goals ?? 0) - (a.goalsAgainst ?? 0)) ||
+    (b.goals ?? 0) - (a.goals ?? 0);
+  const slots = new Map<string, number[]>();
+  rows.forEach((row, i) => {
+    const key = row.groupName || '';
+    const at = slots.get(key);
+    if (at) at.push(i);
+    else slots.set(key, [i]);
+  });
+  for (const at of slots.values()) {
+    const sorted = at.map((i) => rows[i]).sort(byRank);
+    at.forEach((i, j) => {
+      rows[i] = sorted[j];
+    });
+  }
+}
+
 /** Competition standings (table rows + the teams/promotion bands they point at). */
 export async function getLeagueStandings(
   { leagueId, sportType = 1, language = 0, seasonId }: LeagueParams
@@ -534,6 +595,7 @@ export async function getLeagueStandings(
           seasonId: seasonId ? num(seasonId) : undefined,
         });
         const standings = decodeLeagueTeamStandingListResp(r.pb?.data ?? r.payload, num(language));
+        sortStandings(standings.rows);
         // The table's own team list (`teams`) is what every row's crest and
         // name are read from, so it is where the club links are attached.
         attachTeamClubIds(Object.values(standings.teams), num(sportType));
@@ -572,6 +634,41 @@ export async function getLeaguePlayerTotals(
         // first, then hand the whole table to the player bridge.
         attachTeamClubIds(Object.values(totals.teams), num(sportType));
         await attachLeaguePlayerIds(totals, num(sportType));
+        return totals;
+      }
+    );
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+
+/** Competition team statistics — the "Team" half of the Tech Stat tab (goals,
+ *  possession, shots, cards, per-game rates). Same payload class and TTL as the
+ *  player totals, so flipping between the two subtabs costs one upstream call
+ *  per season, not one per flip. */
+export async function getLeagueTeamTotals(
+  { leagueId, sportType = 1, language = 0, seasonId }: LeagueParams
+): Promise<Result<LeagueTeamTotals>> {
+  try {
+    const data = await withCache<LeagueTeamTotals>(
+      `league:team-totals:${num(leagueId)}:${num(sportType)}:${num(language)}:${num(seasonId)}`,
+      60_000,
+      async () => {
+        const version = await ensureLeagueSignature(sportType);
+        const r = await apiGetLeagueTeamTotalList({
+          version,
+          leagueId: num(leagueId),
+          sportType: num(sportType),
+          language: num(language),
+          seasonId: seasonId ? num(seasonId) : undefined,
+        });
+        if (r.pb?.code) throw new Error(r.pb.message || `upstream code ${r.pb.code}`);
+        const totals = decodeLeagueTeamTotalListResp(r.pb?.data ?? r.payload, num(language));
+        // Same club bridge as the standings and the player totals: the rows and
+        // the club list they ship share teamIds, and the bridge is what makes a
+        // crest link to its club page.
+        attachTeamClubIds(Object.values(totals.teams), num(sportType));
         return totals;
       }
     );

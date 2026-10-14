@@ -26,9 +26,9 @@
 //   PBMatchVS: 1=home(PBTeam), 2=away(PBTeam), 10=name
 //   PBTeam:    2=name, 3=logo, 4=score
 
-import { iterFields } from './proto';
+import { iterFields, iterFieldsAll, numberValue } from './proto';
 import { countryLogoUrl, teamLogoUrl } from './logos';
-import type { Team, League, Contender, Match, Stream, MatchDetail, MatchAnalysis, H2HSummary, MatchOutcome, LineupPlayer, MatchLineup, MatchEvent, MatchEvents, MatchStat, MatchStats, LeagueSeason, LeagueStage } from './types';
+import type { Team, League, Contender, Match, Stream, MatchDetail, MatchAnalysis, H2HSummary, MatchOutcome, LineupPlayer, MatchLineup, MatchEvent, MatchEvents, MatchStat, MatchStats, MatchTrend, TrendPoint, TrendEvent, LeagueSeason, LeagueStage } from './types';
 
 const dec = new TextDecoder('utf-8', { fatal: false });
 /** Decode a length-delimited field. Never throws on varint input (returns ''). */
@@ -779,6 +779,99 @@ export function computeH2HSummary(h2h: Match[], ref: Team | undefined): H2HSumma
     drawPct: pct(draws),
     lossPct: pct(losses),
   };
+}
+
+/* ---------- match momentum trend (code 102, same signature as the detail) ----
+ * PBMatchTrendResp: 1 = PBDataMatchTrend
+ * PBDataMatchTrend: 1 = a nested PBDataMatchTrend carrying 1 = matchId,
+ *                   10 = ONE PBDataMatchTrendPeriodList, 11 = repeated
+ *                   PBDataMatchTrendEvent
+ * PBDataMatchTrendPeriodList: 1 = repeated PBDataMatchTrendPeriod
+ * PBDataMatchTrendPeriod: 1 = minute (string), 2 = value (float32)
+ * PBDataMatchTrendEvent:  1 = minute (string), 2 = eventType, 3 = side, 4 = flag
+ * (Dumped field by field from the live response of a finished match: the
+ * 1012-byte field 10 above holds 96 child periods, so the list is one level
+ * deeper than a flat reading suggests — see `decodeTrendPeriods`.)
+ * The value is a SIGNED momentum number — positive = the home side on top,
+ * negative = the away side — and it arrives as a float32, which plain
+ * {@link iterFields} skips, so this decoder walks with `iterFieldsAll`. */
+
+/** Minute field of a trend entry: the feed spells it as a string, but a number
+ *  (either the signed or the varint shape) is accepted as well. */
+const trendMinute = (b: number | Uint8Array): number | undefined => {
+  const n = typeof b === 'number' ? b : Number(dec.decode(b as Uint8Array));
+  return Number.isFinite(n) ? n : undefined;
+};
+
+/** One period (minute) of the trend. A period always carries BOTH a minute and
+ *  its momentum value; anything less (e.g. the list wrapper of field 10, which
+ *  only holds children) is not a period and is rejected here so the caller can
+ *  descend into it. */
+function decodeDataMatchTrendPeriod(buf: Uint8Array): TrendPoint | undefined {
+  let minute: number | undefined;
+  let value: number | undefined;
+  for (const f of iterFieldsAll(buf)) {
+    if (f.field === 1) minute = trendMinute(f.value);
+    else if (f.field === 2 && typeof f.value === 'number') value = f.value;
+  }
+  return minute === undefined || value === undefined ? undefined : { minute, value };
+}
+
+/** Descend field 10 (PBDataMatchTrendPeriodList) down to its periods. The
+ *  children sit at field 1, but the walk keys off the SHAPE rather than the
+ *  number: a message that itself spells out minute+value IS a period, anything
+ *  else is a wrapper to open, so a flat list and a packed one both chart. */
+function decodeTrendPeriods(buf: Uint8Array, out: TrendPoint[], depth: number): void {
+  const own = decodeDataMatchTrendPeriod(buf);
+  if (own) {
+    out.push(own);
+    return;
+  }
+  if (depth >= 2) return;
+  for (const f of iterFieldsAll(buf)) {
+    if (f.wire === 2) decodeTrendPeriods(f.value as Uint8Array, out, depth + 1);
+  }
+}
+
+/** One event marker. Every field here is an integer/string, so the plain
+ *  iterator reads it (the float walker is only needed for the periods). */
+function decodeDataMatchTrendEvent(buf: Uint8Array): TrendEvent | undefined {
+  let minute: number | undefined;
+  let eventType: number | undefined;
+  let side: number | undefined;
+  for (const f of iterFields(buf)) {
+    if (f.field === 1) minute = trendMinute(f.value);
+    else if (f.field === 2) eventType = f.value as number;
+    else if (f.field === 3) side = f.value as number;
+  }
+  return minute === undefined ? undefined : { minute, eventType, side };
+}
+
+/** One PBDataMatchTrend body: 1 = the id (sometimes one message deeper),
+ *  10 = the period list, 11 = the event markers. */
+function decodeTrendBody(buf: Uint8Array, out: MatchTrend): void {
+  for (const f of iterFieldsAll(buf)) {
+    if (f.field === 1) {
+      if (f.wire === 0) out.matchId ??= numberValue(f.value);
+      // The id itself arrives wrapped in a tiny one-field message here.
+      else if (f.wire === 2) decodeTrendBody(f.value as Uint8Array, out);
+    } else if (f.field === 10 && f.wire === 2) {
+      decodeTrendPeriods(f.value as Uint8Array, out.points, 0);
+    } else if (f.field === 11 && f.wire === 2) {
+      const e = decodeDataMatchTrendEvent(f.value as Uint8Array);
+      if (e) out.events.push(e);
+    }
+  }
+}
+
+/** PBMatchTrendResp → the momentum series plus its event markers. */
+export function decodeMatchTrendResp(payload: Uint8Array): MatchTrend {
+  const out: MatchTrend = { points: [], events: [] };
+  for (const f of iterFields(payload)) {
+    if (f.field !== 1 || f.wire !== 2) continue;
+    decodeTrendBody(f.value as Uint8Array, out);
+  }
+  return out;
 }
 
 

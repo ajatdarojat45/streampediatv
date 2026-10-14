@@ -196,6 +196,38 @@ export interface MatchStat {
 /** Match statistics payload (PBMatchStatisticResp, code 104): 1 = repeated PBDataMatchStatistic. */
 export type MatchStats = MatchStat[];
 
+/** One minute of the momentum trend (PBDataMatchTrendPeriod): 1 = minute
+ *  (string), 2 = value (float32). */
+export interface TrendPoint {
+  /** Match minute as a number. The feed spells it as a string ("34"). */
+  minute: number;
+  /** Signed momentum: POSITIVE = the home side is on top, NEGATIVE = the away
+   *  side (verified against the goal events of finished matches). A proto3 zero
+   *  is not written to the wire at all, so a missing value reads 0. */
+  value: number;
+}
+
+/** One incident the momentum chart anchors a marker to
+ *  (PBDataMatchTrendEvent): 1 = minute (string), 2 = eventType (the same
+ *  PBMatchEventType codes the event feed uses, 101/102/103 = goals), 3 = side
+ *  (1 = home, 2 = away) and 4 = a flag the feed sets to 1 on the markers it
+ *  ships. `eventType`/`side` stay optional: a match-phase entry (kick-off, half
+ *  time) carries neither, and the chart draws those centred. */
+export interface TrendEvent {
+  minute: number;
+  eventType?: number;
+  side?: number;
+}
+
+/** Match momentum trend — /api/match/trend (endpoint code 102, the same
+ *  signature the match detail uses). `points` walk the match in order, one
+ *  entry per minute; `events` carries the goals/cards the chart marks. */
+export interface MatchTrend {
+  matchId?: number;
+  points: TrendPoint[];
+  events: TrendEvent[];
+}
+
 /* ---------- competition (league) family ----------
  * Backed by the /api/league/* endpoints (data.proto → league/*.proto). All of
  * them are signed with the SAME endpoint signature: DT_LEAGUE (code 200). */
@@ -335,6 +367,39 @@ export interface LeaguePlayerTotals {
   rows: PlayerTotal[];
   /** playerId → player (name + avatar). */
   players: Record<number, Team>;
+  /** teamId → team (name + crest). */
+  teams: Record<number, Team>;
+}
+
+/** One team's competition totals (PBDataTeamTotal). The same sparse shape as
+ *  PlayerTotal: a counter the team never recorded is omitted, and the UI reads
+ *  a missing count as 0. */
+export interface TeamTotal {
+  teamId?: number;
+  goals?: number;
+  goalsConceded?: number;
+  /** Share of the ball the team held, as a percent string (e.g. "46.0"). */
+  ballPossession?: string;
+  shotsPerGame?: string;
+  penaltiesWon?: string;
+  accuratePassesPerGame?: string;
+  keyPassesPerGame?: string;
+  accurateLongBallsPerGame?: string;
+  accurateCrossesPerGame?: string;
+  interceptionsPerGame?: string;
+  clearancesPerGame?: string;
+  blockedShotsPerGame?: string;
+  turnoversPerGame?: string;
+  foulsPerGame?: string;
+  yellowCards?: number;
+  redCards?: number;
+}
+
+/** Competition team statistics — /api/league/team/total/list, code 200. Like
+ *  the player totals it ships its own club list, so a row draws its crest with
+ *  no extra request. */
+export interface LeagueTeamTotals {
+  rows: TeamTotal[];
   /** teamId → team (name + crest). */
   teams: Record<number, Team>;
 }
