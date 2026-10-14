@@ -6,6 +6,8 @@ import { Flame } from 'lucide-react';
 import { statusLabel, isLiveStatus, isStarted, matchLabel } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
 import { ClubLink } from '@/components/ClubLink';
+import { GoalooLogo } from '@/components/GoalooLogo';
+import { goalooCompetitionLogoUrl, goalooMiniTeamLogoUrl } from '@/lib/goaloo';
 import { countryLogoUrl, teamLogoUrl } from '@/lib/logos';
 import { sportColor, sportLabel, sportIsScoring, leagueHref } from '@/lib/sports';
 import type { Match, Team } from '@/lib/types';
@@ -29,6 +31,39 @@ const LOGO_IMG = 'shrink-0 object-contain';
 /** `.logo-empty` — the initial-letter placeholder variant. */
 const LOGO_EMPTY =
   'inline-flex shrink-0 items-center justify-center bg-[#e8eaed] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft';
+
+/**
+ * How a card resolves the crests of the clubs it draws.
+ *
+ * `rblink` (the default, and what every Rblink feed gets): the row publishes a
+ * logo filename, which lib/logos maps onto the current logo host.
+ *
+ * `goaloo`: the clubs travel as Goaloo ids with no filename at all (the club and
+ * player feeds), so the card draws the feed's own by-id crest
+ * (`/mini/fbteam/<id>.png`) through `GoalooLogo` instead — the same crest the
+ * club page prints for an id-only counterparty. Passed as a plain string so a
+ * server page can hand it to this client card across the RSC boundary.
+ */
+export type MatchCrest = 'rblink' | 'goaloo';
+
+/** One club's crest, in whichever vocabulary its payload speaks. Both paths land
+ *  on the card's own 24px size, so the two feeds draw identical rows. */
+function Crest({
+  team,
+  sportType,
+  crest = 'rblink',
+}: {
+  team: Team;
+  sportType?: number;
+  crest?: MatchCrest;
+}) {
+  if (crest === 'goaloo') {
+    return (
+      <GoalooLogo src={goalooMiniTeamLogoUrl(team.teamId ?? 0)} name={team.name ?? ''} size="sm" />
+    );
+  }
+  return <TeamLogo path={team.logo} name={team.name} sportType={sportType} size="rowTeam" />;
+}
 
 /** `.row-team-side` (+ `.row-team > span` / `.detail-team > span` ellipsis). */
 const TEAM_SIDE =
@@ -64,30 +99,79 @@ function LiveLabel() {
   );
 }
 
-/** The `sport · league` line of a card. When `href` is set (only the watch-page
- *  head passes one — see `CardContent`) the line is a link into the competition
- *  page, so a match can be traced back up to its league/standings. List rows
- *  keep it plain text: the row already navigates to the match itself, and the
- *  league's own link sits on the group header above the cards. */
-function LeagueLine({
+/** The competition's crest, in whichever vocabulary the card's payload speaks.
+ *  The Rblink feed publishes a filename for the current logo host (drawn by
+ *  `TeamLogo`'s `league` variant); the Goaloo feeds publish a catalogue path on
+ *  the Goaloo CDN, which that host would not serve — the very split the club
+ *  crests make, hence the same `crest` switch (see {@link MatchCrest}). */
+function LeagueCrest({
+  logo,
+  name,
+  crest,
+}: {
+  logo?: string;
+  name: string;
+  crest?: MatchCrest;
+}) {
+  if (crest === 'goaloo') {
+    return <GoalooLogo src={goalooCompetitionLogoUrl(logo)} name={name} size="xs" />;
+  }
+  return <TeamLogo path={logo} name={name} kind="league" size="league" />;
+}
+
+/** The `sport · league` line of a card, crest and all, as one element: the two
+ *  halves always travel together, so a long competition name never pushes the
+ *  crest away from it. When `href` is set the whole badge — crest included — is a
+ *  link into the competition page, so a match can be traced back up to its
+ *  league/standings.
+ *
+ *  The watch-page head passes one, and so does every link card
+ *  (`MatchLinkCard`): such a row navigates to the match itself through an overlay
+ *  `<a>` that sits *beside* the card body, so the links inside that body (the two
+ *  clubs, this badge) are siblings of the row's own target rather than nested
+ *  inside it. A button row keeps the badge plain text — a `<button>` cannot host
+ *  an `<a>`, and there the league's own link sits on the group header above the
+ *  cards. */
+function LeagueBadge({
   href,
+  logo,
+  crest,
   name,
   className,
   children,
 }: {
   href: string;
+  logo?: string;
+  crest?: MatchCrest;
   name: string;
+  /** Layout of the badge row: the gap between crest and text, plus whatever
+   *  truncation the card needs for a long competition name. */
   className: string;
   children: ReactNode;
 }) {
-  if (!href) return <span className={className}>{children}</span>;
+  const body = (
+    <>
+      <LeagueCrest logo={logo} name={name} crest={crest} />
+      <span className="min-w-0 truncate">{children}</span>
+    </>
+  );
+  /** `relative z-10` is what makes the link reachable at all: a link card's
+   *  row-wide target is an absolutely positioned overlay that comes *later* in the
+   *  document, so it paints — and hit-tests — on top of everything static in the
+   *  body. Without the lift the badge is dead: a click on the crest or the name
+   *  lands on the overlay and opens the match instead of the competition. This is
+   *  the same move `ClubLink` makes for the clubs beside it; `relative` changes no
+   *  geometry, and the plain-text variant carries it too so the two render
+   *  identically. */
+  const shell = `relative z-10 inline-flex min-w-0 items-center ${className}`;
+  if (!href) return <span className={shell}>{body}</span>;
   return (
     <Link
       href={href}
       title={`${name} — fixtures, results & standings`}
-      className={`${className} no-underline transition-colors hover:text-accent hover:underline`}
+      className={`${shell} no-underline transition-colors hover:text-accent hover:underline`}
     >
-      {children}
+      {body}
     </Link>
   );
 }
@@ -172,13 +256,14 @@ export function TeamLogo({
 function TeamSide({
   teams,
   sportType,
-  size = 'rowTeam',
   align = 'away',
+  crest,
 }: {
   teams?: Team[];
   sportType?: number;
-  size?: LogoSize;
   align?: 'home' | 'away';
+  /** Which crest vocabulary the clubs speak — see {@link MatchCrest}. */
+  crest?: MatchCrest;
 }) {
   const list = teams?.length ? teams : [];
   if (!list.length) return <span className={TEAM_NAME}>{'?'}</span>;
@@ -199,11 +284,11 @@ function TeamSide({
             {align === 'home' ? (
               <>
                 <span className={TEAM_NAME}>{t.name || '?'}</span>
-                <TeamLogo path={t.logo} name={t.name} sportType={sportType} size={size} />
+                <Crest team={t} sportType={sportType} crest={crest} />
               </>
             ) : (
               <>
-                <TeamLogo path={t.logo} name={t.name} sportType={sportType} size={size} />
+                <Crest team={t} sportType={sportType} crest={crest} />
                 <span className={TEAM_NAME}>{t.name || '?'}</span>
               </>
             )}
@@ -286,12 +371,26 @@ interface MatchHeadProps {
   className?: string;
 }
 
-/** Card body shared by the list rows (`MatchRow`) and the watch-page head
- *  (`MatchHead`): league line, versus grid and the state/date line.
- *  `heading` swaps the wrappers to `div`/`h1`, because the watch page promotes
- *  the versus grid to the page `<h1>`, while a row lives inside a `<button>`
- *  (phrasing content only, hence `span`). */
-function CardContent({ match, heading = false }: { match: Match; heading?: boolean }) {
+/** Card body shared by the list rows (`MatchRow`, `MatchLinkCard`) and the
+ *  watch-page head (`MatchHead`): league line, versus grid and the state/date
+ *  line. `heading` swaps the wrappers to `div`/`h1`, because the watch page
+ *  promotes the versus grid to the page `<h1>`, while a row lives inside a
+ *  `<button>` (phrasing content only, hence `span`). `crest` picks the crest
+ *  vocabulary of the clubs — see {@link MatchCrest}. */
+function CardContent({
+  match,
+  heading = false,
+  crest,
+  leagueLink = false,
+}: {
+  match: Match;
+  heading?: boolean;
+  crest?: MatchCrest;
+  /** Whether the league badge may carry a link of its own — set by the cards
+   *  whose body sits beside the row-wide target instead of inside it (see
+   *  `LeagueBadge`); a button row leaves it off. */
+  leagueLink?: boolean;
+}) {
   const live = isLiveStatus(match.status);
   // Live/finished → missing score shown as 0; upcoming → shown as "-".
   const started = isStarted(match.status);
@@ -300,9 +399,12 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
   const eventName = match.title || match.name || match.league?.name || '—';
   const sportName = sportLabel(match.sportType);
   const scoring = sportIsScoring(match.sportType);
-  /** Competition page for this match — only on the watch-page head (`heading`),
-   *  which is a read-only `div` card. A list row can't host it (nested link). */
-  const compHref = heading ? leagueHref(match.league?.leagueId, match.sportType) : '';
+  /** Competition page for this match: the watch-page head (`heading`, a
+   *  read-only `div` card) and every link card (`leagueLink`) draw one, because
+   *  their bodies sit beside their row-wide target instead of inside it. A
+   *  button row cannot host an `<a>`, so its badge stays plain text. */
+  const compHref =
+    heading || leagueLink ? leagueHref(match.league?.leagueId, match.sportType) : '';
   const Box = heading ? 'div' : 'span';
   const Grid = heading ? 'h1' : 'span';
   /** Explicit `m-0` on the `<h1>` variants, mirroring the h1 resets used
@@ -320,21 +422,22 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
               league group header is scrolled off-screen. */}
           <Box className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
               {match.hot && <Flame className="h-3.5 w-3.5 shrink-0 text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]" />}
-              <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
-              <LeagueLine
+              <LeagueBadge
                 href={compHref}
+                logo={match.league?.logo}
+                crest={crest}
                 name={league}
-                className="min-w-0 max-w-[260px] truncate"
+                className="max-w-[260px] gap-1"
               >
                 {sportName}
                 {' · '}
                 {league}
-              </LeagueLine>
+              </LeagueBadge>
               {live && <LiveLabel />}
           </Box>
           <Grid className={`${reset}grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-2.5`}>
             <span className="flex min-w-0 justify-end">
-              <TeamSide teams={match.homeTeams?.length ? match.homeTeams : match.home ? [match.home] : []} sportType={match.sportType} align="home" />
+              <TeamSide teams={match.homeTeams?.length ? match.homeTeams : match.home ? [match.home] : []} sportType={match.sportType} align="home" crest={crest} />
             </span>
             <span className="flex min-w-[72px] items-center justify-center px-1">
               {started ? (
@@ -344,7 +447,7 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
               )}
             </span>
             <span className="flex min-w-0">
-              <TeamSide teams={match.awayTeams?.length ? match.awayTeams : match.away ? [match.away] : []} sportType={match.sportType} align="away" />
+              <TeamSide teams={match.awayTeams?.length ? match.awayTeams : match.away ? [match.away] : []} sportType={match.sportType} align="away" crest={crest} />
             </span>
           </Grid>
           <span className="mt-2 flex justify-center">
@@ -358,12 +461,17 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
       ) : (
         <Box className="flex min-w-0 flex-col gap-1">
           <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-muted">
-            <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
-            <LeagueLine href={compHref} name={league} className="truncate">
+            <LeagueBadge
+              href={compHref}
+              logo={match.league?.logo}
+              crest={crest}
+              name={league}
+              className="gap-1.5"
+            >
               {sportName}
               {' · '}
               {league}
-            </LeagueLine>
+            </LeagueBadge>
             {live && <LiveLabel />}
           </span>
           <Grid className={`${reset}truncate text-[15px] font-bold`} title={eventName}>{eventName}</Grid>
@@ -378,22 +486,89 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
   );
 }
 
-export function MatchRow({ match, onClick }: MatchRowProps) {
+/** The list-row shell: the state-coloured chrome every match card is drawn on,
+ *  its body (`CardContent`) and whatever the caller lays on top of it — the
+ *  row-wide navigation overlay, plus any extra card rows of its own. The states
+ *  are the sport category's: a live match paints every border, a finished one
+ *  keeps a muted gray left accent, an upcoming one the sport's own accent. */
+function RowShell({
+  match,
+  crest,
+  leagueLink,
+  children,
+}: {
+  match: Match;
+  crest?: MatchCrest;
+  /** Whether the card's league badge is a link of its own — see `LeagueBadge`. */
+  leagueLink?: boolean;
+  children?: ReactNode;
+}) {
   const live = isLiveStatus(match.status);
   /** Finished / cancelled / cut → muted gray border instead of the sport accent. */
   const finished = (match.status ?? 0) >= 10000;
   const color = sportColor(match.sportType);
-  // The card's clubs are links of their own now, so the row's own navigation is
-  // an overlay button that names itself: the fixture, plus its competition.
-  const label = matchLabel(match);
   return (
     <div
       className={`relative ${live ? ROW_LIVE : finished ? ROW_FINISHED : ROW}`}
       style={{ '--sport-color': color } as CSSProperties}
     >
-      <CardContent match={match} />
-      <button type="button" className={ROW_OVERLAY} onClick={onClick} aria-label={label} />
+      <CardContent match={match} crest={crest} leagueLink={leagueLink} />
+      {children}
     </div>
+  );
+}
+
+export function MatchRow({ match, onClick }: MatchRowProps) {
+  // The card's clubs are links of their own now, so the row's own navigation is
+  // an overlay button that names itself: the fixture, plus its competition.
+  const label = matchLabel(match);
+  return (
+    <RowShell match={match}>
+      <button type="button" className={ROW_OVERLAY} onClick={onClick} aria-label={label} />
+    </RowShell>
+  );
+}
+
+/**
+ * The very same list-row card, navigated like a link instead of a button, with
+ * room for the host page's own extra rows.
+ *
+ * Chrome, body and order are `MatchRow`'s — this adds nothing visual by itself.
+ * Two things differ:
+ *
+ *  1. the row-wide target is a real `<a>` (`href`), not an overlay button, so a
+ *     server-rendered list gets crawlable, back-button-friendly rows exactly
+ *     like the club page's fixture rows — the links inside the body (the two
+ *     clubs, the league badge) stay real links beside that target; and
+ *  2. `children` are extra card rows appended under the body — the player page
+ *     uses them for the per-match personal line. They sit under the overlay, so
+ *     the whole card still has a single click target.
+ *
+ * An empty `href` renders the same card with no overlay at all: a match the
+ * stream catalogue does not know is never a dead link.
+ */
+export function MatchLinkCard({
+  match,
+  href,
+  label,
+  crest,
+  children,
+}: {
+  match: Match;
+  /** `/watch/{id}` for this match; `''` for a match with no stream. */
+  href: string;
+  /** Accessible name of the row-wide link — the fixture, plus its competition. */
+  label: string;
+  /** Which crest vocabulary the clubs speak — see {@link MatchCrest}. */
+  crest?: MatchCrest;
+  /** Extra card rows under the body — the caller's own facts about the row. */
+  children?: ReactNode;
+}) {
+  return (
+    <RowShell match={match} crest={crest} leagueLink>
+      {children}
+      {href && <Link href={href} className={ROW_OVERLAY} aria-label={label} title={label} />}
+    </RowShell>
   );
 }
 

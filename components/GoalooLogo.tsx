@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
-/** Sizes the club/player pages use, in the directory's own vocabulary. */
+/** Sizes the club/player pages use, in the directory's own vocabulary, plus the
+ *  16px box a match card draws its competition crest in — the very size
+ *  `TeamLogo`'s `league` variant uses, so a competition badge looks the same
+ *  whichever vocabulary its payload speaks. */
 const SIZE = {
+  xs: 'h-4 w-4 text-[11px]',
   sm: 'h-6 w-6 text-[11px]',
   base: 'h-9 w-9 text-[13px]',
   lg: 'h-16 w-16 text-[22px]',

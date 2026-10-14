@@ -563,12 +563,21 @@ export interface GoalooClub {
 export interface GoalooPlayerMatch extends GoalooMatchRef {
   /** Season label as published, e.g. "2026-2027". */
   season: string;
+  /** Competition crest URL (Goaloo CDN, absolute) resolved from this row's own
+   *  `leagueId`; "" when the catalogue lists no crest for it. */
+  leagueLogo: string;
+  /** Rblink leagueId behind that competition, for `/competition/{id}` on the
+   *  row's league badge; 0 when the catalogue pairs no stream with it. */
+  leagueStreamId: number;
   /** Minutes played; 0 when the feed publishes none. */
   minutes: number;
   goals: number;
   assists: number;
   yellow: number;
   red: number;
+  /** Second yellow → dismissal, which the feed counts apart from a straight red
+   *  (the player page draws the two differently); 0 when unpublished. */
+  twoYellow: number;
   /** Match rating as published; 0 when the feed publishes none. */
   rating: number;
 }
@@ -605,6 +614,82 @@ export interface GoalooPlayerSeason {
   red: number;
 }
 
+/** One competition × season aggregate of a player's published per-match stats
+ *  (the feed's `playerCount` rows), summed exactly the way the feed's own page
+ *  sums them: every match it lists for that competition and season lands in one
+ *  row. Grouped the way the feed's Tech Stats panel groups them — the important
+ *  plates first, then Offensive, Passing and Defensive.
+ *
+ *  Field numbers were read off the page host's own bundle (`initTechStats` /
+ *  `renderTechData`), not guessed; see lib/goalooPlayer.ts for the map. */
+export interface GoalooPlayerTech {
+  /** Goaloo competition id, e.g. 1122 (Indonesia Super League). */
+  leagueId: number;
+  /** Competition name as published ("England Championship"). */
+  competition: string;
+  /** Competition crest URL (Goaloo CDN, absolute); "" when the catalogue lists
+   *  no crest for the id. */
+  leagueLogo: string;
+  /** Rblink leagueId for `/competition/{id}`; 0 = no stream for it. */
+  leagueStreamId: number;
+  /** Season label as published, e.g. "2026-2027". */
+  season: string;
+  /** Matches the feed lists for this competition and season ("Plays"). */
+  count: number;
+  /** Minutes played in total ("Mins"). */
+  minutes: number;
+  /** Sum of the per-match ratings — the feed's "Avg Rating" is this ÷ count. */
+  rating: number;
+  goals: number;
+  /** The goals above that were penalties (the feed's "Goals(P)"). */
+  penalty: number;
+  assists: number;
+  red: number;
+  yellow: number;
+  /** Offensive group. */
+  shots: number;
+  shotsOnTarget: number;
+  fouled: number;
+  offsides: number;
+  /** The feed's own "Best" tally, published per match and summed here. */
+  best: number;
+  /** Passing group. */
+  passes: number;
+  passesAccurate: number;
+  keyPasses: number;
+  longPasses: number;
+  throughBalls: number;
+  breakLoose: number;
+  /** Defensive group. */
+  tackles: number;
+  interceptions: number;
+  clearances: number;
+  steals: number;
+  blocked: number;
+  headers: number;
+  fouls: number;
+}
+
+/** One axis of a player's attribute radar. */
+export interface GoalooPlayerSkill {
+  /** Axis label in the feed's own vocabulary — outfield PAC/SHO/PHY/PAS/DEF/DRI
+   *  or goalkeeper DIV/HAN/POS/KIC/SPD/REF. */
+  label: string;
+  /** 0–100 as published; 0 when the feed leaves the axis out. */
+  value: number;
+}
+
+/** The six-axis attribute radar (`RadarInfo`). Most players the feed answers
+ *  for carry none, in which case the player page renders no radar at all. */
+export interface GoalooPlayerAttribute {
+  /** `true` = the outfield radar (PAC/SHO/PHY/PAS/DEF/DRI), `false` = the
+   *  goalkeeper one (DIV/HAN/POS/KIC/SPD/REF) — the feed's own first field,
+   *  where 1 means outfield and 2 means goalkeeper (lib/goalooPlayer.ts). */
+  outfield: boolean;
+  /** The six axes, in the feed's own order. */
+  skills: GoalooPlayerSkill[];
+}
+
 /** Everything one player page needs. */
 export interface GoalooPlayer {
   id: number;
@@ -637,12 +722,22 @@ export interface GoalooPlayer {
   /** Competition name from the static catalogue ("" when it does not list the
    *  id at all). */
   leagueName: string;
+  /** Competition crest URL (Goaloo CDN, absolute); "" when the catalogue lists
+   *  no crest for the id. */
+  leagueLogo: string;
   /** Rblink leagueId for `/competition/{id}`; 0 = no stream for it. */
   leagueStreamId: number;
   /** Appearances, newest first. */
   matches: GoalooPlayerMatch[];
   /** Season totals over those appearances, newest season first. */
   seasons: GoalooPlayerSeason[];
+  /** Per-competition, per-season aggregates of the per-match stats, in the
+   *  feed's own order — competition ascending, seasons newest first. Empty for
+   *  a player the feed lists no match for. */
+  tech: GoalooPlayerTech[];
+  /** The six-axis attribute radar, `null` when the feed publishes none (which
+   *  is most players). */
+  attribute: GoalooPlayerAttribute | null;
   /** Transfer record, newest first. */
   transfers: GoalooPlayerTransfer[];
   /** Feed's own last-update stamp, `YYYY-MM-DD HH:MM:SS` (UTC+8). */

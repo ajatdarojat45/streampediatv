@@ -6,6 +6,9 @@ import type { GoalooPlayer } from '@/lib/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  /** The panel selections the page owns: which tab, which page of the match log,
+   *  and which competition × season the Tech Stats panel shows. */
+  searchParams: Promise<{ tab?: string; page?: string; league?: string; season?: string }>;
 }
 
 /** The player feed publishes its own last-update stamp a few times a day, so the
@@ -18,7 +21,7 @@ function describe(player: GoalooPlayer): string {
     `${player.name}${player.teamName ? ` (${player.teamName})` : ''}${player.country ? `, ${player.country}` : ''}.`,
     player.matches.length ? `${player.matches.length} appearances on file` : '',
     player.seasons.length ? `across ${player.seasons.length} season${player.seasons.length > 1 ? 's' : ''}.` : '.',
-    'Profile, season totals, match log and transfer record — each match links to its stream when one exists.',
+    'Profile, attribute radar, season totals, match log, transfers and tech stats — each match links to its stream when one exists.',
   ]
     .filter(Boolean)
     .join(' ');
@@ -50,10 +53,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 /** `/player/{id}` — one player, straight off his own Goaloo feed. An id the
- *  feed does not answer for is a 404 rather than an empty shell. */
-export default async function PlayerPage({ params }: PageProps) {
+ *  feed does not answer for is a 404 rather than an empty shell. The tab, the
+ *  match-log page and the Tech Stats pair ride in the query string, so the
+ *  paneled view stays linkable; the content component clamps anything unknown. */
+export default async function PlayerPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { tab, page, league, season } = await searchParams;
   const player = await getGoalooPlayer(id);
   if (!player) notFound();
-  return <PlayerPageContent player={player} />;
+  return (
+    <PlayerPageContent
+      player={player}
+      tab={tab}
+      page={page}
+      league={league}
+      season={season}
+    />
+  );
 }

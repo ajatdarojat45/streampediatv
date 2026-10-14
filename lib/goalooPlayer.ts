@@ -9,32 +9,62 @@
  *                 shirt, value, contract, birthDate, height, weight, foot,
  *                 compId]
  *   playerCount: [matchId, homeId, awayId, "kickoff", compName, colour,
- *                 homeName, awayName, homeScore, awayScore, …, goals(11),
- *                 red(13), yellow(14), rating(17), assists(20), minutes(38),
- *                 season(39), compId(40)]
+ *                 homeName, awayName, homeScore, awayScore, …,
+ *                 goals(11), penalty(12), red(13), yellow(14), offsides(15),
+ *                 best(16), rating(17), shots(18), shotsOnTarget(19),
+ *                 assists(20), passes(21), passesAccurate(22), keyPasses(23),
+ *                 longPasses(24), throughBalls(25), breakLoose(26),
+ *                 fouled(27), fouls(28), interceptions(29), blocked(30),
+ *                 steals(31), tackles(33), headers(35), clearances(36),
+ *                 minutes(38), season(39), compId(40), countryId(41),
+ *                 liveUrl(42), twoYellow(43)]
  *   TransferInfo: [season, fromId, toId, fromDate, toDate, fee, type, fromName,
  *                  toName, fromLogo, toLogo]
+ *   RadarInfo:   [kind, PAC/DIV, SHO/HAN, PHY/POS, PAS/KIC, DEF/SPD, DRI/REF] —
+ *                 `kind` 1 = the outfield radar, 2 = a goalkeeper's (observed on
+ *                 the live feed; the host's own `initAttribute` branches on
+ *                 `kind == 1` and lets everything else take the keeper path,
+ *                 which is what radarOf does), the six axes then follow as
+ *                 published strings on a 0-100 scale. An empty array for the
+ *                 many players the feed publishes no radar for.
  *
  * The match log (`playerCount`) is the same fixture list the club pages read,
  * so it is joined to the stream catalogue by the shared bridge in
  * lib/goalooJoin.ts: an appearance the stream catalogue knows links straight to
- * `/watch/{id}`, and one it does not stays plain text. Season totals are simple
- * sums over the appearances the feed publishes — labelled as such on the page,
- * because the feed's own aggregate block (`CountSum`) never says what it counts.
+ * `/watch/{id}`, and one it does not stays plain text. Every row — and every
+ * Tech Stats aggregate — also carries its competition's catalogue reference
+ * (its crest on the Goaloo CDN and the Rblink leagueId that streams it, see
+ * `competitionRefs`), which is what lets the page draw the competition's own
+ * badge and link it to `/competition/{id}` rather than inventing either.
+ *
+ * The same rows are ALSO the page's Tech Stats source: the feed keys every match
+ * by (competition 40, season 39) and sums the stat fields above — 18 counters plus
+ * minutes and ratings, exactly the fields its own `initTechStats` reads — into one
+ * line per competition and season (`techAggregates` below). Season totals are
+ * simple sums over the appearances the feed publishes — labelled as such on the
+ * page, because the feed's own aggregate block (`CountSum`) never says what it
+ * counts.
  */
-import { goalooPlayerPhotoUrl, goalooPlayerUrl, goalooTeamLogoUrl } from './goaloo';
+import { goalooCompetitionLogoUrl, goalooPlayerPhotoUrl, goalooPlayerUrl, goalooTeamLogoUrl } from './goaloo';
 import { transferTypeLabel } from './goalooClub';
 import { findCompetition } from './competitions';
 import { joinStreamIds, rblinkLeagueIdForCompetition, type GoalooFixtureRef } from './goalooJoin';
 import type {
   GoalooPlayer,
+  GoalooPlayerAttribute,
   GoalooPlayerMatch,
   GoalooPlayerSeason,
+  GoalooPlayerTech,
   GoalooPlayerTransfer,
 } from './types';
 
-/** How many appearances the page lists (the feed publishes one row per match). */
-export const PLAYER_MATCHES = 20;
+/** How many appearances the Matches tab lists per page — the page size the feed
+ *  paginates its own schedule with (`initSchedule`: 10 rows, newest first). */
+export const PLAYER_MATCHES_PER_PAGE = 10;
+
+/** How many recent appearances the Overview tab previews before linking to the
+ *  full log. */
+export const PLAYER_RECENT_MATCHES = 5;
 
 /** The same five-minute window the club feed uses. */
 const REVALIDATE = 300;
@@ -64,6 +94,39 @@ function footLabel(code: number): string {
   return '';
 }
 
+/** A competition's static identity: the name and crest the catalogue of
+ *  lib/competitions.ts publishes for the id, plus the Rblink league that streams
+ *  it. The catalogue is also the only authority on which of the two feed keys
+ *  (`s<id>` / `c<id>`) files a competition — the feeds themselves publish bare
+ *  ids, never the key. */
+interface CompetitionRefs {
+  /** Catalogue name, "" for an id it does not list. */
+  name: string;
+  /** Absolute crest URL on the Goaloo CDN, "" when there is no crest to draw. */
+  logo: string;
+  /** Rblink leagueId for `/competition/{id}`; 0 = no stream paired with it. */
+  streamId: number;
+}
+
+/** Both lookups are build-time data, so the result is remembered per Goaloo id:
+ *  a player's match log repeats the same handful of competitions on every row. */
+const COMPETITION_REFS = new Map<number, CompetitionRefs>();
+
+/** The catalogue's reference to one Goaloo competition id — what a row needs to
+ *  draw the competition's crest and to link it into its own page. */
+function competitionRefs(goalooLeagueId: number): CompetitionRefs {
+  const cached = COMPETITION_REFS.get(goalooLeagueId);
+  if (cached) return cached;
+  const comp = findCompetition(`s${goalooLeagueId}`) || findCompetition(`c${goalooLeagueId}`);
+  const refs: CompetitionRefs = {
+    name: comp?.name ?? '',
+    logo: goalooCompetitionLogoUrl(comp?.logo),
+    streamId: rblinkLeagueIdForCompetition(goalooLeagueId),
+  };
+  COMPETITION_REFS.set(goalooLeagueId, refs);
+  return refs;
+}
+
 /** One appearance. A score only exists when the feed published both halves —
  *  a missing one is never read as 0-0. */
 function appearanceOf(raw: unknown[]): GoalooPlayerMatch | null {
@@ -75,11 +138,17 @@ function appearanceOf(raw: unknown[]): GoalooPlayerMatch | null {
   const hs = str(raw[8]);
   const as = str(raw[9]);
   const played = hs !== '' && as !== '' && Number.isFinite(+hs) && Number.isFinite(+as);
+  const leagueId = toNum(raw[40]);
+  /** The row's competition reference: same crest and same link as every other row
+   *  of that competition, so the badge stays consistent across the log. */
+  const league = competitionRefs(leagueId);
   return {
     matchId,
     kickoff,
-    leagueId: toNum(raw[40]),
+    leagueId,
     competition: str(raw[4]),
+    leagueLogo: league.logo,
+    leagueStreamId: league.streamId,
     color: str(raw[5]),
     home: { id: toNum(raw[1]), name: home },
     away: { id: toNum(raw[2]), name: away },
@@ -91,6 +160,7 @@ function appearanceOf(raw: unknown[]): GoalooPlayerMatch | null {
     assists: toNum(raw[20]),
     yellow: toNum(raw[14]),
     red: toNum(raw[13]),
+    twoYellow: toNum(raw[43]),
     rating: Number.parseFloat(str(raw[17])) || 0,
   };
 }
@@ -140,9 +210,113 @@ export function playerSeasonTotals(matches: GoalooPlayerMatch[]): GoalooPlayerSe
   return [...bySeason.values()].sort((a, b) => b.season.localeCompare(a.season));
 }
 
+/** One row's contribution to its competition × season aggregate — the very
+ *  fields the feed's own `initTechStats` reads off each `playerCount` row. The
+ *  competition's own reference travels once per aggregate, not per row. */
+type TechCounters = Omit<
+  GoalooPlayerTech,
+  'leagueId' | 'leagueLogo' | 'leagueStreamId' | 'competition' | 'season'
+>;
+
+function techCountersOf(raw: unknown[]): TechCounters {
+  return {
+    // The feed counts one appearance per row and sums every other field as
+    // published (a blank one parses to 0, so it contributes nothing).
+    count: 1,
+    minutes: toNum(raw[38]),
+    rating: toNum(raw[17]),
+    goals: toNum(raw[11]),
+    penalty: toNum(raw[12]),
+    assists: toNum(raw[20]),
+    red: toNum(raw[13]),
+    yellow: toNum(raw[14]),
+    shots: toNum(raw[18]),
+    shotsOnTarget: toNum(raw[19]),
+    fouled: toNum(raw[27]),
+    offsides: toNum(raw[15]),
+    best: toNum(raw[16]),
+    passes: toNum(raw[21]),
+    passesAccurate: toNum(raw[22]),
+    keyPasses: toNum(raw[23]),
+    longPasses: toNum(raw[24]),
+    throughBalls: toNum(raw[25]),
+    breakLoose: toNum(raw[26]),
+    tackles: toNum(raw[33]),
+    interceptions: toNum(raw[29]),
+    clearances: toNum(raw[36]),
+    steals: toNum(raw[31]),
+    blocked: toNum(raw[30]),
+    headers: toNum(raw[35]),
+    fouls: toNum(raw[28]),
+  };
+}
+
+/**
+ * The Tech Stats table: one aggregate per competition and season, summed over
+ * every match the feed lists in that pair — the feed's own `_techStatsInfo.add`
+ * semantics (every field of every row is added on, `count` included), so a
+ * value the feed leaves blank simply contributes nothing.
+ *
+ * The order is the feed's too: competitions ascending by id (`renderTechSelect`
+ * sorts the map's keys), each one with its seasons in the order the feed
+ * published them — newest first, because the match log itself is newest-first.
+ * A row whose competition or season the feed left blank is dropped rather than
+ * folded into an "unknown" bucket.
+ */
+export function playerTechTotals(rows: readonly unknown[][]): GoalooPlayerTech[] {
+  const byPair = new Map<string, GoalooPlayerTech>();
+  for (const raw of rows) {
+    const leagueId = toNum(raw[40]);
+    const season = str(raw[39]);
+    if (!leagueId || !season) continue;
+    const key = `${leagueId}|${season}`;
+    const counters = techCountersOf(raw);
+    const existing = byPair.get(key);
+    if (!existing) {
+      const league = competitionRefs(leagueId);
+      byPair.set(key, {
+        leagueId,
+        competition: str(raw[4]),
+        leagueLogo: league.logo,
+        leagueStreamId: league.streamId,
+        season,
+        ...counters,
+      });
+      continue;
+    }
+    for (const field of Object.keys(counters) as (keyof TechCounters)[]) {
+      existing[field] += counters[field];
+    }
+  }
+  return [...byPair.values()].sort((a, b) => a.leagueId - b.leagueId);
+}
+
+/** Radar axis labels, in the feed's own order (`RadarInfo` fields 1-6). */
+const RADAR_OUTFIELD = ['PAC', 'SHO', 'PHY', 'PAS', 'DEF', 'DRI'];
+const RADAR_KEEPER = ['DIV', 'HAN', 'POS', 'KIC', 'SPD', 'REF'];
+
+/** The six-axis attribute radar, `null` when the feed publishes none (which is
+ *  most players) or publishes it without its six axes.
+ *
+ *  The kind is read exactly the way the host's `initAttribute` reads it: field 0
+ *  `== 1` is the outfield radar and ANYTHING else takes the goalkeeper path —
+ *  the live feed publishes 2 for keepers, so a stricter `== 2` test would drop
+ *  every keeper the day it publishes a third value. */
+function radarOf(value: unknown): GoalooPlayerAttribute | null {
+  const raw = row(value);
+  if (raw.length < 7) return null;
+  const outfield = toNum(raw[0]) === 1;
+  const labels = outfield ? RADAR_OUTFIELD : RADAR_KEEPER;
+  return {
+    outfield,
+    skills: labels.map((label, i) => ({ label, value: toNum(raw[i + 1]) })),
+  };
+}
+
 /**
  * One player, ready for the page: bio, current club, match log with its
- * `/watch/{id}` targets, per-season totals and the transfer record.
+ * `/watch/{id}` targets, per-season totals, the per-competition Tech Stats
+ * aggregates, the attribute radar and the transfer record.
  *
  * `null` for an id the feed does not answer, so the route can 404 instead of
  * rendering an empty shell.
@@ -168,9 +342,12 @@ export async function getGoalooPlayer(id: string | number): Promise<GoalooPlayer
   const name = str(info[1]);
   if (!name) return null;
 
+  /** The published match log, read once: the same rows feed the appearance list,
+   *  the season totals and the per-competition Tech Stats aggregates. */
+  const appearances = row(json.playerCount).map(row);
   const matches: GoalooPlayerMatch[] = [];
-  for (const raw of row(json.playerCount)) {
-    const match = appearanceOf(row(raw));
+  for (const raw of appearances) {
+    const match = appearanceOf(raw);
     if (match) matches.push(match);
   }
   matches.sort((a, b) => b.kickoff - a.kickoff);
@@ -195,10 +372,11 @@ export async function getGoalooPlayer(id: string | number): Promise<GoalooPlayer
   );
   for (const match of matches) match.streamId = streamIds.get(match.matchId) ?? 0;
 
-  /** The player's competition: the feed publishes its id only, so the name and
-   *  the stream link come from the static catalogue (lib/competitions.ts). */
+  /** The player's competition: the feed publishes its id only, so the name, the
+   *  crest and the stream link all come from the static catalogue
+   *  (lib/competitions.ts) — the same reference every match row carries. */
   const leagueId = toNum(info[15]);
-  const competition = findCompetition(`s${leagueId}`) || findCompetition(`c${leagueId}`);
+  const league = competitionRefs(leagueId);
 
   return {
     id: toNum(info[0]) || playerId,
@@ -217,10 +395,13 @@ export async function getGoalooPlayer(id: string | number): Promise<GoalooPlayer
     weight: str(info[13]),
     foot: footLabel(toNum(info[14])),
     leagueId,
-    leagueName: competition?.name ?? '',
-    leagueStreamId: rblinkLeagueIdForCompetition(leagueId),
+    leagueName: league.name,
+    leagueLogo: league.logo,
+    leagueStreamId: league.streamId,
     matches,
     seasons: playerSeasonTotals(matches),
+    tech: playerTechTotals(appearances),
+    attribute: radarOf(json.RadarInfo),
     transfers,
     updatedAt: str(json.LastUpdateTime),
   };
