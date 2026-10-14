@@ -32,6 +32,27 @@ export function readVarint(buf: Uint8Array, pos: number): [number, number] {
   return [Number(result), i];
 }
 
+/** A number field's value as the feed can actually mean it.
+ *
+ *  Protobuf writes a negative int32/int64 as a full 10-byte varint, so the
+ *  feed's `-1` sentinel ("no such value") travels as the wire value 2^64-1 —
+ *  and an unsigned read turns that into `18446744073709552000`. Nothing this
+ *  app draws is anywhere near that: ids, kickoff clocks, goal counts, points
+ *  and capacities all sit far inside `Number.MAX_SAFE_INTEGER`. A value outside
+ *  the safe, non-negative range is therefore that sign extension, not a number
+ *  the feed could have meant, and reads as `undefined` — which is exactly what
+ *  omitting the field means (the sentinel's own magnitude is lost on the way
+ *  through `Number`, and no caller here needs it).
+ *
+ *  Non-integers cannot reach a wire-0 field, so `Number.isSafeInteger` is the
+ *  whole test; wire-5 (float) fields are skipped by {@link iterFields}. See
+ *  `decodeTeamStanding` for the standings row this was written for. */
+export function numberValue(value: number | Uint8Array): number | undefined {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+    ? value
+    : undefined;
+}
+
 export function* iterFields(buf: Uint8Array): Generator<Field, void, undefined> {
   let pos = 0;
   while (pos < buf.length) {

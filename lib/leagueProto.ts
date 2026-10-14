@@ -19,9 +19,11 @@
 //   PBDataTeamStanding: 2=total 3=won 4=draw 5=loss 6=goals 7=goalsAgainst
 //                       8=points, 12..18 home*, 22..28 away*, 29=groupName,
 //                       30=stageId, 31=teamId, 32=promotionId
+//                       (a value the feed has not got arrives as -1 — read with
+//                        numberValue, see proto.ts)
 //   PBDatLeaguePromotion: 1=promotionId, 2=name, 3=color
 
-import { iterFields } from './proto';
+import { iterFields, numberValue } from './proto';
 import {
   decodeDataTeam,
   decodeDataPlayer,
@@ -156,36 +158,43 @@ export function decodeLeagueSeasonListResp(payload: Uint8Array, lang: number): L
 
 /* ---------- standings ---------- */
 
-/** PBDataTeamStanding — one table row (overall + home/away splits). */
+/** PBDataTeamStanding — one table row (overall + home/away splits).
+ *
+ *  Every counter and id is read through `numberValue`, because the feed marks a
+ *  value it has not got with `-1`: that sentinel travels as the 10-byte varint
+ *  2^64-1 (league 4976's table carries exactly that in field 8 of one row), and
+ *  read unsigned it reaches the table as `18446744073709552000` — one such cell
+ *  is wide enough to stretch the whole column it sits in. Such a field simply
+ *  stays absent, which is how every other unpublished field arrives. */
 function decodeTeamStanding(buf: Uint8Array): TeamStanding {
   const s: TeamStanding = {};
   for (const f of iterFields(buf)) {
     switch (f.field) {
-      case 2: s.total = f.value as number; break;
-      case 3: s.won = f.value as number; break;
-      case 4: s.draw = f.value as number; break;
-      case 5: s.loss = f.value as number; break;
-      case 6: s.goals = f.value as number; break;
-      case 7: s.goalsAgainst = f.value as number; break;
-      case 8: s.points = f.value as number; break;
-      case 12: s.homeTotal = f.value as number; break;
-      case 13: s.homeWon = f.value as number; break;
-      case 14: s.homeDraw = f.value as number; break;
-      case 15: s.homeLoss = f.value as number; break;
-      case 16: s.homeGoals = f.value as number; break;
-      case 17: s.homeGoalsAgainst = f.value as number; break;
-      case 18: s.homePoints = f.value as number; break;
-      case 22: s.awayTotal = f.value as number; break;
-      case 23: s.awayWon = f.value as number; break;
-      case 24: s.awayDraw = f.value as number; break;
-      case 25: s.awayLoss = f.value as number; break;
-      case 26: s.awayGoals = f.value as number; break;
-      case 27: s.awayGoalsAgainst = f.value as number; break;
-      case 28: s.awayPoints = f.value as number; break;
+      case 2: s.total = numberValue(f.value); break;
+      case 3: s.won = numberValue(f.value); break;
+      case 4: s.draw = numberValue(f.value); break;
+      case 5: s.loss = numberValue(f.value); break;
+      case 6: s.goals = numberValue(f.value); break;
+      case 7: s.goalsAgainst = numberValue(f.value); break;
+      case 8: s.points = numberValue(f.value); break;
+      case 12: s.homeTotal = numberValue(f.value); break;
+      case 13: s.homeWon = numberValue(f.value); break;
+      case 14: s.homeDraw = numberValue(f.value); break;
+      case 15: s.homeLoss = numberValue(f.value); break;
+      case 16: s.homeGoals = numberValue(f.value); break;
+      case 17: s.homeGoalsAgainst = numberValue(f.value); break;
+      case 18: s.homePoints = numberValue(f.value); break;
+      case 22: s.awayTotal = numberValue(f.value); break;
+      case 23: s.awayWon = numberValue(f.value); break;
+      case 24: s.awayDraw = numberValue(f.value); break;
+      case 25: s.awayLoss = numberValue(f.value); break;
+      case 26: s.awayGoals = numberValue(f.value); break;
+      case 27: s.awayGoalsAgainst = numberValue(f.value); break;
+      case 28: s.awayPoints = numberValue(f.value); break;
       case 29: s.groupName = str(f.value); break;
-      case 30: s.stageId = f.value as number; break;
-      case 31: s.teamId = f.value as number; break;
-      case 32: s.promotionId = f.value as number; break;
+      case 30: s.stageId = numberValue(f.value); break;
+      case 31: s.teamId = numberValue(f.value); break;
+      case 32: s.promotionId = numberValue(f.value); break;
       default: break;
     }
   }

@@ -104,6 +104,17 @@ export function goalooClubId(name?: string): number {
   return hits.length === 1 ? hits[0] : 0;
 }
 
+/** The name the feeds publish for one club id — `""` for an id the index does
+ *  not carry. The transfer feed ships the counterpart club as an id and nothing
+ *  else, so this is where a name for it comes from; when the index holds more
+ *  than one spelling the first in the generated file wins, so one id always
+ *  prints the same name. */
+export function goalooClubName(id: number | string | undefined): string {
+  const wanted = Number(id);
+  if (!Number.isFinite(wanted)) return '';
+  return namesById.get(wanted)?.[0] ?? '';
+}
+
 /** Fill in `clubId` on a team the caller already decoded — no-op for a payload
  *  that is not football, for an already resolved team, and for a name the index
  *  cannot vouch for (`clubId` stays absent and the club renders as text). */

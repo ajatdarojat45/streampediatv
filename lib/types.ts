@@ -508,6 +508,9 @@ export interface GoalooTransfer {
   photo: string;
   /** Counterpart club id (the club the player came from / moved to). */
   clubId: number;
+  /** The name the club index publishes for that id (lib/goalooTeams), "" when
+   *  the index does not carry the club — the feed itself never names it. */
+  clubName: string;
   /** Fee as published, "" when the feed publishes none. */
   fee: string;
   /** Date as published (`dd-mm-yyyy`). */
@@ -516,6 +519,14 @@ export interface GoalooTransfer {
   type: string;
   /** `true` = arrival, `false` = departure. */
   joined: boolean;
+}
+
+/** One line of a club's honours board (`TeamHonor`): the trophy's name and the
+ *  seasons it was won, both exactly as the feed publishes them. */
+export interface GoalooClubHonour {
+  title: string;
+  /** Season list as published, e.g. "05/06,99/00,39/40,1928/29" ("" if none). */
+  years: string;
 }
 
 /** Everything one club page needs: the team feed, its schedule and its
@@ -545,6 +556,8 @@ export interface GoalooClub {
   coach: GoalooClubPerson | null;
   /** First team, ordered Goalkeepers → Defenders → Midfielders → Strikers. */
   squad: GoalooClubPerson[];
+  /** The club's honours board, as the feed publishes it (may be empty). */
+  honours: GoalooClubHonour[];
   /** Competitions the feed lists for this club (schedule ajax `SclassList`). */
   competitions: { id: number; name: string }[];
   /** Played matches, newest first (the club feed's own history rows). */
@@ -557,6 +570,45 @@ export interface GoalooClub {
   transfers: GoalooTransfer[];
   /** Feed's own last-update stamp, `YYYY-MM-DD HH:MM:SS` (UTC+8). */
   updatedAt: string;
+}
+
+/** The panels a club page opens, in the order its tab strip draws them. The tab
+ *  rides in the URL (`/club/100?tab=schedule`), so a panel is linkable. */
+export type ClubTab = 'overview' | 'schedule' | 'players' | 'transfers' | 'standing';
+
+/** The two sub-panels of the Players tab: the squad as a team sheet, and the
+ *  squad's totals for one competition × season. */
+export type ClubPlayerView = 'lineup' | 'data';
+
+/** The two sub-panels of the Transfers tab — arrivals and departures, which the
+ *  feed itself tells apart by `isJoined`. */
+export type TransferDirection = 'in' | 'out';
+
+/** One page of a club's schedule (`/ajax/getteamschedulebypageno`, `init=0`).
+ *  Every row is a `GoalooMatchRef`: a played match carries the score the feed
+ *  published with it, a fixture carries none. */
+export interface GoalooClubSchedulePage {
+  matches: GoalooMatchRef[];
+  /** The page the rows belong to (1-based, clamped to `totalPages`). */
+  page: number;
+  /** The publisher's own page count — 0 when it answers with none. */
+  totalPages: number;
+}
+
+/** One competition a club page can be filtered by: a competition the club's own
+ *  feed lists (`SclassList`) that the stream catalogue also pairs with a league,
+ *  which is what makes standings and player data reachable for it. */
+export interface ClubLeagueOption {
+  /** Goaloo competition id, e.g. 31 (Spanish La Liga). */
+  goalooId: number;
+  /** Name as the club feed lists it ("Spanish La Liga"). */
+  name: string;
+  /** Competition crest URL (Goaloo CDN, absolute); "" when the catalogue lists
+   *  no crest for it. */
+  logo: string;
+  /** Rblink leagueId of the paired league — never 0 (an unpaired competition is
+   *  not an option at all). */
+  streamId: number;
 }
 
 /** One appearance in a player's published match log (`playerCount`). */

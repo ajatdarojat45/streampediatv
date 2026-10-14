@@ -116,6 +116,20 @@ export function goalooClubScheduleUrl(
   return `${GOALOO_ORIGIN}/ajax/getteamschedulebypageno?id=${Number(teamId)}&pageNo=${page}${comp}&init=${page === 1 && !sclassId ? 1 : 0}`;
 }
 
+/** One page of the club's schedule ajax, as the page host paginates it:
+ *  `init=0`, ten rows a page. `init=1` (see above) is the publisher's own
+ *  first-page preview — fifty rows plus the club's competition list — which the
+ *  club payload reads once; the Schedule panel pages through THIS one instead,
+ *  so every page holds the same number of rows. */
+export function goalooClubSchedulePageUrl(
+  teamId: number | string,
+  page = 1,
+  sclassId?: number | string
+): string {
+  const comp = sclassId ? `&sclassId=${Number(sclassId)}` : '';
+  return `${GOALOO_ORIGIN}/ajax/getteamschedulebypageno?id=${Number(teamId)}&pageNo=${Math.max(1, Math.trunc(Number(page)) || 1)}${comp}&init=0`;
+}
+
 /** The club's transfers for one year, split by `isJoined` (in / out). */
 export function goalooClubTransfersUrl(teamId: number | string, year: number | string): string {
   return `${GOALOO_ORIGIN}/ajax/GetTeamTransferByYear?teamId=${Number(teamId)}&year=${year}`;
