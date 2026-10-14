@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Radio, MoreHorizontal } from 'lucide-react';
 import { POPULAR_SPORTS, MORE_SPORTS } from '@/lib/sports';
 import { usePrefetchCategory } from '@/lib/streamingQueries';
+import { inCompetitionSection } from '@/lib/sections';
 
 const TAB_BASE =
   'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-4 py-[9px] text-sm font-semibold no-underline transition-all duration-150 max-[640px]:px-[13px] max-[640px]:py-2 max-[640px]:text-[13px]';
@@ -23,13 +24,22 @@ const ICON_BTN =
   'bg-transparent px-1.5 py-0.5 text-[13px] text-muted hover:text-text [[data-theme=dark]_&]:text-text';
 
 /** Header navigation bar — mirrors the home page toolbar: a "Live" tab, the
- *  popular sports, and a "More" button that opens the full sport picker. */
+ *  popular sports, and a "More" button that opens the full sport picker.
+ *
+ *  The row is the LIVE half's own navigation (every link in it points at
+ *  `/sports/{slug}` or `/`), so it is not drawn on the competition pages: there
+ *  it would only switch the reader out of the section he is browsing, and a
+ *  club, a player and a competition cross-link each other instead. The header's
+ *  section switch (components/SectionSwitch) is how a reader moves between the
+ *  two halves — see lib/sections.ts. */
 export function SportNav() {
   const pathname = usePathname();
   const prefetchCategory = usePrefetchCategory();
   const [showMore, setShowMore] = useState(false);
 
   const isActive = (href: string): boolean => pathname === href;
+
+  if (inCompetitionSection(pathname)) return null;
 
   return (
     <>

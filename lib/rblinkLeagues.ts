@@ -157,6 +157,38 @@ export function rblinkStreamIds(comps: GoalooCompetition[]): Map<string, number>
   return ids;
 }
 
+/** The reverse view of `rblinkLeagueFor`, built on first use: the catalogue
+ *  competitions the scan pairs with ONE Rblink league, in pair-quality order
+ *  (`exact` names before filler-tolerant ones) and then alphabetically.
+ *
+ *  The watch page is the reason it exists: an Rblink fixture arrives with a
+ *  league id and no Goaloo key at all, and the Goaloo match centre is addressed
+ *  by the schedule id of one of the competitions this map lists
+ *  (lib/goalooLiveJoin.ts). Concatenating the 989 competitions means running
+ *  the matcher over the whole catalogue — the same one-off pass
+ *  `competitionDirectory` pays for, and `rblinkLeagueFor` caches each verdict,
+ *  so it happens once per process either way. */
+const byLeague = new Map<number, GoalooCompetition[]>();
+
+export function goalooCompetitionsForLeague(leagueId: number | string): GoalooCompetition[] {
+  if (!byLeague.size) {
+    const grouped = new Map<number, { comp: GoalooCompetition; tier: number }[]>();
+    for (const comp of GOALOO_COMPETITIONS) {
+      const hit = rblinkLeagueFor(comp);
+      if (!hit) continue;
+      const row = { comp, tier: hit.tier === 'exact' ? 0 : 1 };
+      const list = grouped.get(hit.league.id);
+      if (list) list.push(row);
+      else grouped.set(hit.league.id, [row]);
+    }
+    for (const [id, rows] of grouped) {
+      rows.sort((a, b) => a.tier - b.tier || a.comp.name.localeCompare(b.comp.name));
+      byLeague.set(id, rows.map((r) => r.comp));
+    }
+  }
+  return byLeague.get(Number(leagueId)) ?? [];
+}
+
 /**
  * The Goaloo catalogue resolved against the Rblink scan — the whole payload
  * behind `/competitions`.

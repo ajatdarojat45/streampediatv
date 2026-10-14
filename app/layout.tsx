@@ -9,7 +9,7 @@ import './globals.css';
 import { QueryProvider } from '@/components/QueryProvider';
 import { RBProvider } from '@/components/RBProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { CompetitionsLink } from '@/components/CompetitionsLink';
+import { SectionSwitch } from '@/components/SectionSwitch';
 import { FooterCategories } from '@/components/FooterCategories';
 import { SportNav } from '@/components/SportNav';
 import { LazyGutterAd } from '@/components/LazyGutterAd';
@@ -119,7 +119,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                       </div>
                     </Link>
                     <div className="inline-flex items-center gap-2">
-                      <CompetitionsLink />
+                      <SectionSwitch />
                       <ThemeToggle />
                     </div>
                   </header>

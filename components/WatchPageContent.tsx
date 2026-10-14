@@ -23,6 +23,7 @@ import VideoPlayer from '@/components/VideoPlayer';
 import AdBanner from '@/components/AdBanner';
 import { ADSENSE_CLIENT, AD_SLOTS } from '@/lib/ads';
 import { MatchTabs } from '@/components/MatchTabs';
+import { GoalooMatchCentre } from '@/components/GoalooMatchCentre';
 import type { Match, Stream } from '@/lib/types';
 
 /** Surface panel (`.panel`): bordered card on the app background. */
@@ -440,6 +441,27 @@ export function WatchPageContent({ id }: { id: string }) {
             sportType={sportType}
             matchStatus={match?.status}
           />
+
+          {/* Goaloo match centre — the OTHER publisher's half of this page, and
+              the point where the app's two halves meet: Rblink owns the stream
+              above, Goaloo owns the match itself (both team sheets with ratings
+              and substitution minutes, the event list, the technical statistics
+              of every period, recent form, the goal/missed distribution, the
+              HT/FT record and the minute-by-minute text feed). The fixture is
+              resolved to Goaloo by kick-off + club names (lib/goalooLiveJoin), so
+              a match the catalogue does not carry — and every non-football
+              category — simply draws nothing here. */}
+          {match && (
+            <GoalooMatchCentre
+              matchId={matchId}
+              sportType={sportType}
+              leagueId={match.league?.leagueId}
+              kickoff={match.matchDate}
+              home={match.home?.name}
+              away={match.away?.name}
+              live={isLiveStatus(matchStatus)}
+            />
+          )}
 
           {/* Related matches (live/upcoming) — grouped by league name.
               `visibleRelated` is already filtered to this competition when the

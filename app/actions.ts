@@ -55,7 +55,10 @@ import {
   attachMatchLineupPlayerIds,
 } from '@/lib/goalooSquad';
 import { DEFAULT_CONTINENT, DEFAULT_COUNTRY, DEFAULT_SITE_TYPE } from '@/lib/config';
-import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchTrend, MatchList, MatchSource, Stream, LeagueDetail, LeaguePlayerTotals, LeagueTeamTotals, LeagueSeason, LeagueStandings, TeamStanding } from '@/lib/types';
+import { getGoalooLiveMatch as readGoalooMatchCentre } from '@/lib/goalooLive';
+import { goalooScheduleIdForMatch } from '@/lib/goalooLiveJoin';
+import { matchDateMs } from '@/lib/datetime';
+import type { Match, MatchDetail, MatchAnalysis, MatchLineup, MatchEvents, MatchStats, MatchTrend, MatchList, MatchSource, Stream, LeagueDetail, LeaguePlayerTotals, LeagueTeamTotals, LeagueSeason, LeagueStandings, TeamStanding, GoalooLiveMatch, GoalooLivePayload } from '@/lib/types';
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -677,3 +680,89 @@ export async function getLeagueTeamTotals(
     return { ok: false, error: errMsg(e) };
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * The Goaloo half of the watch page.
+ *
+ * Rblink owns the stream and the two publishers share no match identifier, so
+ * this action is where the page's two halves meet: the Rblink matchId (which is
+ * what `/watch/{id}` is addressed by) is resolved to the Goaloo schedule id of
+ * the very same fixture — kick-off instant + both club names, see
+ * lib/goalooLiveJoin.ts — and that id is then read into the match centre
+ * (lib/goalooLive.ts): team sheets with ratings, the event list, the technical
+ * statistics per period, both clubs' recent form, the goal/missed distribution,
+ * the HT/FT record and the text feed.
+ *
+ * The caller already holds the match (the page renders it), so the join's own
+ * keys travel down as hints and the usual call costs no Rblink round trip at
+ * all; only a caller without them pays for one detail read. Nothing here throws
+ * at the page: a fixture Goaloo does not carry — or one whose page cannot be
+ * read — answers `{ matched: false }` and the panel is simply not drawn.
+ * ------------------------------------------------------------------------- */
+
+export interface GoalooMatchCentreParams {
+  matchId: string | number;
+  sportType?: number;
+  /** The join's keys, as the page already has them (`match.league.id`,
+   *  `match.matchDate`, both club names). */
+  leagueId?: number | string;
+  kickoff?: number;
+  home?: string;
+  away?: string;
+  /** Whether the match is in play — it picks the re-use window below. */
+  live?: boolean;
+}
+
+/** How long a read match centre is re-used. A match in play moves every minute;
+ *  a finished or upcoming one barely moves at all, and its page is big. */
+const GOALOO_LIVE_TTL = 30_000;
+const GOALOO_PAST_TTL = 300_000;
+/** A fixture's Goaloo schedule id never changes inside a season. */
+const GOALOO_ID_TTL = 6 * 3600_000;
+
+export async function getGoalooMatchCentre({
+  matchId,
+  sportType = 1,
+  leagueId,
+  kickoff,
+  home,
+  away,
+  live = false,
+}: GoalooMatchCentreParams): Promise<Result<GoalooLivePayload>> {
+  // The Goaloo match centre is a football page: every other category answers
+  // "nothing to draw" instead of a lookup that cannot succeed.
+  if (num(sportType) !== 1) return { ok: true, data: { matched: false } };
+  try {
+    let league = num(leagueId);
+    let at = num(kickoff);
+    let homeName = home ?? '';
+    let awayName = away ?? '';
+    if (!league || !at || !homeName || !awayName) {
+      const detail = await getMatchDetail({ matchId, sportType, language: 0, source: 'data' });
+      if (!detail.ok) return { ok: true, data: { matched: false } };
+      const m = detail.data.match;
+      league = league || num(m?.league?.leagueId);
+      at = at || matchDateMs(m?.matchDate) || 0;
+      homeName = homeName || m?.home?.name || '';
+      awayName = awayName || m?.away?.name || '';
+    }
+    // The join is cached: resolving it costs a competition feed, and the answer
+    // is the same for every viewer of this fixture.
+    const scheduleId = await withCache<number | null>(
+      `goaloo:id:${league}:${at}:${homeName}:${awayName}`,
+      GOALOO_ID_TTL,
+      () => goalooScheduleIdForMatch({ leagueId: league, kickoff: at, home: homeName, away: awayName })
+    );
+    if (!scheduleId) return { ok: true, data: { matched: false } };
+    const read = await withCache<GoalooLiveMatch | null>(
+      `goaloo:match:${scheduleId}`,
+      live ? GOALOO_LIVE_TTL : GOALOO_PAST_TTL,
+      () => readGoalooMatchCentre(scheduleId)
+    );
+    if (!read) return { ok: true, data: { matched: false } };
+    return { ok: true, data: { matched: true, scheduleId, live: read } };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+

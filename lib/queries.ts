@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery, useMutation } from '@tanstack/react-query';
-import { getMatches, getMatchDetail, getMatchAnalysis, getMatchLineup, getMatchEvent, getMatchStatistic, getMatchTrend, getStreamUrl, getAllLiveMatches, getLeagueDetail, getLeagueMatches, getLeagueSeasons, getLeagueStandings, getLeaguePlayerTotals, getLeagueTeamTotals } from '@/app/actions';
+import { getMatches, getMatchDetail, getMatchAnalysis, getMatchLineup, getMatchEvent, getMatchStatistic, getMatchTrend, getStreamUrl, getAllLiveMatches, getLeagueDetail, getLeagueMatches, getLeagueSeasons, getLeagueStandings, getLeaguePlayerTotals, getLeagueTeamTotals, getGoalooMatchCentre } from '@/app/actions';
 
 /** Never auto-retry a rate-limit (HTTP 429): re-hitting immediately makes the
  * upstream limiter angrier and starves the UI. Other errors get one retry. */
@@ -353,3 +353,77 @@ export function useLeagueTeamTotals({ leagueId, sportType, seasonId, enabled }: 
     ...DETAIL_POLL,
   });
 }
+
+export interface GoalooMatchCentreInput {
+  matchId: string | number;
+  sportType?: number;
+  /** The join's keys, as the watch page already has them: the Rblink league id,
+   *  the kick-off (`match.matchDate`) and both club names. */
+  leagueId?: number | string;
+  kickoff?: number;
+  home?: string;
+  away?: string;
+  /** True while the match is in play — it shortens the read window and is what
+   *  turns polling on. */
+  live?: boolean;
+}
+
+/**
+ * The Goaloo match centre behind one watch page — the second publisher's half of
+ * `/watch/{id}` (see app/actions.ts and lib/goalooLive.ts).
+ *
+ * One read covers everything the panel draws: score and half scores, both team
+ * sheets with ratings, the event list, the statistics of every period, the two
+ * clubs' form, the goal/missed distribution, the HT/FT record and the text feed
+ * all arrive in one payload, so the interval below is the page's ONLY extra
+ * upstream cost. It is therefore only armed while the match is actually in play:
+ * a finished fixture's page never changes again, and re-reading it every 45s
+ * would buy nothing. `refetchOnWindowFocus`/`Reconnect` stay off for the same
+ * reason the Rblink detail family turns them off — alt-tabbing back into a
+ * player must not trigger another read.
+ */
+export function useGoalooMatchCentre({
+  matchId,
+  sportType = 1,
+  leagueId,
+  kickoff,
+  home,
+  away,
+  live = false,
+}: GoalooMatchCentreInput) {
+  return useQuery({
+    queryKey: [
+      'goaloo-centre',
+      String(matchId),
+      sportType,
+      String(leagueId ?? ''),
+      kickoff ?? 0,
+      home ?? '',
+      away ?? '',
+    ],
+    queryFn: async () => {
+      const res = await getGoalooMatchCentre({
+        matchId,
+        sportType,
+        leagueId,
+        kickoff,
+        home,
+        away,
+        live,
+      });
+      if (!res.ok) throw new Error(res.error);
+      return res.data;
+    },
+    // The Goaloo match centre is a football page (the server answers "not
+    // matched" for every other category), so nothing is asked for elsewhere.
+    enabled: Boolean(matchId) && Number(sportType) === 1,
+    retry: retryPolicy,
+    retryDelay,
+    staleTime: live ? 25_000 : 120_000,
+    refetchInterval: live ? 45_000 + Math.floor(Math.random() * 8_000) : false,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+}
+

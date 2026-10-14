@@ -515,6 +515,162 @@ export interface GoalooCompetitionDetail {
   standings: GoalooStandingsGroup[];
 }
 
+/* ---------------------------------------------------------------------------
+ * The Goaloo match centre on `/watch/{id}` — the second publisher's half of the
+ * player page (see lib/goalooLive.ts).
+ *
+ * Rblink owns the stream; Goaloo owns the match: the team sheet with each
+ * player's rating and the minute he came on or went off, the event list, the
+ * technical statistics per period, both teams' recent form, where their goals
+ * land inside the ninety minutes, their HT/FT record and the text feed. Every
+ * shape below therefore mirrors a panel of that page rather than an Rblink
+ * payload, and the club/player ids it carries are Goaloo's own — the same ids
+ * `/club/{id}` and `/player/{id}` are addressed by.
+ * ------------------------------------------------------------------------- */
+
+/** One side of the Goaloo page: the club id it publishes (`team/summary/109`). */
+export interface GoalooLiveTeam {
+  id: number;
+  name: string;
+  /** Absolute crest URL (already resolved onto the Goaloo image host). */
+  logo: string;
+}
+
+/** A badge drawn inside a team sheet row — a goal, a card, or the minute a
+ *  substitute came on or went off. */
+export interface GoalooLiveMark {
+  /** The page's own label: `Goal`, `Yellow Card`, `Sub in`, … */
+  label: string;
+  /** Minute as published (`66′`), `''` when the feed leaves it out. */
+  time: string;
+}
+
+/** One player in a team sheet. */
+export interface GoalooLivePlayer {
+  /** Goaloo player id — the id `/player/{id}` resolves. */
+  id: number;
+  /** Shirt number as published (a string: the feed ships `''` for a trialist). */
+  number: string;
+  name: string;
+  /** The publisher's own rating out of 10, `null` when he was not rated. */
+  rating: number | null;
+  marks: GoalooLiveMark[];
+}
+
+/** One team sheet: formation, the eleven, and the bench. */
+export interface GoalooLiveSide {
+  team: GoalooLiveTeam;
+  /** `4-4-2`, or `''` when the feed has not published one yet. */
+  formation: string;
+  starters: GoalooLivePlayer[];
+  substitutes: GoalooLivePlayer[];
+}
+
+export interface GoalooLiveStatRow {
+  label: string;
+  /** Values as published — percentages arrive as `58%`, counts as `2`. */
+  home: string;
+  away: string;
+}
+
+/** One period of the technical statistics. `key` is FT / 1st Half / 2nd Half /
+ *  ET — the four the page switches between. */
+export interface GoalooLivePeriod {
+  key: string;
+  rows: GoalooLiveStatRow[];
+}
+
+/** One row of the event list. A period heading (`FT 2-0`, `HT 1-0`) travels in
+ *  the same ordered list with an empty `kind`, so the timeline can render the
+ *  phases exactly where the page puts them. */
+export interface GoalooLiveEvent {
+  /** Event label (`Goal`, `Yellow Card`, `Sub`, `Penalty missed`, …); `''` on a
+   *  period heading. */
+  kind: string;
+  /** Period heading text, `''` on an event row. */
+  label: string;
+  minute: string;
+  side: 'home' | 'away' | '';
+  /** Home-side text (a scorer, `Sub in` + `Sub out` pair, `''`). */
+  home: string;
+  away: string;
+}
+
+/** One row of the two teams' recent-form table: three-match and ten-match
+ *  averages, home and away, for one metric. */
+export interface GoalooLiveFormRow {
+  label: string;
+  /** `[this club's value, the opponent's value]`. */
+  recent3: [string, string];
+  recent10: [string, string];
+}
+
+/** One bar of the goal/missed distribution — how often a club scores (or
+ *  concedes) inside a fifteen-minute window of its last 30/50 matches. */
+export interface GoalooLiveBucket {
+  kind: 'scored' | 'missed';
+  /** `Last 30 Matches` / `Last 50 Matches` (the page's own tab labels). */
+  span: string;
+  /** `1~15`, `16~30`, … `76~90`. */
+  label: string;
+  home: number;
+  away: number;
+}
+
+/** The half-time/full-time record table (last two seasons). */
+export interface GoalooLiveHtFt {
+  /** Team names with their match counts, home then away. */
+  teams: { name: string; matches: string }[];
+  /** Column headings under each club — `Home`, `Away`. */
+  columns: string[];
+  rows: { label: string; cells: string[] }[];
+}
+
+/** One line of the minute-by-minute text feed. */
+export interface GoalooLiveTextRow {
+  id: number;
+  /** The feed's own stamp (`2026-10-13 19:04:20`). */
+  time: string;
+  /** Minute the line carries (`1'`, `90+6'`), `''` for a phase line. */
+  minute: string;
+  text: string;
+}
+
+/** Everything the match centre renders for one fixture. */
+export interface GoalooLiveMatch {
+  /** Goaloo schedule id — `live-<id>` in the publisher's URL. */
+  scheduleId: number;
+  league: { id: number; name: string };
+  /** Kick-off in epoch ms (converted from the page's UTC clock). */
+  kickoff: number | null;
+  /** The page's own state text: `Finished`, `45'`, `Half Time`, `Scheduled`. */
+  state: string;
+  /** The minute, when the state is one (`45'`), else `''`. */
+  minute: string;
+  score: { home: number; away: number } | null;
+  /** Half scores as published (`1-0`, `1-0`). */
+  halves: { label: string; value: string }[];
+  home: GoalooLiveTeam;
+  away: GoalooLiveTeam;
+  /** Two entries once the sheet is out, empty before that. */
+  lineups: GoalooLiveSide[];
+  events: GoalooLiveEvent[];
+  stats: GoalooLivePeriod[];
+  form: GoalooLiveFormRow[];
+  buckets: GoalooLiveBucket[];
+  htft: GoalooLiveHtFt | null;
+  text: GoalooLiveTextRow[];
+  /** When the page was read (epoch ms) — how the panel dates itself. */
+  fetchedAt: number;
+}
+
+/** The watch page's Goaloo half: either the fixture is not in the Goaloo
+ *  catalogue (or the page failed) and nothing is drawn, or the match centre
+ *  travels with the schedule id it was read under. */
+export type GoalooLivePayload =
+  | { matched: false }
+  | { matched: true; scheduleId: number; live: GoalooLiveMatch };
+
 /** One fixture row on a club or player page.
  *
  *  All three Goaloo match feeds (the club's own history, the club's schedule
