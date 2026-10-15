@@ -221,6 +221,74 @@ function stageOrder(key: string, cupNames: Map<number, string>): number {
   return round ? +round[1] : 999_999;
 }
 
+/** `SubLeagueInfo` declares the divisions a competition splits into — `[id,
+ *  "East", …]` (the Austrian 3.Liga names four of them, the Indonesian Super
+ *  League one, called simply "League"). Only the id and the name are read. */
+function subLeagueNames(raw: unknown): Map<number, string> {
+  const out = new Map<number, string>();
+  if (!Array.isArray(raw)) return out;
+  for (const row of raw) {
+    if (!Array.isArray(row) || typeof row[0] !== 'number' || typeof row[1] !== 'string') continue;
+    const name = row[1].trim();
+    if (name) out.set(row[0], name);
+  }
+  return out;
+}
+
+/** One round of a schedule, with everything needed to address, label and order it. */
+interface ScheduleRound {
+  /** The key the round is addressed by (`R_7`, `G24122A`, or `sub_1422.R_7` when
+   *  the competition files more than one division). */
+  key: string;
+  label: string;
+  /** The round's own key inside its division — what orders rounds within it. */
+  base: string;
+  /** The division's index in `SubLeagueInfo` (0 for a competition without one). */
+  order: number;
+  rows: unknown;
+}
+
+/** Unfold `ScheduleList` into rounds. The feed files a schedule one of two ways:
+ *  flat — one key per round (`R_7` matchdays, `G<stage><group>` cup rounds) — or
+ *  under a division key (`ScheduleList.sub_1422.R_7`) when the competition splits
+ *  into divisions which each number their matchdays from `R_1` again. A split
+ *  competition therefore addresses its rounds by division (`sub_1422.R_7`) and
+ *  labels them with the division's name; a single-division one keeps the plain
+ *  `R_7` key and label, so its rounds stay unique on their own. */
+function scheduleRounds(
+  schedule: Record<string, unknown>,
+  cupNames: Map<number, string>,
+  subs: Map<number, string>
+): ScheduleRound[] {
+  const rounds: { key: string; base: string; sub: string; rows: unknown }[] = [];
+  for (const [key, value] of Object.entries(schedule)) {
+    if (Array.isArray(value)) {
+      rounds.push({ key, base: key, sub: '', rows: value });
+      continue;
+    }
+    // A division: its own keys are the rounds.
+    if (!value || typeof value !== 'object') continue;
+    for (const [inner, rows] of Object.entries(value as Record<string, unknown>)) {
+      if (Array.isArray(rows)) rounds.push({ key: `${key}.${inner}`, base: inner, sub: key, rows });
+    }
+  }
+
+  const split = new Set(rounds.map((r) => r.sub)).size > 1;
+  const declared = [...subs.keys()];
+  return rounds.map((r) => {
+    const id = Number(/^sub_(\d+)$/.exec(r.sub)?.[1] ?? NaN);
+    const division = subs.get(id);
+    const label = stageLabel(r.base, cupNames);
+    return {
+      key: split ? r.key : r.base,
+      label: split && division ? `${division} · ${label}` : label,
+      base: r.base,
+      order: split ? Math.max(0, declared.indexOf(id)) : 0,
+      rows: r.rows,
+    };
+  });
+}
+
 /** One positional match row: `[matchId, compId, status, "date", homeId, awayId,
  *  "score", "halfScore", …]`. The feed pads and reuses the tail per stage, so
  *  only the leading fields are read. */
@@ -289,8 +357,9 @@ function parseStandings(
 ): GoalooStandingsGroup[] {
   if (!raw || typeof raw !== 'object') return [];
   const groups: GoalooStandingsGroup[] = [];
-  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (!Array.isArray(value)) continue;
+
+  /** One published table, resolved against the squad list. */
+  const table = (key: string, value: unknown[]): void => {
     const rows: GoalooStandingRow[] = [];
     for (const row of value) {
       if (!Array.isArray(row) || typeof row[1] !== 'number') continue;
@@ -310,10 +379,23 @@ function parseStandings(
         points: num(9),
       });
     }
-    if (!rows.length) continue;
+    if (!rows.length) return;
     const m = /^S(\d+)([A-Z]*)$/.exec(key);
     const name = m ? (cupNames.get(+m[1]) || key) + (m[2] ? ` · Group ${m[2]}` : '') : key;
     groups.push({ key, name, rows });
+  };
+
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (Array.isArray(value)) {
+      table(key, value);
+      continue;
+    }
+    // A competition that splits into divisions files its tables one level deep,
+    // exactly as it files its rounds — and the inner keys are the real keys.
+    if (!value || typeof value !== 'object') continue;
+    for (const [inner, rows] of Object.entries(value as Record<string, unknown>)) {
+      if (Array.isArray(rows)) table(inner, rows);
+    }
   }
   return groups;
 }
@@ -331,8 +413,9 @@ function leagueInfoAbout(info: unknown): string {
 }
 
 /** Normalise one competition-season payload. Every fixture gets its two teams
- *  attached, stages are ordered round by round, and the standings (when the
- *  feed publishes them) are keyed to those same teams. */
+ *  attached, rounds are unfolded and ordered (a competition that splits into
+ *  divisions orders them by division first, then by round), and the standings
+ *  (when the feed publishes them) are keyed to those same teams. */
 export function parseGoalooCompetition(
   raw: unknown,
   comp: GoalooCompetition
@@ -347,14 +430,20 @@ export function parseGoalooCompetition(
 
   const cupNames = cupKindNames(json.CupKindList);
   const schedule = (json.ScheduleList ?? {}) as Record<string, unknown>;
-  const keys = Object.keys(schedule).sort(
-    (a, b) => stageOrder(a, cupNames) - stageOrder(b, cupNames) || a.localeCompare(b)
+  // Cups keep the feed's own chronological order (Round 1 → League Round),
+  // league matchdays sort by round number, and a competition that splits into
+  // divisions keeps the divisions in the order `SubLeagueInfo` declares them.
+  const rounds = scheduleRounds(schedule, cupNames, subLeagueNames(json.SubLeagueInfo)).sort(
+    (a, b) =>
+      a.order - b.order ||
+      stageOrder(a.base, cupNames) - stageOrder(b.base, cupNames) ||
+      a.key.localeCompare(b.key)
   );
 
   const stages: GoalooStage[] = [];
-  for (const key of keys) {
+  for (const round of rounds) {
     const items: GoalooFixture[] = [];
-    flattenStage(schedule[key], key, items);
+    flattenStage(round.rows, round.key, items);
     if (!items.length) continue;
     for (const fixture of items) {
       const home = teams.get(fixture.homeId);
@@ -363,7 +452,7 @@ export function parseGoalooCompetition(
       if (away) fixture.away = away;
     }
     items.sort((a, b) => a.kickoff - b.kickoff || a.matchId - b.matchId);
-    stages.push({ key, label: stageLabel(key, cupNames), items });
+    stages.push({ key: round.key, label: round.label, items });
   }
 
   return {

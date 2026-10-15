@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CircleCheck, Loader2, RefreshCw, Share2, ThumbsUp, Trophy, Tv } from 'lucide-react';
+import { CircleCheck, Clapperboard, Loader2, Play, RefreshCw, Share2, ThumbsUp, Trophy, Tv } from 'lucide-react';
 import { useRB } from '@/components/RBProvider';
 import { Countdown, MatchHead } from '@/components/Match';
 import { useUserTimeZone } from '@/components/LocalTime';
@@ -17,13 +17,13 @@ import {
   matchHeading,
 } from '@/lib/matchProto';
 import { UTC, formatKickoffLong, matchDateMs } from '@/lib/datetime';
-import { useSportMatches, useMatchDetail, useMatchAnalysis, useMatchLineup, useMatchEvent, useMatchStatistic, useStreamUrl } from '@/lib/queries';
+import { useSportMatches, useMatchDetail, useMatchAnalysis, useMatchLineup, useMatchEvent, useMatchStatistic, useStreamUrl, useGoalooMatchCentre } from '@/lib/queries';
 import { sportSlug, sportTypeFromParam, watchHref } from '@/lib/sports';
 import VideoPlayer from '@/components/VideoPlayer';
 import AdBanner from '@/components/AdBanner';
 import { ADSENSE_CLIENT, AD_SLOTS } from '@/lib/ads';
 import { MatchTabs } from '@/components/MatchTabs';
-import { GoalooMatchCentre } from '@/components/GoalooMatchCentre';
+import HighlightPlayer from '@/components/HighlightPlayer';
 import type { Match, Stream } from '@/lib/types';
 
 /** Surface panel (`.panel`): bordered card on the app background. */
@@ -69,6 +69,9 @@ export function WatchPageContent({ id }: { id: string }) {
 
   const [liked, setLiked] = useState(false);
   const [playing, setPlaying] = useState<ResolvedStream | null>(null);
+  /** Index of the incident highlight on screen, `null` while the frame is the
+   *  stream's (see `shownIndex`). */
+  const [clipIndex, setClipIndex] = useState<number | null>(null);
   const [resolveErr, setResolveErr] = useState('');
   const autoPlayedRef = useRef(false);
 
@@ -133,11 +136,46 @@ export function WatchPageContent({ id }: { id: string }) {
   const scoreText = `${match?.homeScore ?? 0} : ${match?.awayScore ?? 0}`;
   const finalScore = matchStatus === 10000 && match ? scoreText : '';
 
+  /* ---------- the Goaloo half: the incident highlights ---------- */
+
+  /** The Goaloo match centre of THIS fixture: the player's incident clips and
+   *  the statistics, team sheets and form the tab strip below draws all come
+   *  from this ONE read (both callers carry the same query key, so React Query
+   *  asks once). The call is held until the fixture row exists (the hook's own
+   *  `enabled` sees the empty id), so a cold page never asks for a lookup whose
+   *  join keys — league, kick-off and the two club names — are not known yet. */
+  const centreQuery = useGoalooMatchCentre({
+    matchId: match ? matchId : '',
+    sportType,
+    leagueId: match?.league?.leagueId,
+    kickoff: match?.matchDate,
+    home: match?.home?.name,
+    away: match?.away?.name,
+    live: isLiveStatus(matchStatus),
+  });
+  /** The publisher's own clips of this match, newest first (lib/goalooLive): the
+   *  goals and cards it animated. Empty for a fixture Goaloo does not carry, for
+   *  a match it published no clip for, and for every other category. */
+  const clips = centreQuery.data?.matched ? centreQuery.data.live.highlights : [];
+
+  /** The clip holding the frame. A pick is clamped to the list loaded now, so
+   *  stepping from one fixture to the next can never replay a stale clip; with no
+   *  pick, a finished match opens on its newest highlight — the one thing left to
+   *  watch once the stream is over — while a live or upcoming match stays on the
+   *  stream (and on its kick-off countdown), the highlights waiting a click. */
+  const pickedIndex =
+    clipIndex !== null && clipIndex >= 0 && clipIndex < clips.length ? clipIndex : null;
+  const autoIndex = pickedIndex === null && !live && finished && clips.length > 0 ? 0 : null;
+  const shownIndex = pickedIndex ?? autoIndex;
+  const shownClip = shownIndex === null ? null : clips[shownIndex] ?? null;
+
   const streamLabel = (s: Stream, i: number): string =>
     s.fullName || s.name || `Channel #${s.streamId ?? s.channelId ?? i + 1}`;
 
   const playChannel = async (s: Stream, i: number): Promise<void> => {
     setResolveErr('');
+    // A channel takes the frame back from a highlight the viewer was replaying.
+    setClipIndex(null);
     try {
       const res = await streamMutation.mutateAsync({
         matchId,
@@ -352,7 +390,19 @@ export function WatchPageContent({ id }: { id: string }) {
               in production builds only. */}
           <section className={PANEL}>
             <div className="relative">
-              {playing ? (
+              {shownClip ? (
+                /* An incident highlight holds the frame: the publisher's own clip
+                   (lib/goalooLive) — the newest one on a match whose stream is over,
+                   or the one the viewer picked. Its ✕ hands the frame back to the
+                   live stream whenever there is a stream to hand it back to. */
+                <HighlightPlayer
+                  clips={clips}
+                  index={shownIndex ?? 0}
+                  onSelect={setClipIndex}
+                  onClose={live || playing ? () => setClipIndex(null) : undefined}
+                  title={title}
+                />
+              ) : playing ? (
                 <VideoPlayer
                   streamUrl={playing.url}
                   referer={playing.referer}
@@ -407,6 +457,31 @@ export function WatchPageContent({ id }: { id: string }) {
 
             </div>
 
+            {/* Highlights under the player — the clips the publisher filed with the
+                match's incidents, newest first. Chips rather than a list because
+                one click swaps the frame above. Nothing is drawn for a fixture
+                with no clip, which is the common case. */}
+            {clips.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted">
+                  <Clapperboard size={14} /> Highlights
+                </span>
+                {clips.map((clip, i) => (
+                  <button
+                    key={clip.url}
+                    type="button"
+                    className={shownIndex === i ? ACTION_ACTIVE : ACTION_IDLE}
+                    title={clip.title}
+                    onClick={() => setClipIndex(i)}
+                  >
+                    <Play size={13} fill="currentColor" />
+                    {clip.minute ? `${clip.minute} ` : ''}
+                    {clip.kind || 'Highlight'}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {resolveErr && <div className={ERROR_BANNER}>{resolveErr}</div>}
 
           </section>
@@ -427,10 +502,17 @@ export function WatchPageContent({ id }: { id: string }) {
             </button>
           </div>
 
-          {/* Big ad — above the tabs (Overview / H2H / Lineups / Timeline) */}
+          {/* Big ad — above the match panels (tabs) */}
           <AdBanner slotId="watch-above-related" category={slug} size="rectangle" />
 
-          {/* H2H / Lineups / Timeline (tabs; auto-shown only where data exists) */}
+          {/* The match itself, as ONE tab strip: Overview (statistics), Head to
+              Head, the two matches tabs, Lineups, Timeline and Form. Where the
+              fixture is in the Goaloo catalogue, Overview, Lineups and Form draw
+              that publisher's own numbers — from the very read the player's
+              incident clips come from, so the strip costs no extra request — and
+              the catalogue's payload is the fallback behind the first two. Tabs
+              without data are hidden, so a match nobody published anything for
+              draws nothing here. */}
           <MatchTabs
             analysis={analysisQuery.data}
             lineup={lineupQuery.data}
@@ -440,28 +522,9 @@ export function WatchPageContent({ id }: { id: string }) {
             awayTeam={match?.away}
             sportType={sportType}
             matchStatus={match?.status}
+            goaloo={centreQuery.data?.matched ? centreQuery.data.live : null}
+            goalooLoading={sportType === 1 && Boolean(match) && centreQuery.isPending}
           />
-
-          {/* Goaloo match centre — the OTHER publisher's half of this page, and
-              the point where the app's two halves meet: Rblink owns the stream
-              above, Goaloo owns the match itself (both team sheets with ratings
-              and substitution minutes, the event list, the technical statistics
-              of every period, recent form, the goal/missed distribution, the
-              HT/FT record and the minute-by-minute text feed). The fixture is
-              resolved to Goaloo by kick-off + club names (lib/goalooLiveJoin), so
-              a match the catalogue does not carry — and every non-football
-              category — simply draws nothing here. */}
-          {match && (
-            <GoalooMatchCentre
-              matchId={matchId}
-              sportType={sportType}
-              leagueId={match.league?.leagueId}
-              kickoff={match.matchDate}
-              home={match.home?.name}
-              away={match.away?.name}
-              live={isLiveStatus(matchStatus)}
-            />
-          )}
 
           {/* Related matches (live/upcoming) — grouped by league name.
               `visibleRelated` is already filtered to this competition when the

@@ -13,7 +13,7 @@
  *                club's squad and a player's profile.
  *
  * `/watch/{id}` is where the two meet and is filed under LIVE, because that is
- * what it opens with — the stream (see components/GoalooMatchCentre.tsx for the
+ * what it opens with — the stream (see components/GoalooPanels.tsx for the
  * Goaloo half that joins it there, and lib/goalooLiveJoin.ts for the join).
  */
 export const COMPETITION_SECTION = ['/competitions', '/competition/', '/club/', '/player/'];

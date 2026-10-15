@@ -107,6 +107,16 @@ export function leagueHref(leagueId: number | string | undefined, sportType?: nu
   return slug ? `/competition/${leagueId}?sport=${slug}` : `/competition/${leagueId}`;
 }
 
+/** Goaloo catalogue competition URL: `/competition/s1122` (a league) or
+ *  `/competition/c29090` (a cup). The catalogue's own key IS the id the route
+ *  resolves (lib/competitions.findCompetition), so a competition the stream join
+ *  could not pair still has a page of its own — its fixtures, results, standings
+ *  and squads — instead of being a dead row. `''` for a row without a key, the
+ *  same contract as {@link leagueHref}. */
+export function goalooCompetitionHref(path: string | undefined): string {
+  return path ? `/competition/${path}` : '';
+}
+
 /** Club detail URL: `/club/24170`. The page is built off a Goaloo football
  *  feed, so it carries no category param. Unlike {@link watchHref} — whose ids
  *  are Rblink match ids, always present — a club id comes from a feed row that

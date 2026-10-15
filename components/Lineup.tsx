@@ -84,11 +84,16 @@ function PlayerRow({
   sportType,
   stats,
   side,
+  tail,
 }: {
   p: LineupPlayer;
   sportType: number;
   stats?: PlayerEventStats;
   side: 'home' | 'away';
+  /** Drawn at the END of the row instead of the event badges — what a Goaloo
+   *  sheet carries and the catalogue's feed does not: the publisher's own marks
+   *  (a goal with its minute, a card, the minute he came on) and his rating. */
+  tail?: ReactNode;
 }) {
   const name = p.player?.name ?? '—';
   const avatar = p.player?.logo ? playerAvatarUrl(sportType, p.player.logo) : '';
@@ -146,15 +151,30 @@ function PlayerRow({
     >
       {number}
       {person}
-      <EventBadges stats={stats} />
+      {tail !== undefined ? tail : <EventBadges stats={stats} />}
     </div>
   );
 }
 
 /** Team header (logo + name), mirrored for the away side. Crest and name are a
  *  single link into the club's own page when the feed's name resolved to one
- *  (ClubLink renders plain text for a team it could not resolve). */
-function TeamHeader({ team, side }: { team?: Team; side: 'home' | 'away' }) {
+ *  (ClubLink renders plain text for a team it could not resolve). `crest` and
+ *  `note` are the two things the sources draw differently: a Goaloo crest comes
+ *  off another host and carries its own broken-URL fallback (GoalooLogo), and a
+ *  Goaloo sheet publishes the formation, which the catalogue's feed does not. */
+function TeamHeader({
+  team,
+  side,
+  crest,
+  note,
+}: {
+  team?: Team;
+  side: 'home' | 'away';
+  /** Crest element; the default draws `team.logo` off the Rblink logo host. */
+  crest?: ReactNode;
+  /** Drawn after the club name — mirrored with the rest of the header. */
+  note?: ReactNode;
+}) {
   const title = team?.name;
   return (
     <ClubLink
@@ -164,16 +184,18 @@ function TeamHeader({ team, side }: { team?: Team; side: 'home' | 'away' }) {
         side === 'away' ? 'flex-row-reverse text-right' : ''
       }`}
     >
-      {team?.logo ? (
-        <img src={team.logo} alt="" loading="lazy" className="h-6 w-6 shrink-0 rounded object-contain" />
-      ) : (
-        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft">
-          {(title ?? '?').charAt(0).toUpperCase()}
-        </span>
-      )}
+      {crest ??
+        (team?.logo ? (
+          <img src={team.logo} alt="" loading="lazy" className="h-6 w-6 shrink-0 rounded object-contain" />
+        ) : (
+          <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft">
+            {(title ?? '?').charAt(0).toUpperCase()}
+          </span>
+        ))}
       <span className="min-w-0 truncate text-[14px] font-bold">
         {title ?? (side === 'home' ? 'Home' : 'Away')}
       </span>
+      {note}
     </ClubLink>
   );
 }
@@ -188,6 +210,9 @@ function PlayerColumn({
   players,
   sportType,
   statsMap,
+  tail,
+  crest,
+  note,
   showHeader = true,
 }: {
   team?: Team;
@@ -195,11 +220,17 @@ function PlayerColumn({
   players: LineupPlayer[];
   sportType: number;
   statsMap?: Map<number, PlayerEventStats>;
+  /** Drawn at the end of each row instead of the event badges (a Goaloo sheet). */
+  tail?: (player: LineupPlayer) => ReactNode;
+  /** Crest element for the team header (a Goaloo crest, typically). */
+  crest?: ReactNode;
+  /** Drawn beside the club name (the Goaloo sheet's formation). */
+  note?: ReactNode;
   showHeader?: boolean;
 }) {
   return (
     <div className="min-w-0">
-      {showHeader && <TeamHeader team={team} side={side} />}
+      {showHeader && <TeamHeader team={team} side={side} crest={crest} note={note} />}
       <div className="flex flex-col gap-0.5">
         {players.map((p, i) => (
           <PlayerRow
@@ -208,6 +239,7 @@ function PlayerColumn({
             sportType={sportType}
             side={side}
             stats={statsMap?.get(p.player?.playerId ?? 0)}
+            tail={tail?.(p)}
           />
         ))}
       </div>
@@ -215,75 +247,122 @@ function PlayerColumn({
   );
 }
 
-export function Lineup({
-  lineup,
-  homeTeam,
-  awayTeam,
-  sportType,
-  homeStats,
-  awayStats,
+/** One side of the shell: the club, the eleven and the bench — ALREADY ordered
+ *  by the caller (the catalogue sorts a lineup by position, `splitLineup`; a
+ *  Goaloo sheet arrives in the formation order its publisher prints) — plus the
+ *  three things the two sources draw differently: the crest, the note beside the
+ *  club name (a Goaloo formation) and the tail of every row (the catalogue's
+ *  event badges, a Goaloo mark with its minute and rating). */
+export interface LineupColumn {
+  team?: Team;
+  /** Crest element; the default draws `team.logo` off the Rblink logo host. */
+  crest?: ReactNode;
+  /** Drawn beside the club name — the formation a Goaloo sheet publishes. */
+  note?: ReactNode;
+  starters: LineupPlayer[];
+  subs: LineupPlayer[];
+  /** Per-player event stats, keyed by `player.playerId` (catalogue rows). */
+  statsMap?: Map<number, PlayerEventStats>;
+  /** Drawn at the end of each row — {@link EventBadges}, unless the caller puts
+   *  something of its own there. */
+  tail?: (player: LineupPlayer) => ReactNode;
+}
+
+/** Whether a side has anything to draw at all: a half-filed read (the Goaloo
+ *  page prints both sheets or neither) must leave neither a stray "Away" header
+ *  nor an empty half behind. */
+const hasSide = (column: LineupColumn): boolean =>
+  !!column.team || column.starters.length > 0 || column.subs.length > 0;
+
+/** The lineup panel, drawn the same whichever publisher answered: a collapsible
+ *  heading with the player count, the two starting elevens under one header per
+ *  club, and ONE shared "Substitutes" toggle that reveals both benches (the H2H
+ *  "Past meetings" idiom). The catalogue's own lineup (this module, {@link Lineup})
+ *  and a Goaloo sheet (components/GoalooPanels) hand in the same two columns, so
+ *  the Lineups tab reads identically in either half of the strip. */
+export function LineupShell({
+  home,
+  away,
+  sportType = 1,
+  credit,
 }: {
-  lineup: MatchLineup;
-  homeTeam?: Team;
-  awayTeam?: Team;
+  home: LineupColumn;
+  away: LineupColumn;
   sportType?: number;
-  /** Per-player event stats for the home team (goals/assists/cards/subs). */
-  homeStats?: Map<number, PlayerEventStats>;
-  /** Per-player event stats for the away team. */
-  awayStats?: Map<number, PlayerEventStats>;
+  /** Drawn at the end of the heading — the Goaloo credit, whose numbers these
+   *  are and where they were read from. */
+  credit?: ReactNode;
 }) {
   const [open, setOpen] = useState(true);
   // One shared substitute toggle for BOTH teams: the bench lists live in a
   // single grid that expands/collapses as a whole, so the two sides stay in sync.
   const [subsOpen, setSubsOpen] = useState(false);
-  if (!lineup.home.length && !lineup.away.length) return null;
-  const st = sportType ?? 1;
-  const total = lineup.home.length + lineup.away.length;
-
-  const home = splitLineup(lineup.home);
-  const away = splitLineup(lineup.away);
+  const total = home.starters.length + home.subs.length + away.starters.length + away.subs.length;
   const subCount = home.subs.length + away.subs.length;
+  const twoSides = hasSide(home) && hasSide(away);
+  const twoBenches = home.subs.length > 0 && away.subs.length > 0;
 
   return (
     <section className={PANEL}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="mb-3 flex w-full cursor-pointer items-center justify-between gap-2 border-0 bg-transparent p-0 text-left"
-      >
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="text-[15px] font-bold">Lineups</span>
-          <span className="rounded-full bg-card px-2 py-0.5 text-[11px] text-muted">
-            {total} players
+      <div className="mb-3 flex w-full items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-2 border-0 bg-transparent p-0 text-left"
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="text-[15px] font-bold">Lineups</span>
+            <span className="rounded-full bg-card px-2 py-0.5 text-[11px] text-muted">
+              {total} players
+            </span>
           </span>
-        </span>
-        <ChevronDown
-          size={16}
-          className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
+          <ChevronDown
+            size={16}
+            className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          />
+        </button>
+        {/* The credit sits OUTSIDE the toggle (an anchor inside a button is not
+            a thing): the heading stays one click target and the Goaloo panel
+            keeps its attribution. */}
+        {credit}
+      </div>
 
       {open && (
         <div>
           {/* Starting XI — home on the left, away on the right, split by a
-              vertical rule. Stacks to a single column on narrow screens. */}
-          <div className="grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-[1fr_auto_1fr]">
-            <PlayerColumn
-              side="home"
-              team={homeTeam}
-              players={home.starters}
-              sportType={st}
-              statsMap={homeStats}
-            />
-            <div aria-hidden className="hidden w-px self-stretch bg-border md:block" />
-            <PlayerColumn
-              side="away"
-              team={awayTeam}
-              players={away.starters}
-              sportType={st}
-              statsMap={awayStats}
-            />
+              vertical rule. Stacks to a single column on narrow screens (and
+              drops the rule, and the empty half, while only one side is out). */}
+          <div
+            className={`grid grid-cols-1 gap-x-5 gap-y-5 ${
+              twoSides ? 'md:grid-cols-[1fr_auto_1fr]' : ''
+            }`}
+          >
+            {hasSide(home) && (
+              <PlayerColumn
+                side="home"
+                team={home.team}
+                crest={home.crest}
+                note={home.note}
+                players={home.starters}
+                sportType={sportType}
+                statsMap={home.statsMap}
+                tail={home.tail}
+              />
+            )}
+            {twoSides && <div aria-hidden className="hidden w-px self-stretch bg-border md:block" />}
+            {hasSide(away) && (
+              <PlayerColumn
+                side="away"
+                team={away.team}
+                crest={away.crest}
+                note={away.note}
+                players={away.starters}
+                sportType={sportType}
+                statsMap={away.statsMap}
+                tail={away.tail}
+              />
+            )}
           </div>
 
           {/* One shared "Substitutes" toggle spanning both columns (H2H
@@ -307,26 +386,71 @@ export function Lineup({
           )}
 
           {subCount > 0 && subsOpen && (
-            <div className="mt-3 grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-[1fr_auto_1fr]">
-              <PlayerColumn
-                side="home"
-                players={home.subs}
-                sportType={st}
-                statsMap={homeStats}
-                showHeader={false}
-              />
-              <div aria-hidden className="hidden w-px self-stretch bg-border md:block" />
-              <PlayerColumn
-                side="away"
-                players={away.subs}
-                sportType={st}
-                statsMap={awayStats}
-                showHeader={false}
-              />
+            <div
+              className={`mt-3 grid grid-cols-1 gap-x-5 gap-y-5 ${
+                twoBenches ? 'md:grid-cols-[1fr_auto_1fr]' : ''
+              }`}
+            >
+              {home.subs.length > 0 && (
+                <PlayerColumn
+                  side="home"
+                  players={home.subs}
+                  sportType={sportType}
+                  statsMap={home.statsMap}
+                  tail={home.tail}
+                  showHeader={false}
+                />
+              )}
+              {twoBenches && (
+                <div aria-hidden className="hidden w-px self-stretch bg-border md:block" />
+              )}
+              {away.subs.length > 0 && (
+                <PlayerColumn
+                  side="away"
+                  players={away.subs}
+                  sportType={sportType}
+                  statsMap={away.statsMap}
+                  tail={away.tail}
+                  showHeader={false}
+                />
+              )}
             </div>
           )}
         </div>
       )}
     </section>
+  );
+}
+
+/** The catalogue's own lineup — the fallback behind a Goaloo sheet. The payload
+ *  is one flat list per club, so each side is split into its eleven and its
+ *  bench (both sorted by position) and handed to {@link LineupShell}, with the
+ *  per-player event stats the Timeline tab already computed. */
+export function Lineup({
+  lineup,
+  homeTeam,
+  awayTeam,
+  sportType,
+  homeStats,
+  awayStats,
+}: {
+  lineup: MatchLineup;
+  homeTeam?: Team;
+  awayTeam?: Team;
+  sportType?: number;
+  /** Per-player event stats for the home team (goals/assists/cards/subs). */
+  homeStats?: Map<number, PlayerEventStats>;
+  /** Per-player event stats for the away team. */
+  awayStats?: Map<number, PlayerEventStats>;
+}) {
+  if (!lineup.home.length && !lineup.away.length) return null;
+  const home = splitLineup(lineup.home);
+  const away = splitLineup(lineup.away);
+  return (
+    <LineupShell
+      sportType={sportType}
+      home={{ team: homeTeam, ...home, statsMap: homeStats }}
+      away={{ team: awayTeam, ...away, statsMap: awayStats }}
+    />
   );
 }

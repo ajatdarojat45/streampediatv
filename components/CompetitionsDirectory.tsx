@@ -2,9 +2,9 @@
 
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Flame, Globe, Play, Trophy } from 'lucide-react';
+import { ChevronDown, Flame, Globe, Trophy } from 'lucide-react';
 import { LocalTime } from '@/components/LocalTime';
-import { leagueHref } from '@/lib/sports';
+import { goalooCompetitionHref, leagueHref } from '@/lib/sports';
 import type {
   CompetitionDirectory,
   CompetitionFederation,
@@ -30,9 +30,6 @@ const TAB_COUNT_IDLE = `${TAB_COUNT} bg-[#f1f3f4] text-muted [[data-theme=dark]_
 const TAB_COUNT_ACTIVE = `${TAB_COUNT} bg-[rgba(26,115,232,0.2)] text-accent`;
 const BADGE =
   'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-semibold text-muted';
-/** The one accent-coloured pill: this competition has a stream behind it. */
-const WATCH_BADGE =
-  'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-bold text-accent';
 const HOT = 'h-3.5 w-3.5 shrink-0 text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]';
 /** Continent tab row — the same swipeable pill row the feed uses, so the tabs
  *  stay on one line and can be swiped into view on a narrow screen. */
@@ -59,7 +56,6 @@ const MENU_HEAD =
 const MENU_LIST = 'm-0 list-none columns-2 gap-x-4 min-[560px]:columns-3 min-[900px]:columns-4';
 const MENU_ITEM = 'mb-1 break-inside-avoid text-[12.5px] leading-[1.55]';
 const MENU_LINK = `${MENU_ITEM} font-semibold text-text underline decoration-dotted underline-offset-2 transition-colors hover:text-accent`;
-const MENU_PLAIN = `${MENU_ITEM} text-muted`;
 
 /** Crest of a headline card. Deliberately not `TeamLogo`: that helper rewrites
  *  the host to the current Rblink logo host, while these crests live on the
@@ -123,31 +119,31 @@ function FederationBadge({ src, name }: { src: string; name: string }) {
 /** One competition inside a federation panel. The feed's short code is the
  *  label — that is how the feed itself names a competition in a compact grid —
  *  with the long name as the tooltip and the accessible name, so a screen
- *  reader never has to guess what "ENG LCH" is. A competition the matcher could
- *  not pair with a stream stays plain text, exactly like a row of the list. */
+ *  reader never has to guess what "ENG LCH" is.
+ *
+ *  Every entry opens a competition page: the Rblink page when the matcher pairs
+ *  the competition with a stream (`/competition/{id}?sport=football`), and the
+ *  Goaloo catalogue page of the same competition otherwise
+ *  (`/competition/{s|c<id>}` — the key is the catalogue's own id vocabulary, so
+ *  the row is never a dead end). */
 function FederationEntry({ item }: { item: FederationCompetition }) {
-  const content = (
-    <>
-      {item.short}
-      {item.hot && <Flame className={`${HOT} ml-1 inline-block align-[-2px]`} aria-label="Headline competition" />}
-    </>
-  );
-  if (item.streamId <= 0) {
-    return (
-      <li className={MENU_PLAIN} title={`${item.name} — no stream`}>
-        {content}
-      </li>
-    );
-  }
+  const linked = item.streamId > 0;
   return (
     <li className={MENU_ITEM}>
       <Link
-        href={leagueHref(item.streamId, FOOTBALL)}
+        href={linked ? leagueHref(item.streamId, FOOTBALL) : goalooCompetitionHref(item.key)}
         className="font-semibold text-text underline decoration-dotted underline-offset-2 transition-colors hover:text-accent"
-        title={`${item.name} — fixtures, results & live streams`}
+        title={
+          linked
+            ? `${item.name} — fixtures, results & live streams`
+            : `${item.name} — fixtures, results & standings`
+        }
         aria-label={item.name}
       >
-        {content}
+        {item.short}
+        {item.hot && (
+          <Flame className={`${HOT} ml-1 inline-block align-[-2px]`} aria-label="Headline competition" />
+        )}
       </Link>
     </li>
   );
@@ -159,9 +155,8 @@ function FederationEntry({ item }: { item: FederationCompetition }) {
  *  Opens on hover and on focus, so a pointer and a keyboard both reach it, and
  *  a click toggles it as well, which is what a touch screen has (there is no
  *  hover there). The panel is rendered only while open — 128 federations
- *  therefore cost 128 cards and no hidden menus — and the crawlable copy of
- *  every competition lives in the country list below, so nothing here has to
- *  carry SEO weight. */
+ *  therefore cost 128 cards and no hidden menus — and every entry it draws is a
+ *  link into that competition's own page. */
 function FederationCard({
   federation,
   open,
@@ -176,7 +171,7 @@ function FederationCard({
   onClose: () => void;
 }) {
   const ref = useRef<HTMLLIElement>(null);
-  const { country, areaLabel, logo, competitions, streamed } = federation;
+  const { country, areaLabel, logo, competitions } = federation;
   /** "1 competition" / "3 competitions" — a federation with a single
    *  competition is common in this catalogue (Angola, Guam), and the card's
    *  accessible name and its panel head both quote it. */
@@ -199,7 +194,7 @@ function FederationCard({
         className={open ? CARD_OPEN : CARD_IDLE}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={`${country} — ${count}${streamed > 0 ? `, ${streamed} with streams` : ''}`}
+        aria-label={`${country} — ${count}`}
         onClick={() => (open ? onClose() : onOpen(ref.current))}
         onKeyDown={(e) => {
           if (e.key === 'Escape') onClose();
@@ -215,15 +210,7 @@ function FederationCard({
             aria-hidden="true"
           />
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className={BADGE}>{competitions.length}</span>
-          {streamed > 0 && (
-            <span className={WATCH_BADGE}>
-              <Play size={10} aria-hidden="true" />
-              {streamed}
-            </span>
-          )}
-        </span>
+        <span className={BADGE}>{competitions.length}</span>
       </button>
       {open && (
         <div className={`${MENU} ${align === 'end' ? 'right-0' : 'left-0'}`}>
@@ -231,7 +218,6 @@ function FederationCard({
             <span className="text-[13px] font-bold text-text">{country}</span>
             <span>
               {areaLabel} · {count}
-              {streamed > 0 ? ` · ${streamed} with streams` : ''}
             </span>
           </p>
           <ul className={MENU_LIST}>
@@ -245,7 +231,9 @@ function FederationCard({
   );
 }
 
-/** Headline card — one featured competition, its crest and its country. */
+/** Headline card — one featured competition, its crest and its country. The card
+ *  carries no watchability badge: a competition is a competition, and the page it
+ *  opens is where streams are found. */
 function HighlightCard({ item }: { item: CompetitionHighlight }) {
   return (
     <Link
@@ -259,10 +247,6 @@ function HighlightCard({ item }: { item: CompetitionHighlight }) {
         <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-muted">
           {item.country && <span className="truncate">{item.country}</span>}
         </span>
-      </span>
-      <span className={WATCH_BADGE}>
-        <Play size={11} aria-hidden="true" />
-        Watch
       </span>
     </Link>
   );
@@ -307,7 +291,7 @@ export function CompetitionsDirectory({ directory }: { directory: CompetitionDir
           const competitions = f.competitions.filter(
             (c) => !q || countryHit || c.name.toLowerCase().includes(q),
           );
-          return { ...f, competitions, streamed: competitions.filter((c) => c.streamId > 0).length };
+          return { ...f, competitions };
         })
         .filter((f) => f.competitions.length > 0),
     [directory.federations, q],
@@ -364,8 +348,8 @@ export function CompetitionsDirectory({ directory }: { directory: CompetitionDir
         <p className="m-0 mt-1.5 max-w-[760px] text-[13px] leading-[1.65] text-muted">
           <strong className="text-text">{totals.competitions}</strong> competitions from{' '}
           <strong className="text-text">{totals.countries}</strong> countries —{' '}
-          <strong className="text-text">{totals.streamed}</strong> of them with live streams, plus
-          fixtures, results and standings.
+          <strong className="text-text">{totals.streamed}</strong> of them with live streams, and every
+          one of them with its own page of fixtures, results and standings.
         </p>
 
         {/* The catalogue-wide search — the only control this page needs now: it
@@ -380,8 +364,8 @@ export function CompetitionsDirectory({ directory }: { directory: CompetitionDir
         />
 
         <p className="m-0 mt-2 text-[12px] leading-[1.6] text-muted">
-          A competition is only marked <em>Watch</em> when the Goaloo catalogue and the Rblink
-          stream catalogue agree on its name and country. Stream list scanned{' '}
+          Every competition opens its own page. Where the Goaloo catalogue and the Rblink stream
+          catalogue agree on a competition, that page also streams its fixtures. Stream list scanned{' '}
           {scan ? <LocalTime ts={scan} variant="long" /> : 'recently'}.
         </p>
       </section>
@@ -416,8 +400,8 @@ export function CompetitionsDirectory({ directory }: { directory: CompetitionDir
           </span>
         </div>
         <p className="m-0 mt-1.5 max-w-[760px] text-[13px] leading-[1.65] text-muted">
-          Pick a continent, then hover a federation to see every competition it runs — the ones with a
-          stream open their competition page, the rest are listed for reference.
+          Pick a continent, then hover a federation to see every competition it runs — every entry
+          opens that competition&apos;s own page of fixtures, results and standings.
         </p>
 
         <div className={`mt-3 ${TAB_ROW}`} role="tablist" aria-label="Continents">

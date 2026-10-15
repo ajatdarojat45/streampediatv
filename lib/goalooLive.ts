@@ -20,9 +20,11 @@
  * own bundle does, and every read is guarded: a panel the page has not published
  * (an upcoming fixture has no events, an unplayed match no statistics) comes back
  * as an empty list rather than as a fabricated row, and a page that cannot be
- * fetched at all comes back as `null` and the panel simply is not drawn. The text
- * feed IS JSON (`/ajax/gettextlivedetail?scheduleId=`), and is read through the
- * same guard.
+ * fetched at all comes back as `null` and the panel simply is not drawn. The
+ * incident clips the publisher files with its events — the animated highlights
+ * the watch page plays back — come off that same event table, in the same pass.
+ * The text feed IS JSON (`/ajax/gettextlivedetail?scheduleId=`), and is read
+ * through the same guard.
  *
  * Nothing here knows how Goaloo spells a competition or a club: the slug in the
  * path is decorative, and the host answers `.../football/x/live-<id>` with the
@@ -36,6 +38,7 @@
  */
 import type {
   GoalooLiveBucket,
+  GoalooLiveClip,
   GoalooLiveEvent,
   GoalooLiveFormRow,
   GoalooLiveHtFt,
@@ -316,10 +319,29 @@ function sideText(cell: string): string {
   return parts.length ? parts.join(' · ') : text(cell);
 }
 
+/** The clip a side cell carries: the page's own video icon, whose `onclick` is
+ *  `callGifWin('<url>','<caption>')`. Read whole — the caption is the publisher's
+ *  and doubles as the clip's title — and dropped when either half is missing, so
+ *  a row without an animation simply reports `null`. */
+const CLIP = /callGifWin\('([^']+)'\s*,\s*'([^']*)'\)/;
+
+function clipOf(cell: string, minute: string, kind: string): GoalooLiveClip | null {
+  const m = CLIP.exec(cell);
+  if (!m) return null;
+  const url = absolute(m[1]);
+  if (!url) return null;
+  return { url, title: text(m[2]), minute, kind };
+}
+
 /** The page's `#eventsTable`, row by row. A period row (`stage-tit`, `FT 2-0`)
  *  keeps its place in the same list; every other row carries five cells — the
  *  home side, the home badge column, the minute, the away badge column and the
- *  away side — and the badge column a row filled in is the side it belongs to. */
+ *  away side — and the badge column a row filled in is the side it belongs to.
+ *
+ *  A row the publisher animated carries one more thing: a video icon whose
+ *  `onclick` names the clip (`callGifWin('<url>','<caption>')`). It sits in the
+ *  SAME side cell as the player it belongs to, so the clip is read from whichever
+ *  of the two side cells has it and travels with the row (see clipOf). */
 function parseEvents(html: string): GoalooLiveEvent[] {
   const table = slice(html, 'id="eventsTable"', '</table>');
   if (!table) return [];
@@ -328,7 +350,15 @@ function parseEvents(html: string): GoalooLiveEvent[] {
     // A period row carries a single cell — `FT 2-0` — so it is recognised before
     // the five-cell shape below is required.
     if (/stage-tit/.test(row[1])) {
-      out.push({ kind: '', label: text(first(/<td[^>]*>([\s\S]*?)<\/td>/, row[2])), minute: '', side: '', home: '', away: '' });
+      out.push({
+        kind: '',
+        label: text(first(/<td[^>]*>([\s\S]*?)<\/td>/, row[2])),
+        minute: '',
+        side: '',
+        home: '',
+        away: '',
+        clip: null,
+      });
       continue;
     }
     const cells = [...row[2].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((m) => m[1]);
@@ -338,13 +368,16 @@ function parseEvents(html: string): GoalooLiveEvent[] {
     const away = sideText(awayCell);
     const homeKind = text(first(/<img[^>]*alt="([^"]+)"/, homeBadge));
     const awayKind = text(first(/<img[^>]*alt="([^"]+)"/, awayBadge));
+    const kind = homeKind || awayKind;
+    const minute = text(first(/<b class="score">([\s\S]*?)<\/b>/, minuteCell));
     out.push({
-      kind: homeKind || awayKind,
+      kind,
       label: '',
-      minute: text(first(/<b class="score">([\s\S]*?)<\/b>/, minuteCell)),
+      minute,
       side: homeKind || home ? 'home' : awayKind || away ? 'away' : '',
       home,
       away,
+      clip: clipOf(homeCell, minute, kind) ?? clipOf(awayCell, minute, kind),
     });
   }
   return out;
@@ -517,6 +550,10 @@ export function parseGoalooLiveMatch(html: string, scheduleId: number): GoalooLi
   const home = headClub(box, 'home');
   const away = headClub(box, 'guest');
   if (!home.name && !away.name) return null;
+  // The event table is read once: its rows carry both the timeline the panel
+  // draws and the clips the player needs, so the highlights are lifted off the
+  // very events that were just parsed instead of re-scanning the page.
+  const events = parseEvents(html);
   return {
     scheduleId,
     league: {
@@ -528,7 +565,8 @@ export function parseGoalooLiveMatch(html: string, scheduleId: number): GoalooLi
     home,
     away,
     lineups: parseLineups(html, home, away),
-    events: parseEvents(html),
+    events,
+    highlights: events.flatMap((event) => (event.clip ? [event.clip] : [])),
     stats: parseStats(html),
     form: parseForm(html),
     buckets: parseBuckets(html),

@@ -278,7 +278,6 @@ export function competitionDirectory(): CompetitionDirectory {
         areaLabel: goalooAreaLabel(area),
         logo: badge.get(badgeKey(country)) ?? '',
         competitions,
-        streamed: competitions.filter((c) => c.streamId > 0).length,
       };
       return {
         rank: best ? LEAGUE_RANK.get(best.streamId) ?? Number.MAX_SAFE_INTEGER : Number.MAX_SAFE_INTEGER,

@@ -583,6 +583,24 @@ export interface GoalooLivePeriod {
 /** One row of the event list. A period heading (`FT 2-0`, `HT 1-0`) travels in
  *  the same ordered list with an empty `kind`, so the timeline can render the
  *  phases exactly where the page puts them. */
+/** One incident clip a match page offers for an event row.
+ *
+ *  The publisher hangs its own animation of the incident on the row itself —
+ *  `callGifWin('<url>','<caption>')` — and the file behind it is an animated GIF
+ *  on its clips CDN. Only the incidents the publisher has animated carry one
+ *  (a goal usually, a red card or a shot sometimes), so a row without a clip is
+ *  the normal case and never a gap in the read. */
+export interface GoalooLiveClip {
+  /** Absolute URL of the clip (an animated GIF). */
+  url: string;
+  /** The publisher's own caption (`Atletico Madrid 2-0 Lookman A. Goal`). */
+  title: string;
+  /** Minute the clip's incident carries (`79'`), `''` when the page prints none. */
+  minute: string;
+  /** Event label the clip belongs to (`Goal`, `Red Card`, `Shots`, …). */
+  kind: string;
+}
+
 export interface GoalooLiveEvent {
   /** Event label (`Goal`, `Yellow Card`, `Sub`, `Penalty missed`, …); `''` on a
    *  period heading. */
@@ -594,6 +612,9 @@ export interface GoalooLiveEvent {
   /** Home-side text (a scorer, `Sub in` + `Sub out` pair, `''`). */
   home: string;
   away: string;
+  /** The clip filed beside this row, `null` when the publisher has none for it
+   *  (see GoalooLiveClip). */
+  clip: GoalooLiveClip | null;
 }
 
 /** One row of the two teams' recent-form table: three-match and ten-match
@@ -655,6 +676,10 @@ export interface GoalooLiveMatch {
   /** Two entries once the sheet is out, empty before that. */
   lineups: GoalooLiveSide[];
   events: GoalooLiveEvent[];
+  /** The clips the page offers, in the page's own order (newest first, the order
+   *  its event table is written in) — what the watch page's player falls back to
+   *  once the stream is over, and what a viewer picks from to replay an incident. */
+  highlights: GoalooLiveClip[];
   stats: GoalooLivePeriod[];
   form: GoalooLiveFormRow[];
   buckets: GoalooLiveBucket[];
@@ -796,6 +821,13 @@ export interface GoalooClub {
 /** The panels a club page opens, in the order its tab strip draws them. The tab
  *  rides in the URL (`/club/100?tab=schedule`), so a panel is linkable. */
 export type ClubTab = 'overview' | 'schedule' | 'players' | 'transfers' | 'standing';
+
+/** The panels a Goaloo catalogue competition page opens
+ *  (`/competition/{s|c<id>}` — the page the directory's unpaired rows open), in
+ *  the order its tab strip draws them. The tab rides in the URL, and the fixtures
+ *  panel adds the stage it shows (`?tab=fixtures&stage=R_7`), exactly as the club
+ *  page's panels do. */
+export type CatalogueTab = 'overview' | 'fixtures' | 'standings' | 'teams';
 
 /** The two sub-panels of the Players tab: the squad as a team sheet, and the
  *  squad's totals for one competition × season. */
@@ -1091,8 +1123,6 @@ export interface CompetitionFederation {
   /** Every competition of this federation, ordered: streamed ones first, in the
    *  scan's own (importance) order, then the unpaired ones alphabetically. */
   competitions: FederationCompetition[];
-  /** Competitions of this federation with a stream — pre-counted. */
-  streamed: number;
 }
 
 /** One continent tab of the `/competitions` grid. */

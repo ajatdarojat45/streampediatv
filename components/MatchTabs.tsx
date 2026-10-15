@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import type { MatchAnalysis, MatchLineup, MatchEvents, MatchStats, Team } from '@/lib/types';
+import type {
+  GoalooLiveMatch,
+  MatchAnalysis,
+  MatchLineup,
+  MatchEvents,
+  MatchStats,
+  Team,
+} from '@/lib/types';
 import type { PlayerEventStats } from '@/lib/matchProto';
 import { computePlayerEventStats, isLiveStatus } from '@/lib/matchProto';
 import { H2H } from '@/components/H2H';
@@ -9,8 +16,14 @@ import { LatestMatches, NextMatches } from '@/components/TeamMatches';
 import { Lineup } from '@/components/Lineup';
 import { Timeline } from '@/components/Timeline';
 import { Stats } from '@/components/Stats';
+import {
+  GoalooFormPanel,
+  GoalooLineupsPanel,
+  GoalooPendingPanel,
+  GoalooStatsPanel,
+} from '@/components/GoalooPanels';
 
-type TabId = 'overview' | 'h2h' | 'latest' | 'next' | 'lineup' | 'timeline';
+type TabId = 'overview' | 'h2h' | 'latest' | 'next' | 'lineup' | 'timeline' | 'form';
 
 /** Split a match-events list into per-team player-stat maps (keyed by playerId).
  *  Attributes each event to home/away by teamSide, reusing the shared
@@ -47,8 +60,18 @@ function teamStats(events: MatchEvents | undefined): {
   return { home, away };
 }
 
-/** Panelled tab strip wrapping H2H, Lineups and Timeline. Tabs with no
- *  data are hidden; if only one has data it renders directly with no strip. */
+/** Panelled tab strip: Overview (statistics), Head to Head, the two matches
+ *  tabs, Lineups, Timeline and Form. Tabs with no data are hidden; if only one
+ *  has data it renders directly with no strip.
+ *
+ *  Overview, Lineups and Form draw the Goaloo match centre's own numbers when
+ *  the fixture is in that catalogue (components/GoalooPanels.tsx) — statistics of
+ *  every period, the team sheets with ratings and substitution minutes, the two
+ *  clubs' recent numbers — and Overview and Lineups fall back to the catalogue's
+ *  own payload when it is not (every other category, and any part of a football
+ *  match the publisher has not filed yet). The Goaloo read itself happens once,
+ *  in the page (components/WatchPageContent.tsx): it is the very read the
+ *  player's incident clips come from. */
 export function MatchTabs({
   analysis,
   lineup,
@@ -58,6 +81,8 @@ export function MatchTabs({
   awayTeam,
   sportType,
   matchStatus,
+  goaloo,
+  goalooLoading = false,
 }: {
   analysis?: MatchAnalysis;
   lineup?: MatchLineup;
@@ -67,9 +92,27 @@ export function MatchTabs({
   awayTeam?: Team;
   sportType?: number;
   matchStatus?: number;
+  /** The fixture's Goaloo match centre, when the publisher carries it. */
+  goaloo?: GoalooLiveMatch | null;
+  /** True while that read is in flight (the caller gates it on the category, so
+   *  this is never set for a sport Goaloo does not carry). Overview and Lineups
+   *  then hold their place with one loading line instead of drawing the
+   *  catalogue's numbers and swapping them out a moment later. */
+  goalooLoading?: boolean;
 }) {
   // `null` = user hasn't picked yet → default to the phase-preferred first tab.
   const [active, setActive] = useState<TabId | null>(null);
+
+  // What only Goaloo carries. Statistics and the team sheets are PREFERRED over
+  // the catalogue's own (its statistics run per period; its sheets carry each
+  // player's rating and the minute he came on or went off) but never required —
+  // the catalogue's payload is the fallback behind both.
+  const hasGoalooStats = !!goaloo && goaloo.stats.length > 0;
+  const hasGoalooSheets = !!goaloo && goaloo.lineups.length > 0;
+  // Form, the goal distribution and the HT/FT record exist only at Goaloo, so
+  // this tab has nothing to fall back to and is simply absent without them.
+  const hasGoalooForm =
+    !!goaloo && (goaloo.form.length > 0 || goaloo.buckets.length > 0 || !!goaloo.htft);
 
   const hasStats = !!stats && stats.length > 0;
   const hasH2H = !!analysis && analysis.h2h.length > 0;
@@ -89,21 +132,25 @@ export function MatchTabs({
   //              latest results / next fixtures) lead; stats/timeline are empty
   //   live     → Timeline (goals/cards as they happen) leads, then live stats
   //   finished → Overview (final stat summary) leads, then the goal recap
+  // Form rides last in every phase: it is a reference panel — the two clubs'
+  // recent numbers — and never the first thing a reader opens for a match that
+  // is being played or has just ended.
   const finished = (matchStatus ?? 0) >= 10000;
   const live = isLiveStatus(matchStatus);
   const phaseOrder: TabId[] = finished
-    ? ['overview', 'timeline', 'h2h', 'latest', 'next', 'lineup']
+    ? ['overview', 'timeline', 'h2h', 'latest', 'next', 'lineup', 'form']
     : live
-    ? ['timeline', 'overview', 'lineup', 'h2h', 'latest', 'next']
-    : ['lineup', 'h2h', 'latest', 'next', 'overview', 'timeline'];
+    ? ['timeline', 'overview', 'lineup', 'h2h', 'latest', 'next', 'form']
+    : ['lineup', 'h2h', 'latest', 'next', 'overview', 'timeline', 'form'];
 
   const defs: Record<TabId, { label: string; show: boolean }> = {
-    overview: { label: 'Overview', show: hasStats },
+    overview: { label: 'Overview', show: hasGoalooStats || hasStats || goalooLoading },
     h2h: { label: 'Head to Head', show: hasH2H },
     latest: { label: 'Latest Matches', show: hasLatest },
     next: { label: 'Next Matches', show: hasNext },
-    lineup: { label: 'Lineups', show: hasLineup },
+    lineup: { label: 'Lineups', show: hasGoalooSheets || hasLineup || goalooLoading },
     timeline: { label: 'Timeline', show: hasTimeline },
+    form: { label: 'Form', show: hasGoalooForm },
   };
   const available = phaseOrder
     .map((id) => ({ id, ...defs[id] }))
@@ -114,6 +161,12 @@ export function MatchTabs({
   const content = (id: TabId) => {
     switch (id) {
       case 'overview':
+        // The publisher's own statistics when it has them, one loading line
+        // while its page is still being read, and the catalogue's own numbers
+        // when it has none — never the catalogue's first and the publisher's a
+        // moment later, which would swap the panel under the reader's cursor.
+        if (goaloo && hasGoalooStats) return <GoalooStatsPanel match={goaloo} />;
+        if (goalooLoading) return <GoalooPendingPanel />;
         return <Stats stats={stats!} homeTeam={homeTeam} awayTeam={awayTeam} />;
       case 'h2h':
         return <H2H analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} sportType={sportType} />;
@@ -122,6 +175,11 @@ export function MatchTabs({
       case 'next':
         return <NextMatches analysis={analysis!} homeTeam={homeTeam} awayTeam={awayTeam} sportType={sportType} />;
       case 'lineup':
+        // The publisher's team sheets (ratings and substitution minutes) when
+        // they are out, the catalogue's lineup until then — the tab keeps the
+        // "Lineups" reading either way.
+        if (goaloo && hasGoalooSheets) return <GoalooLineupsPanel match={goaloo} />;
+        if (goalooLoading) return <GoalooPendingPanel />;
         return (
           <Lineup
             lineup={lineup!}
@@ -134,6 +192,8 @@ export function MatchTabs({
         );
       case 'timeline':
         return <Timeline events={events!} sportType={sportType} homeTeam={homeTeam} awayTeam={awayTeam} />;
+      case 'form':
+        return goaloo ? <GoalooFormPanel match={goaloo} /> : null;
       default:
         return null;
     }
