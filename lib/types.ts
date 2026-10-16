@@ -1252,3 +1252,30 @@ export interface NowgoalMatchAbsence {
   id: string;
   name: string;
 }
+
+/* ------------------------------------------------------------------------- *
+ * The live player's own match behind a publisher match
+ * ------------------------------------------------------------------------- */
+
+/** The app's own player, seen from a publisher match page: the match it carries
+ *  behind `/matches/[id]`, when it carries it at all. The two feeds number their
+ *  matches in their own spaces (see lib/matchStream.ts), so this is resolved on
+ *  the server by the two sides rather than by id, and handed to the page — which
+ *  only renders it. */
+export interface MatchStreamView {
+  /** The player's own match id: its player page is `/watch/{matchId}`. */
+  matchId: number;
+  /** The sport the player files the match under — the category its player page
+   *  opens with (`?sport=football`). */
+  sportType: number;
+  /** What the player calls the competition (`Brazilian Serie A`); the page's own
+   *  name for it may be spelled differently, so it is shown as the player's. */
+  competition: string;
+  /** The player's own status code for the match (`101` first half, `102` half
+   *  time, `0`/absent before kick-off), rendered with the app's `statusLabel`. */
+  status?: number;
+  /** The broadcasters the player lists for the match, as it names them (`MAX UK`,
+   *  `ESPN+ US`), in its own order. Empty until it publishes them, which for a
+   *  match that has not kicked off happens near kick-off. */
+  channels: string[];
+}

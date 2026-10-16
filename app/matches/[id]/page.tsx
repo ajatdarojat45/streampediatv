@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MatchDetail } from '@/components/MatchDetail';
 import { getMatchView } from '@/lib/nowgoalMatch';
+import { getMatchStream } from '@/lib/matchStream';
 import type { NowgoalMatchQuery } from '@/lib/nowgoalMatch';
 
 /* One match, one tab at a time, with the plates of that tab's own two-sided
@@ -23,7 +24,12 @@ import type { NowgoalMatchQuery } from '@/lib/nowgoalMatch';
  * Every tab and every plate is a query on this one route, so each view is a real
  * URL a visitor can link to, share or refresh. The route renders per request
  * (the search params decide what is read), while the upstream reads themselves
- * are cached through `next.revalidate`. */
+ * are cached through `next.revalidate`.
+ *
+ * Behind a match that is live or about to be, this app's own player is read too
+ * (lib/matchStream.ts): its channels are the match's streaming links, drawn
+ * above the tabs. A finished match skips that read altogether — the publisher's
+ * highlight is what it has to offer instead. */
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -94,5 +100,8 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
   const loaded = await getMatchView(id, queryOf(await searchParams));
   if (loaded.status === 'missing') notFound();
   if (loaded.status !== 'ok') return <MatchUnavailable id={id} />;
-  return <MatchDetail id={id} view={loaded.value} />;
+  // Where to watch it, off the app's own player. The read is skipped outright for
+  // a finished match, and the list behind it is the one the live pages poll.
+  const stream = await getMatchStream(loaded.value.header);
+  return <MatchDetail id={id} view={loaded.value} stream={stream} />;
 }

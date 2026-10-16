@@ -2,9 +2,13 @@
 
 import { useState, type ReactNode } from 'react';
 import Link, { useLinkStatus } from 'next/link';
-import { ChevronDown, Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2, Play, Tv } from 'lucide-react';
 import { LocalTime } from '@/components/LocalTime';
+import { StatusBadge } from '@/components/Match';
+import { isLiveStatus } from '@/lib/matchProto';
+import { watchHref } from '@/lib/sports';
 import type {
+  MatchStreamView,
   NowgoalMatchAbsence,
   NowgoalMatchEvent,
   NowgoalMatchFixTab,
@@ -30,10 +34,16 @@ import type {
  *   H2H      the strength comparison, the page's own poll, the head-to-head list
  *            and both sides' form and fixtures, each behind its own buttons
  *
- * Nothing here reads upstream: the server resolved the tab and the plates and
- * handed over exactly the rows of the tab that is open (lib/nowgoalMatch.ts).
- * Every button is a link carrying the same query with one value changed, so the
- * URL always says what is on screen. */
+ * Above the tabs sits the one thing a match being played needs before anything
+ * else: where to watch it. A match that is live or about to be carries this
+ * app's own player behind it (lib/matchStream.ts), and that player's channel
+ * list is drawn as the match's streaming links; a match that has finished has
+ * the publisher's highlight in its detail tab instead.
+ *
+ * Nothing here reads upstream: the server resolved the tab, the plates and the
+ * stream and handed over exactly the rows of the tab that is open
+ * (lib/nowgoalMatch.ts, lib/matchStream.ts). Every button is a link carrying the
+ * same query with one value changed, so the URL always says what is on screen. */
 
 /** Surface panel — the card every page of the app renders. */
 const PANEL =
@@ -48,6 +58,11 @@ const CHIP =
   'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold transition-all';
 const CHIP_IDLE = `${CHIP} border-border bg-card text-muted hover:border-[#c7ccd2] hover:text-text`;
 const CHIP_ACTIVE = `${CHIP} border-accent bg-accent-soft text-accent`;
+/** The same pill as a link: one channel of the app's own player. */
+const CHANNEL = `${CHIP_IDLE} no-underline`;
+/** The primary action of the streaming plate — the app's accent button. */
+const WATCH =
+  'mt-3 inline-flex items-center gap-2 rounded-full border border-transparent bg-accent px-4 py-2 text-[13px] font-semibold text-white no-underline transition-all hover:opacity-90';
 const COUNT = 'min-w-5 rounded-full bg-accent-soft px-1.5 text-center text-[10.5px] font-bold';
 /** One swipeable row of pills, like the directory's own tab row. */
 const ROW =
@@ -268,13 +283,80 @@ function MatchHeader({ view, href }: { view: NowgoalMatchView; href: Href }) {
   );
 }
 
-/** The match's own page: the header, the tabs, and the plates of the tab that is
- *  open — all of which the server resolved already. */
-export function MatchDetail({ id, view }: { id: string; view: NowgoalMatchView }) {
+/** Where to watch a match: the app's own player carries it (lib/matchStream.ts),
+ *  so this plate is that player's channel list drawn as the match's streaming
+ *  links, each one opening the player page — over the one button that opens it
+ *  while the channels are not published yet. A finished match never reaches this
+ *  plate: its stream is over, and its highlight is on the detail tab instead. */
+function StreamPlate({ view, stream }: { view: NowgoalMatchView; stream: MatchStreamView }) {
+  const live = isLiveStatus(stream.status);
+  const href = watchHref(stream.matchId, stream.sportType);
+  const teams = `${view.header.home.name} vs ${view.header.away.name}`;
+  return (
+    <section className={PANEL}>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <h2 className="m-0 flex items-center gap-2 text-[15px] font-bold">
+          <Tv size={16} className="shrink-0 text-accent" aria-hidden="true" />
+          Live stream
+        </h2>
+        <span className="flex min-w-0 flex-wrap items-center gap-2 text-[11px] text-muted">
+          {live ? <StatusBadge status={stream.status} /> : null}
+          {stream.competition ? (
+            <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+              {stream.competition}
+            </span>
+          ) : null}
+        </span>
+      </div>
+
+      {stream.channels.length ? (
+        <div className={`${ROW} mt-3`}>
+          {stream.channels.map((channel) => (
+            <Link
+              key={channel}
+              href={href}
+              className={CHANNEL}
+              title={`Watch ${teams} on ${channel}`}
+            >
+              <Play size={12} aria-hidden="true" />
+              {channel}
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="m-0 mt-3 text-[13px] leading-[1.7] text-muted">
+          {live
+            ? `Our own player carries ${teams}, but it has not published a channel for it yet — worth another look in a moment.`
+            : `The channels for ${teams} are published closer to kick-off; the player opens with the countdown until then.`}
+        </p>
+      )}
+
+      <Link href={href} className={WATCH}>
+        <Play size={14} aria-hidden="true" />
+        {live ? 'Watch live' : 'Open the player'}
+      </Link>
+    </section>
+  );
+}
+
+/** The match's own page: the header, where to watch it, the tabs, and the plates
+ *  of the tab that is open — all of which the server resolved already. */
+export function MatchDetail({
+  id,
+  view,
+  stream,
+}: {
+  id: string;
+  view: NowgoalMatchView;
+  /** The app's own player behind this match, `null` when it carries none or the
+   *  match has finished (lib/matchStream.ts). */
+  stream: MatchStreamView | null;
+}) {
   const href: Href = (overrides) => matchHref(id, view, overrides);
   return (
     <>
       <MatchHeader view={view} href={href} />
+      {stream ? <StreamPlate view={view} stream={stream} /> : null}
       {view.tab === 'detail' ? <DetailTab view={view} /> : null}
       {view.tab === 'lineup' ? <LineUpTab view={view} /> : null}
       {view.tab === 'h2h' ? <H2HTab view={view} href={href} /> : null}
@@ -421,12 +503,17 @@ function timelineOf(events: NowgoalMatchEvent[], periods: NowgoalMatchPeriod[]):
 }
 
 /** The detail tab: the timeline, the statistics plates the publisher published
- *  and the highlight it links to. A match it has published none of yet — one
- *  that has not kicked off — says so instead of drawing three empty plates. */
+ *  and, once the match is over, the highlight it links to. A match it has
+ *  published none of yet — one that has not kicked off — says so instead of
+ *  drawing three empty plates. */
 function DetailTab({ view }: { view: NowgoalMatchView }) {
   const { header, events, periods, stats, video } = view;
   const rows = timelineOf(events, periods);
-  if (!events.length && !stats.length && !video) {
+  // The publisher hangs its `youtubeLink` off the page of a match it has a
+  // highlight for, which is a match that has finished (`-1`); a match in play is
+  // shown its stream instead, above the tabs.
+  const highlight = header.stateCode === -1 ? video : null;
+  if (!events.length && !stats.length && !highlight) {
     return (
       <section className={PANEL}>
         <p className={EMPTY}>
@@ -472,11 +559,11 @@ function DetailTab({ view }: { view: NowgoalMatchView }) {
         </Plate>
       ))}
 
-      {video ? (
+      {highlight ? (
         <Plate title="Highlight">
           <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border">
             <iframe
-              src={video.embed}
+              src={highlight.embed}
               title={`${header.home.name} vs ${header.away.name} highlights`}
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
