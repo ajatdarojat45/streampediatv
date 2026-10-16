@@ -205,3 +205,89 @@ export interface AppConfig {
   deviceId: string;
   activationCode: string;
 }
+
+/* ------------------------------------------------------------------------- *
+ * NowGoal football competition catalogue — the federation/competition feed
+ * behind `/competitions` (see lib/nowgoal.ts).
+ * ------------------------------------------------------------------------- */
+
+/** One competition row of the feed: `36,ENG PR,1,0,2026-2027,2025-2026,...`. */
+export interface NowgoalCompetition {
+  /** Publisher's competition id — also the id in its own `/league/{id}` page. */
+  id: string;
+  /** Short label the feed itself shows in a compact grid, e.g. "ENG PR". */
+  name: string;
+  /** Third field: `1` = league, `2` = cup (the publisher's own split). */
+  kind: 'league' | 'cup';
+  /** Fourth field: `true` for a top-flight league — cups always read `false`. */
+  topTier: boolean;
+  /** Newest season label of the feed, e.g. "2026-2027" (empty when unlisted).
+   *  The feed also lists every past season; nothing renders those. */
+  season: string;
+}
+
+/** One federation (country / region) of the feed, with the competitions it runs. */
+export interface NowgoalFederation {
+  /** Feed key, e.g. "InfoID_1" (England). */
+  id: string;
+  /** Country or region name, e.g. "England". */
+  name: string;
+  /** Badge path exactly as published, e.g. "images/164326923816.png". */
+  flag: string;
+  /** Continent key 0–5 — see NOWGOAL_CONTINENTS in lib/nowgoal.ts. */
+  area: string;
+  competitions: NowgoalCompetition[];
+}
+
+/** Shape of `data/nowgoal-competitions.json` — the committed feed snapshot. */
+export interface NowgoalCatalogueFile {
+  /** ISO timestamp of the generator run that wrote the file. */
+  generatedAt: string;
+  /** Feed URL the snapshot was parsed from. */
+  origin: string;
+  federations: NowgoalFederation[];
+}
+
+/** A competition ready to render: the feed row plus its crest and its page. */
+export interface NowgoalCompetitionEntry extends NowgoalCompetition {
+  /** Absolute crest URL, or `''` when the feed publishes none. */
+  crest: string;
+  /** Absolute competition page on the publisher's site. */
+  href: string;
+}
+
+/** A federation ready to render: absolute badge URL + resolved continent label. */
+export interface NowgoalFederationEntry {
+  id: string;
+  name: string;
+  /** Absolute badge URL, or `''` when the feed publishes none. */
+  badge: string;
+  area: string;
+  continent: string;
+  competitions: NowgoalCompetitionEntry[];
+}
+
+/** One continent of the directory (the feed's own six area buckets). */
+export interface NowgoalContinent {
+  key: string;
+  label: string;
+  federations: number;
+  competitions: number;
+}
+
+/** The whole `/competitions` directory: federations, continent tabs, totals. */
+export interface NowgoalCatalogue {
+  federations: NowgoalFederationEntry[];
+  continents: NowgoalContinent[];
+  totals: {
+    federations: number;
+    competitions: number;
+    leagues: number;
+    cups: number;
+  };
+  /** `nowgoal` when the live feed answered, `snapshot` when the committed file did. */
+  source: 'nowgoal' | 'snapshot';
+  /** When the catalogue in use was read: the fetch time for a live read, the
+   *  generator run that wrote the snapshot for a fallback (`''` if neither). */
+  generatedAt: string;
+}

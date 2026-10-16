@@ -1,0 +1,7945 @@
+{
+  "generatedAt": "2026-10-16T00:19:04.994Z",
+  "origin": "https://football.nowgoal50.com/jsData/infoHeaderEn.js",
+  "federations": [
+    {
+      "id": "InfoID_1",
+      "name": "England",
+      "flag": "images/164326923816.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "36",
+          "name": "ENG PR",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "37",
+          "name": "ENG LCH",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "39",
+          "name": "ENG L1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "35",
+          "name": "ENG L2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "90",
+          "name": "ENG FAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "146",
+          "name": "ENG NL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "84",
+          "name": "ENG LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "144",
+          "name": "EFL Trophy",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "177",
+          "name": "ENG FAT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "207",
+          "name": "ENG YFAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "385",
+          "name": "ENG FACS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "452",
+          "name": "ENG FA WNLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "585",
+          "name": "ENG WPR LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "298",
+          "name": "ENG NLS",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "297",
+          "name": "ENG NLN",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "566",
+          "name": "ENG RYM",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "713",
+          "name": "ENG-N PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "336",
+          "name": "ENG-S PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1147",
+          "name": "ENG FAWSL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "285",
+          "name": "ENG LCHW",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "861",
+          "name": "EWSL",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1016",
+          "name": "ENG WNPL",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1209",
+          "name": "ENG WLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1260",
+          "name": "ENG U21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1329",
+          "name": "ENG U21LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1583",
+          "name": "ENG PU23",
+          "kind": "league",
+          "topTier": false,
+          "season": "2021-2022"
+        },
+        {
+          "id": "1617",
+          "name": "ENG U23LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2021-2022"
+        },
+        {
+          "id": "1956",
+          "name": "ENG-S CE",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1264",
+          "name": "ENG U21D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1599",
+          "name": "ENG U23 D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2021-2022"
+        },
+        {
+          "id": "2604",
+          "name": "ENL Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_2",
+      "name": "Italy",
+      "flag": "images/164326651873.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "34",
+          "name": "ITA D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "40",
+          "name": "ITA D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "142",
+          "name": "ITA SC",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "83",
+          "name": "ITA Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "252",
+          "name": "TIM Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016"
+        },
+        {
+          "id": "346",
+          "name": "VIAT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "264",
+          "name": "ITA SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "219",
+          "name": "ITA SC C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "736",
+          "name": "ITA YCup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "677",
+          "name": "ITA YTHL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1217",
+          "name": "IWD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1677",
+          "name": "ITA S4 CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2158",
+          "name": "ITA YL B",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2871",
+          "name": "SAWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_3",
+      "name": "Spain",
+      "flag": "images/164326689793.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "31",
+          "name": "SPA D1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "33",
+          "name": "SPA D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2254",
+          "name": "SPA D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1413",
+          "name": "SPA D4",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "81",
+          "name": "SPA CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "704",
+          "name": "SPA SUC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "587",
+          "name": "SPA FDH",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "684",
+          "name": "S Q C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "951",
+          "name": "Spain D4",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1126",
+          "name": "SPA FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1561",
+          "name": "Catalonia C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1186",
+          "name": "SPA WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2488",
+          "name": "GAM T",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_4",
+      "name": "Germany",
+      "flag": "images/1ky92749fx2g.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "8",
+          "name": "GER D1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "9",
+          "name": "GER D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "693",
+          "name": "GER D3",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1416",
+          "name": "GER Reg",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "51",
+          "name": "GERC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "529",
+          "name": "GERJBC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "462",
+          "name": "GERWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "842",
+          "name": "GER SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1151",
+          "name": "GER WBC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2011"
+        },
+        {
+          "id": "1312",
+          "name": "Ger LTC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1776",
+          "name": "GER WD2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "441",
+          "name": "GER WD1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1415",
+          "name": "GER U19",
+          "kind": "league",
+          "topTier": false,
+          "season": "2023-2024"
+        },
+        {
+          "id": "2578",
+          "name": "GER JB",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_5",
+      "name": "France",
+      "flag": "images/164327629847.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "11",
+          "name": "FRA D1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "12",
+          "name": "FRA D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "203",
+          "name": "FRA D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1421",
+          "name": "FRA N1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "54",
+          "name": "FRAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "55",
+          "name": "FRA LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019-2020"
+        },
+        {
+          "id": "698",
+          "name": "FRA SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "440",
+          "name": "FRA WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1414",
+          "name": "FRA U19",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2875",
+          "name": "FRA N2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_6",
+      "name": "Portugal",
+      "flag": "images/16432671037.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "23",
+          "name": "POR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "157",
+          "name": "POR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1957",
+          "name": "Por U23",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "70",
+          "name": "POR CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "505",
+          "name": "PORLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1429",
+          "name": "PORJA1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2019-2020"
+        },
+        {
+          "id": "69",
+          "name": "POR SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1419",
+          "name": "POR JB",
+          "kind": "league",
+          "topTier": false,
+          "season": "2021-2022"
+        },
+        {
+          "id": "1831",
+          "name": "POR U19",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2350",
+          "name": "POR U23 C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_7",
+      "name": "Scotland",
+      "flag": "images/164326681333.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "29",
+          "name": "SCO PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "150",
+          "name": "SCO CH",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "151",
+          "name": "SCO L1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "152",
+          "name": "SCO L2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "78",
+          "name": "SCOFAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "77",
+          "name": "SCO LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "145",
+          "name": "SCO BC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "337",
+          "name": "SCO HL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "521",
+          "name": "SCO SRL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2024-2025"
+        },
+        {
+          "id": "1092",
+          "name": "SCO WPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_8",
+      "name": "Netherlands",
+      "flag": "images/164326974361.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "16",
+          "name": "HOL D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "17",
+          "name": "HOL D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1592",
+          "name": "HOL D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "604",
+          "name": "HOL BD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "767",
+          "name": "HOL BD2",
+          "kind": "league",
+          "topTier": true,
+          "season": "2011-2012"
+        },
+        {
+          "id": "59",
+          "name": "HOLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "58",
+          "name": "DSC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "573",
+          "name": "HOL WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_9",
+      "name": "Belgium",
+      "flag": "images/164326596384.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "5",
+          "name": "BEL D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "138",
+          "name": "BEL D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1418",
+          "name": "BEL D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2015-2016"
+        },
+        {
+          "id": "108",
+          "name": "BEL Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "110",
+          "name": "BEL SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "969",
+          "name": "BEL U21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1405",
+          "name": "BPL (W)",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "575",
+          "name": "BEL WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1524",
+          "name": "BEL FAD",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1270",
+          "name": "BENL BNL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2014-2015"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_10",
+      "name": "Sweden",
+      "flag": "images/164326691798.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "26",
+          "name": "SWE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "122",
+          "name": "SWE D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "218",
+          "name": "SWE D1 SN",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "73",
+          "name": "SWE Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "625",
+          "name": "SWESC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2015"
+        },
+        {
+          "id": "464",
+          "name": "SWEC-W-C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1436",
+          "name": "SWE D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "447",
+          "name": "SWE U21AS",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1291",
+          "name": "SWE U21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "443",
+          "name": "SWE WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1430",
+          "name": "SWE WD2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_11",
+      "name": "Finland",
+      "flag": "images/16432661394.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "13",
+          "name": "FIN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "212",
+          "name": "FIN D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1417",
+          "name": "FIN D3 A",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "226",
+          "name": "FIN CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "189",
+          "name": "FIN LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "475",
+          "name": "FIN WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2313",
+          "name": "FIN YCUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_12",
+      "name": "Norway",
+      "flag": "images/164326669955.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "22",
+          "name": "NOR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "123",
+          "name": "NOR AL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1428",
+          "name": "NOR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "473",
+          "name": "NORW",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "64",
+          "name": "NORC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "508",
+          "name": "NOR WCUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2027"
+        },
+        {
+          "id": "775",
+          "name": "NSC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018"
+        },
+        {
+          "id": "786",
+          "name": "NOR JET",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014"
+        },
+        {
+          "id": "1589",
+          "name": "NOR D1 W",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1407",
+          "name": "NOR D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_13",
+      "name": "Denmark",
+      "flag": "images/164326918176.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "7",
+          "name": "DEN SASL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "127",
+          "name": "DEN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1427",
+          "name": "DEN D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "461",
+          "name": "DEN WD",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "378",
+          "name": "DMVC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2006"
+        },
+        {
+          "id": "50",
+          "name": "DAN Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "271",
+          "name": "DEN D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "540",
+          "name": "DWLWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "720",
+          "name": "DEN WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "816",
+          "name": "DAN U19",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1041",
+          "name": "DAN U17",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1085",
+          "name": "DEN FC",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_14",
+      "name": "Austria",
+      "flag": "images/164326586578.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "3",
+          "name": "AUT D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "128",
+          "name": "AUT D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1249",
+          "name": "AFB",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "96",
+          "name": "AUT CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1426",
+          "name": "AUS D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_15",
+      "name": "Switzerland",
+      "flag": "images/164326693591.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "27",
+          "name": "SUI SL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "74",
+          "name": "SUI Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "121",
+          "name": "SUI CL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1425",
+          "name": "SUI PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1549",
+          "name": "SUI LC",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1756",
+          "name": "SSL W",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_16",
+      "name": "Ireland",
+      "flag": "images/1k7b5vqkmr1f.jpg",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "1",
+          "name": "IRE PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "139",
+          "name": "IRE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "231",
+          "name": "IRE LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2020"
+        },
+        {
+          "id": "195",
+          "name": "IRFAIC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "200",
+          "name": "IRE SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014"
+        },
+        {
+          "id": "2620",
+          "name": "IR W Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_17",
+      "name": "Northern Ireland",
+      "flag": "images/164326724473.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "165",
+          "name": "NIR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "365",
+          "name": "NIR LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "501",
+          "name": "Milk Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013"
+        },
+        {
+          "id": "748",
+          "name": "NIR CH",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "757",
+          "name": "NIR CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_18",
+      "name": "Russia",
+      "flag": "images/164326677184.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "10",
+          "name": "RUS PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "235",
+          "name": "RUS D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "153",
+          "name": "RUS Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "191",
+          "name": "RUS SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1433",
+          "name": "RUS D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2022-2023"
+        },
+        {
+          "id": "2659",
+          "name": "RUS D3A",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2660",
+          "name": "RUS D3B",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1739",
+          "name": "RUS FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2020"
+        },
+        {
+          "id": "476",
+          "name": "RUS YthC",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1049",
+          "name": "RUS WPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_19",
+      "name": "Poland",
+      "flag": "images/164326928851.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "6",
+          "name": "POL PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "221",
+          "name": "POL D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1355",
+          "name": "POL D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1159",
+          "name": "POL WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "500",
+          "name": "POL ME",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "115",
+          "name": "POL Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "402",
+          "name": "POL LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2008-2009"
+        },
+        {
+          "id": "491",
+          "name": "Pol SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_20",
+      "name": "Ukraine",
+      "flag": "images/164326697571.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "119",
+          "name": "UKR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "154",
+          "name": "UKRC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "485",
+          "name": "UKR SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2021"
+        },
+        {
+          "id": "872",
+          "name": "UKR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "927",
+          "name": "UKR U21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1658",
+          "name": "UKR D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_21",
+      "name": "Czech Republic",
+      "flag": "images/164326729963.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "116",
+          "name": "CZEC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "137",
+          "name": "CZE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "290",
+          "name": "CZE D2",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "706",
+          "name": "CZE CFL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1258",
+          "name": "CZE U21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2018-2019"
+        },
+        {
+          "id": "1080",
+          "name": "CZE SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2015"
+        },
+        {
+          "id": "1191",
+          "name": "CZE W1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "807",
+          "name": "CZE U19",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_22",
+      "name": "Greece",
+      "flag": "images/164326643375.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "32",
+          "name": "GRE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "170",
+          "name": "GRE D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "163",
+          "name": "GRE Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2061",
+          "name": "GRE D21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2020-2021"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_23",
+      "name": "Romania",
+      "flag": "images/164326675047.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "124",
+          "name": "ROM D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "197",
+          "name": "ROMC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "494",
+          "name": "Rom SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1423",
+          "name": "ROM D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1351",
+          "name": "ROMCL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016-2017"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_24",
+      "name": "Slovakia",
+      "flag": "images/164326726915.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "654",
+          "name": "SVKCU18",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018"
+        },
+        {
+          "id": "143",
+          "name": "SVK Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "132",
+          "name": "SVK D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "351",
+          "name": "SVK D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_25",
+      "name": "Iceland",
+      "flag": "images/164326645731.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "166",
+          "name": "ICE PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "381",
+          "name": "ICE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "246",
+          "name": "ICE CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "773",
+          "name": "ICE LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1009",
+          "name": "ICE WLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1047",
+          "name": "ICE WPR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1074",
+          "name": "ICE WC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1083",
+          "name": "ICE D2",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026"
+        },
+        {
+          "id": "1132",
+          "name": "ICE CH",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1148",
+          "name": "ICE SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1334",
+          "name": "REYT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1849",
+          "name": "ICE FBC W",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1869",
+          "name": "ICE LCB",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1251",
+          "name": "ICE LD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1438",
+          "name": "REWT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1439",
+          "name": "ICE CH B",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_26",
+      "name": "Latvia",
+      "flag": "images/164326654225.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "214",
+          "name": "LAT D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1070",
+          "name": "LAT D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "243",
+          "name": "LAT Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2531",
+          "name": "LIV WL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_28",
+      "name": "Belarus",
+      "flag": "images/164326592218.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "230",
+          "name": "BLR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "638",
+          "name": "BLR CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1046",
+          "name": "BLR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1652",
+          "name": "BLR D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2020"
+        },
+        {
+          "id": "1086",
+          "name": "BWPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_29",
+      "name": "Lithuania",
+      "flag": "images/1k7b59b0w6h.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "217",
+          "name": "TOPLYGA",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "558",
+          "name": "LIT Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "897",
+          "name": "LIT D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_30",
+      "name": "Wales",
+      "flag": "images/164326699464.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "190",
+          "name": "WALC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "135",
+          "name": "Welsh PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "518",
+          "name": "WAL CLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1104",
+          "name": "WAL CA",
+          "kind": "league",
+          "topTier": false,
+          "season": "2018-2019"
+        },
+        {
+          "id": "1115",
+          "name": "WAL D1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2018-2019"
+        },
+        {
+          "id": "2051",
+          "name": "WAL FAWC",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_31",
+      "name": "Hungary",
+      "flag": "images/164326733387.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "136",
+          "name": "HUN D1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "155",
+          "name": "HUN Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "703",
+          "name": "HUN D2E",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "249",
+          "name": "HUN SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2015"
+        },
+        {
+          "id": "513",
+          "name": "HUN LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014-2015"
+        },
+        {
+          "id": "893",
+          "name": "HUN U19A",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1056",
+          "name": "HUN WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1319",
+          "name": "HUN U21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2014-2015"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_32",
+      "name": "Turkey",
+      "flag": "images/164326695439.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "30",
+          "name": "TUR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "167",
+          "name": "TUR Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "130",
+          "name": "TFF 1. Lig",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1431",
+          "name": "TUR 2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1432",
+          "name": "TUR 3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "705",
+          "name": "TUR SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "750",
+          "name": "TUR WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1236",
+          "name": "TUR STC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2012"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_33",
+      "name": "Croatia",
+      "flag": "images/164326713621.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "62",
+          "name": "CRO Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "133",
+          "name": "CRO D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1612",
+          "name": "CRO D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_34",
+      "name": "Bulgaria",
+      "flag": "images/164326601073.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "196",
+          "name": "BUL Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "131",
+          "name": "BUL FL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "496",
+          "name": "BUL SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1262",
+          "name": "BUL SL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2889",
+          "name": "BP Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_35",
+      "name": "Slovenia",
+      "flag": "images/164326688094.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "208",
+          "name": "SLOC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "247",
+          "name": "SLO D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "120",
+          "name": "SLO D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "688",
+          "name": "SLO SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2015"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_36",
+      "name": "Cyprus",
+      "flag": "images/164326605421.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "168",
+          "name": "CYP Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "159",
+          "name": "CYP D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "710",
+          "name": "CYP SCUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "915",
+          "name": "CYP D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_37",
+      "name": "Serbia",
+      "flag": "images/164326683298.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "129",
+          "name": "SER D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "211",
+          "name": "SER CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1061",
+          "name": "SER D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_88",
+      "name": "Bosnia",
+      "flag": "images/164326926285.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "352",
+          "name": "BOS PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "355",
+          "name": "BOS Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2783",
+          "name": "BIH PL-FBiH",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2784",
+          "name": "BIH PL-RS",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_89",
+      "name": "Estonia",
+      "flag": "images/164326609057.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "353",
+          "name": "EST D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "646",
+          "name": "EST CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1043",
+          "name": "EST D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1154",
+          "name": "EST D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1079",
+          "name": "EST WD2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1437",
+          "name": "Est WT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_90",
+      "name": "Moldova",
+      "flag": "images/164326665981.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "389",
+          "name": "MOL D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "549",
+          "name": "MOL Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1014",
+          "name": "MOL D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_91",
+      "name": "Armenia",
+      "flag": "images/164326583011.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "469",
+          "name": "ARM D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "794",
+          "name": "ARM CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1062",
+          "name": "ARM D2",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_92",
+      "name": "North Macedonia",
+      "flag": "images/164326668052.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "392",
+          "name": "MKD D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "569",
+          "name": "MKD CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1242",
+          "name": "MKD D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_93",
+      "name": "Malta",
+      "flag": "images/1k7b5z34dg0.jpg",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "701",
+          "name": "MAL SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "533",
+          "name": "MAL D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "657",
+          "name": "MAL Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "994",
+          "name": "Mal WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1000",
+          "name": "MAL D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1285",
+          "name": "AMEC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_94",
+      "name": "Luxembourg",
+      "flag": "images/164326659819.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "514",
+          "name": "LUX D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1328",
+          "name": "LUX Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_95",
+      "name": "Faroe",
+      "flag": "images/164326611131.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "576",
+          "name": "FAR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1050",
+          "name": "FAR Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_96",
+      "name": "Georgia",
+      "flag": "images/164326638327.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "563",
+          "name": "GEO D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "647",
+          "name": "GEO C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1116",
+          "name": "GEO D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_98",
+      "name": "Azerbaijan",
+      "flag": "images/164326932339.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "613",
+          "name": "AZE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "620",
+          "name": "AZE CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_108",
+      "name": "Andorra",
+      "flag": "images/164326581414.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "880",
+          "name": "ANDPD",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1362",
+          "name": "ORD SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1224",
+          "name": "And Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_38",
+      "name": "Argentina",
+      "flag": "images/1ky9cdfx6w1c.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "2",
+          "name": "ARG D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "340",
+          "name": "ARG TPV",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "423",
+          "name": "ARG D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "917",
+          "name": "ARG B M",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1277",
+          "name": "ARG SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1461",
+          "name": "ARG C M",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1462",
+          "name": "ARG D M",
+          "kind": "league",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "2016",
+          "name": "ARG SLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2020"
+        },
+        {
+          "id": "1183",
+          "name": "ARG C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2304",
+          "name": "ARG CT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_39",
+      "name": "Brazil",
+      "flag": "images/164327631176.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "4",
+          "name": "BRA D1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026"
+        },
+        {
+          "id": "358",
+          "name": "BRA D2",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026"
+        },
+        {
+          "id": "181",
+          "name": "BRA RJ",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "186",
+          "name": "Copa do Brasil",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "178",
+          "name": "BRA SP",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "751",
+          "name": "CSP YC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "930",
+          "name": "Bra YL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "957",
+          "name": "BRA CE",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "960",
+          "name": "Bra PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "961",
+          "name": "BRA CGD",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "962",
+          "name": "BRA CCD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "963",
+          "name": "BRA PE",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "964",
+          "name": "BRA CGD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "971",
+          "name": "BRA MG",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "973",
+          "name": "BRA CBD",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "987",
+          "name": "BRA CP",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "998",
+          "name": "BRA PB",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1065",
+          "name": "BRA CNF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1358",
+          "name": "BRA SPC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1441",
+          "name": "BLP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "1445",
+          "name": "BRA MT",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1448",
+          "name": "BRA CV",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1614",
+          "name": "BRA BL",
+          "kind": "league",
+          "topTier": true,
+          "season": "2016"
+        },
+        {
+          "id": "1693",
+          "name": "BRA CA",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1719",
+          "name": "Copa RS U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1937",
+          "name": "BRA BAS U23",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "2216",
+          "name": "BSC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1373",
+          "name": "BRA SPB",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1347",
+          "name": "BRA D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1275",
+          "name": "BRA YCup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1406",
+          "name": "BR W Tmt",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1602",
+          "name": "BRA RC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2335",
+          "name": "Bra Pia",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2360",
+          "name": "BRA AMP",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2811",
+          "name": "Bra GP C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2823",
+          "name": "BSSC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2840",
+          "name": "BNE C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2841",
+          "name": "BCW C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_40",
+      "name": "Uruguay",
+      "flag": "images/164326701128.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "240",
+          "name": "URU D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1231",
+          "name": "URU TP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2012"
+        },
+        {
+          "id": "2383",
+          "name": "URU Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2797",
+          "name": "UCL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_41",
+      "name": "United States",
+      "flag": "images/164326703079.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "21",
+          "name": "MLS",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "483",
+          "name": "USA CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2027"
+        },
+        {
+          "id": "448",
+          "name": "USL CH",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "802",
+          "name": "USA WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1145",
+          "name": "NAL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "1740",
+          "name": "Car Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1876",
+          "name": "USA CDS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "2117",
+          "name": "NWSLCup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2632",
+          "name": "USA L1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_42",
+      "name": "Chile",
+      "flag": "images/16432772874.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "415",
+          "name": "CHI D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "611",
+          "name": "CHI D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "714",
+          "name": "Chile Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1309",
+          "name": "CHI SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2820",
+          "name": "CHI LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_43",
+      "name": "Mexico",
+      "flag": "images/164326663760.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "173",
+          "name": "MEX IL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019-2020"
+        },
+        {
+          "id": "140",
+          "name": "MEX D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "847",
+          "name": "MEX Lig2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "967",
+          "name": "MEX U20",
+          "kind": "league",
+          "topTier": false,
+          "season": "2022-2023"
+        },
+        {
+          "id": "1807",
+          "name": "MEX CC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1817",
+          "name": "Mex MFW",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2119",
+          "name": "MGNP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1350",
+          "name": "MEX SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "2475",
+          "name": "MEX U23",
+          "kind": "league",
+          "topTier": false,
+          "season": "2024-2025"
+        },
+        {
+          "id": "2874",
+          "name": "MEX LPP",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_44",
+      "name": "Israel",
+      "flag": "images/164326737897.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "118",
+          "name": "ISR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "205",
+          "name": "ISR CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "160",
+          "name": "ISR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "711",
+          "name": "ISR LATTC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "783",
+          "name": "ISR LA",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "858",
+          "name": "ISR LLTTC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "947",
+          "name": "ISR W1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1821",
+          "name": "IS-CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2586",
+          "name": "IWLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_45",
+      "name": "China",
+      "flag": "images/16432549088.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "60",
+          "name": "CHA CSL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "61",
+          "name": "CHA D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "686",
+          "name": "CHA D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2683",
+          "name": "JSCL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1278",
+          "name": "A.D.tor",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2012"
+        },
+        {
+          "id": "1303",
+          "name": "SH IT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013"
+        },
+        {
+          "id": "311",
+          "name": "HK PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "645",
+          "name": "CWPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "831",
+          "name": "CSGU16",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1320",
+          "name": "CSGU18",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1321",
+          "name": "CSGU18",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "86",
+          "name": "China Lea",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "87",
+          "name": "CFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "202",
+          "name": "CHN NGFM",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2021"
+        },
+        {
+          "id": "796",
+          "name": "CHN NGFW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "735",
+          "name": "HK SS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1286",
+          "name": "NYCup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013"
+        },
+        {
+          "id": "420",
+          "name": "HK LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "458",
+          "name": "HKFA CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "631",
+          "name": "HK CC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2008"
+        },
+        {
+          "id": "499",
+          "name": "WFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "413",
+          "name": "GDHKCUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "610",
+          "name": "LNY CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018"
+        },
+        {
+          "id": "1663",
+          "name": "HK D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1690",
+          "name": "BTH Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "1699",
+          "name": "HKEC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024-2025"
+        },
+        {
+          "id": "1766",
+          "name": "Chinese T L",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1811",
+          "name": "CSGU20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1843",
+          "name": "GDHKW CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "2013",
+          "name": "EVD U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "2105",
+          "name": "Chinese TML",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1363",
+          "name": "HK D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1378",
+          "name": "MAC D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2370",
+          "name": "HK 2D C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "2710",
+          "name": "JXCL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2769",
+          "name": "HNFL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2770",
+          "name": "SichuanFootball",
+          "kind": "league",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "2737",
+          "name": "DSF SL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2753",
+          "name": "SD S",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2724",
+          "name": "IMSL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2468",
+          "name": "CHA CSL U21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2474",
+          "name": "CHN WC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2812",
+          "name": "YNCL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "2821",
+          "name": "CQFL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2528",
+          "name": "HKPLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023-2024"
+        },
+        {
+          "id": "2681",
+          "name": "CSGWU16",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2698",
+          "name": "SYP CIT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2705",
+          "name": "CHN YFL U15",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2711",
+          "name": "CHN YFL W U16",
+          "kind": "league",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2717",
+          "name": "CHN YFL U17",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2773",
+          "name": "CHN Panda C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2827",
+          "name": "HBCL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2835",
+          "name": "GDFSL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2836",
+          "name": "WuYue Cup",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2837",
+          "name": "FuJian SL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2845",
+          "name": "GXSL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2864",
+          "name": "CSFS Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2869",
+          "name": "CSFS W Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_27",
+      "name": "Peru",
+      "flag": "images/164326671651.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "242",
+          "name": "PER L1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1162",
+          "name": "Peru Copa Inca",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2015"
+        },
+        {
+          "id": "2851",
+          "name": "Peru Liga Copa",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_46",
+      "name": "Japan",
+      "flag": "images/164325492540.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "25",
+          "name": "JPN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "284",
+          "name": "JPN D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1346",
+          "name": "JPN D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "780",
+          "name": "JPN JFL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "695",
+          "name": "JCYF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2010"
+        },
+        {
+          "id": "459",
+          "name": "JPN WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "455",
+          "name": "JWD2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "393",
+          "name": "JPN SL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2009"
+        },
+        {
+          "id": "72",
+          "name": "JPN LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "71",
+          "name": "JPN SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "162",
+          "name": "JE Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "517",
+          "name": "J.S Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "525",
+          "name": "WJLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "574",
+          "name": "JW Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1581",
+          "name": "SBS CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "1731",
+          "name": "JPN NYC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "1795",
+          "name": "Japanese W C 2",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "2263",
+          "name": "JWL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_47",
+      "name": "South Korea",
+      "flag": "images/164325406166.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "15",
+          "name": "KOR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1292",
+          "name": "KOR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "630",
+          "name": "KCL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2110",
+          "name": "KCL 4",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "827",
+          "name": "KOR WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "685",
+          "name": "KOR NCH",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "468",
+          "name": "KFAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "437",
+          "name": "K-LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2011"
+        },
+        {
+          "id": "456",
+          "name": "KOR D3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2019"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_48",
+      "name": "Singapore",
+      "flag": "images/164326685291.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "194",
+          "name": "SIN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "245",
+          "name": "SIN CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "603",
+          "name": "STLC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_49",
+      "name": "Australia",
+      "flag": "images/164326585093.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "273",
+          "name": "AUS D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "383",
+          "name": "AUS FWD1",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2009"
+        },
+        {
+          "id": "616",
+          "name": "AUS NSW",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "436",
+          "name": "AUS VPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1073",
+          "name": "Aus VD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "774",
+          "name": "AUS BPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2021"
+        },
+        {
+          "id": "1029",
+          "name": "AUS SASL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "481",
+          "name": "WAUS D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1063",
+          "name": "NPLCF",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1068",
+          "name": "AUS QSL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "722",
+          "name": "AUS YL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2019-2020"
+        },
+        {
+          "id": "1255",
+          "name": "AUS NSWSL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1072",
+          "name": "FFSA PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "612",
+          "name": "MFNSPD",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2009"
+        },
+        {
+          "id": "977",
+          "name": "AUS FWD1",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "978",
+          "name": "AUS PLNS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1450",
+          "name": "TSA TPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1453",
+          "name": "NSW-N TPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1382",
+          "name": "FQPL3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "729",
+          "name": "AUS WAL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "453",
+          "name": "AUS WPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "619",
+          "name": "Aus VPL U21",
+          "kind": "league",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "1064",
+          "name": "AUS NSWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1075",
+          "name": "Aus BCC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2021"
+        },
+        {
+          "id": "1135",
+          "name": "WAUS LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1301",
+          "name": "FFV Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1356",
+          "name": "AUS CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1647",
+          "name": "WAUS D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1672",
+          "name": "AUS NPL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1845",
+          "name": "AUS BSB",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018"
+        },
+        {
+          "id": "1868",
+          "name": "QLD D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2253",
+          "name": "AUS WNSW",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1397",
+          "name": "WAUS U20",
+          "kind": "league",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "1400",
+          "name": "WAUS WD1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2334",
+          "name": "FQPL2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2434",
+          "name": "AUS QPS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2535",
+          "name": "Aus NPL U23",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2746",
+          "name": "Aus Champ",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_50",
+      "name": "Algeria",
+      "flag": "images/164326574190.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "193",
+          "name": "ALG D1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "333",
+          "name": "ALG CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "863",
+          "name": "ALG D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_51",
+      "name": "Iran",
+      "flag": "images/164326648827.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "279",
+          "name": "IRN PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "898",
+          "name": "IRN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "618",
+          "name": "Iran Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1488",
+          "name": "ISC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_57",
+      "name": "Saudi Arabia",
+      "flag": "images/164326679087.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "292",
+          "name": "SPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "745",
+          "name": "KSA D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "950",
+          "name": "KSA D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "749",
+          "name": "KSA YTH",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "891",
+          "name": "KSA FC U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013"
+        },
+        {
+          "id": "752",
+          "name": "KSA U17",
+          "kind": "league",
+          "topTier": true,
+          "season": "2014-2015"
+        },
+        {
+          "id": "1118",
+          "name": "PFBFC",
+          "kind": "league",
+          "topTier": true,
+          "season": "2017-2018"
+        },
+        {
+          "id": "640",
+          "name": "SK CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "339",
+          "name": "SCP CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017-2018"
+        },
+        {
+          "id": "884",
+          "name": "SAYC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "1359",
+          "name": "KSA SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_59",
+      "name": "UAE",
+      "flag": "images/164454914655.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "301",
+          "name": "UAE LP",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "740",
+          "name": "UAE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "331",
+          "name": "UAE C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "733",
+          "name": "UAE",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_60",
+      "name": "Albania",
+      "flag": "images/164454808415.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "315",
+          "name": "ALB D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "634",
+          "name": "ALB Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "348",
+          "name": "ALB D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1125",
+          "name": "ALB SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_61",
+      "name": "Lebanon",
+      "flag": "images/164454864492.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "325",
+          "name": "LBN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "474",
+          "name": "LBN FA Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1273",
+          "name": "Lbn EC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "2473",
+          "name": "Lbn FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_62",
+      "name": "Kuwait",
+      "flag": "images/164454862722.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "322",
+          "name": "KUW D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "471",
+          "name": "KUW Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "559",
+          "name": "KUWCPC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "592",
+          "name": "Kuw FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022-2023"
+        },
+        {
+          "id": "923",
+          "name": "KUW D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1008",
+          "name": "KUW FeC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2010"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_63",
+      "name": "Colombia",
+      "flag": "images/164454833539.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "250",
+          "name": "COL D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "635",
+          "name": "COL Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1169",
+          "name": "COL D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1349",
+          "name": "Cos Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_64",
+      "name": "Malaysia",
+      "flag": "images/164454867528.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "316",
+          "name": "MAS SL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "317",
+          "name": "MAS PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "280",
+          "name": "MAS FAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "426",
+          "name": "MALAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "822",
+          "name": "INT Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2008"
+        },
+        {
+          "id": "1963",
+          "name": "MAS CGC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1187",
+          "name": "MAS RESC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2011"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_65",
+      "name": "New Zealand",
+      "flag": "images/164454874955.png",
+      "area": "4",
+      "competitions": [
+        {
+          "id": "341",
+          "name": "NZNL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1664",
+          "name": "NZC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_66",
+      "name": "Paraguay",
+      "flag": "images/164454884029.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "354",
+          "name": "PAR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1076",
+          "name": "PAR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1970",
+          "name": "PAR Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_69",
+      "name": "Montenegro",
+      "flag": "images/164454869336.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "562",
+          "name": "MNE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "639",
+          "name": "MNE CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1520",
+          "name": "MNE D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_70",
+      "name": "Egypt",
+      "flag": "images/164454841775.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "2311",
+          "name": "EGY LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "303",
+          "name": "EGY D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "451",
+          "name": "EGY Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "696",
+          "name": "EGY SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_71",
+      "name": "Qatar",
+      "flag": "images/164454885542.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "313",
+          "name": "QAT D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "450",
+          "name": "QATL CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1028",
+          "name": "QAT PC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1031",
+          "name": "QCP Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1102",
+          "name": "QSJC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "2224",
+          "name": "QAT QC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023-2024"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_73",
+      "name": "Bahrain",
+      "flag": "images/164454811833.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "318",
+          "name": "BHR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "721",
+          "name": "BHR Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "747",
+          "name": "BHR FAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "839",
+          "name": "BHR CPC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2009"
+        },
+        {
+          "id": "896",
+          "name": "BHR D",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1914",
+          "name": "BHR EC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_74",
+      "name": "Morocco",
+      "flag": "images/164454871095.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "321",
+          "name": "MAR D1",
+          "kind": "league",
+          "topTier": true,
+          "season": "2026-2027"
+        },
+        {
+          "id": "467",
+          "name": "MOLE Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "953",
+          "name": "MAR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2589",
+          "name": "MEC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024-2025"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_75",
+      "name": "Tunisia",
+      "flag": "images/164454897229.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "326",
+          "name": "TUN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "636",
+          "name": "T C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1222",
+          "name": "TTLd",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_76",
+      "name": "Yemen",
+      "flag": "images/16445492860.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "465",
+          "name": "YEM D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1058",
+          "name": "YEM FAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "976",
+          "name": "YEM D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2014"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_77",
+      "name": "Oman",
+      "flag": "images/164454881226.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "332",
+          "name": "OMA PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "925",
+          "name": "OMA Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1318",
+          "name": "OMA FA Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_78",
+      "name": "Jordan",
+      "flag": "images/164454857478.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "309",
+          "name": "JOR D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "330",
+          "name": "JORC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "687",
+          "name": "JOR ShC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1078",
+          "name": "JOR D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_79",
+      "name": "Canada",
+      "flag": "images/164454832174.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "460",
+          "name": "CAN CSL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "664",
+          "name": "CAN CHL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2028",
+          "name": "Can PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_80",
+      "name": "Bolivia",
+      "flag": "images/164454818418.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "593",
+          "name": "BOL D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1484",
+          "name": "BCCC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016"
+        },
+        {
+          "id": "1352",
+          "name": "Copa",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_81",
+      "name": "Ecuador",
+      "flag": "images/164454840123.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "596",
+          "name": "ECU LPSA",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2020",
+          "name": "ECU CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1398",
+          "name": "ECU LPSB",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2638",
+          "name": "ES Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_100",
+      "name": "Thailand",
+      "flag": "images/164454893071.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "700",
+          "name": "THA PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "758",
+          "name": "KCTH",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "882",
+          "name": "TH FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1048",
+          "name": "THA L2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1119",
+          "name": "THA LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1500",
+          "name": "THA L3",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2513",
+          "name": "BGC MTI",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_82",
+      "name": "Venezuela",
+      "flag": "images/164454918634.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "391",
+          "name": "VEN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1184",
+          "name": "VEN CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2657",
+          "name": "VEN SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_83",
+      "name": "Honduras",
+      "flag": "images/164483119964.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "577",
+          "name": "HON Lig1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_109",
+      "name": "Indonesia",
+      "flag": "images/164454853059.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "1122",
+          "name": "IDN ISL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1227",
+          "name": "IDN L2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1335",
+          "name": "IDN IIC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014"
+        },
+        {
+          "id": "2004",
+          "name": "IDN PC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1240",
+          "name": "IDN C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_101",
+      "name": "India",
+      "flag": "images/164454851770.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "1367",
+          "name": "ISL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "763",
+          "name": "IND D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "937",
+          "name": "IND FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "1340",
+          "name": "IFA ST",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018"
+        },
+        {
+          "id": "1197",
+          "name": "IND SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_84",
+      "name": "Guatemala",
+      "flag": "images/164454850371.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "579",
+          "name": "GUA D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_102",
+      "name": "Vietnam",
+      "flag": "images/164482748835.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "766",
+          "name": "VIE D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1955",
+          "name": "VIE U21",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1265",
+          "name": "VIE Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1248",
+          "name": "VIE D2",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2552",
+          "name": "VIEL W",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_85",
+      "name": "Costa",
+      "flag": "images/164482740268.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "504",
+          "name": "CRC D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1308",
+          "name": "CRC C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_103",
+      "name": "Uzbekistan",
+      "flag": "images/164454916878.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "772",
+          "name": "UZB D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "823",
+          "name": "UzbC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1160",
+          "name": "UZB D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1342",
+          "name": "Uzbekistan Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1383",
+          "name": "Uzbekistan Su",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_86",
+      "name": "El Salvador",
+      "flag": "images/164454843688.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "511",
+          "name": "SLV D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_105",
+      "name": "Iraq",
+      "flag": "images/164454854483.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "1054",
+          "name": "IRQ SL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_87",
+      "name": "Kazakhstan",
+      "flag": "images/164454859591.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "466",
+          "name": "KAZ PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "527",
+          "name": "KAZ C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1077",
+          "name": "KAZ D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2557",
+          "name": "Kazakhstan LC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_106",
+      "name": "Libya",
+      "flag": "images/164454865928.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "324",
+          "name": "LIBD1L",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_107",
+      "name": "Nigeria",
+      "flag": "images/164454878140.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "949",
+          "name": "NGA PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_99",
+      "name": "South Africa",
+      "flag": "images/164454889653.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "308",
+          "name": "SAPL D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "779",
+          "name": "SALC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "907",
+          "name": "SAFL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1010",
+          "name": "SAPL CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_113",
+      "name": "Senegal",
+      "flag": "images/1k6abrx9c32d.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1376",
+          "name": "SEN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_114",
+      "name": "Jamaica",
+      "flag": "images/164454855935.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "1409",
+          "name": "JAM D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_116",
+      "name": "Zimbabwe",
+      "flag": "images/164454922422.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1451",
+          "name": "ZIM LEG",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_117",
+      "name": "Kenya",
+      "flag": "images/164454861121.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1456",
+          "name": "KEN D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_119",
+      "name": "Ethiopia",
+      "flag": "images/1k6537f42g2w.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1465",
+          "name": "ETH PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_122",
+      "name": "Angola",
+      "flag": "images/16445481007.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1471",
+          "name": "AGB LE",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_123",
+      "name": "Ghana",
+      "flag": "images/164454848519.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1393",
+          "name": "GHA D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_125",
+      "name": "Sudan",
+      "flag": "images/164482745123.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1487",
+          "name": "SUD PR",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_130",
+      "name": "San Marino",
+      "flag": "images/164454887792.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "1662",
+          "name": "SAN L",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1717",
+          "name": "SMA CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2400",
+          "name": "SMSC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_133",
+      "name": "Republic of Trinidad",
+      "flag": "images/20161005145453.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "1684",
+          "name": "TRI PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2025-2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_115",
+      "name": "Myanmar",
+      "flag": "images/164454872916.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "1443",
+          "name": "MYA D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_136",
+      "name": "Tajikistan",
+      "flag": "images/164454891469.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "1889",
+          "name": "TAJ L1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_144",
+      "name": "Mongolia",
+      "flag": "images/16506857925.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "1909",
+          "name": "MGL PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_148",
+      "name": "Kosovo",
+      "flag": "images/164482743387.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "1750",
+          "name": "Kos L",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_151",
+      "name": "Panama",
+      "flag": "images/164714314119.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "1494",
+          "name": "LPF",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_159",
+      "name": "Burkina Faso",
+      "flag": "images/1k6a72chew18.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "2073",
+          "name": "BFL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_160",
+      "name": "Burundi",
+      "flag": "images/164454820317.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1741",
+          "name": "BI PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_162",
+      "name": "Bangladesh",
+      "flag": "images/164454814075.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "1527",
+          "name": "BGD D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_170",
+      "name": "Nicaragua",
+      "flag": "images/164454876578.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "1586",
+          "name": "NIC LP",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_171",
+      "name": "Turkmenistan",
+      "flag": "images/164454910787.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "2107",
+          "name": "TKM D1",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_193",
+      "name": "Tanzania",
+      "flag": "images/166121875378.gif",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "1623",
+          "name": "Tanzania PL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_52",
+      "name": "International",
+      "flag": "images/164454845888.png",
+      "area": "0",
+      "competitions": [
+        {
+          "id": "75",
+          "name": "World Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "650",
+          "name": "WCPEU",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "648",
+          "name": "FIFA WCQL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023-2025"
+        },
+        {
+          "id": "652",
+          "name": "WCPSA",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023-2025"
+        },
+        {
+          "id": "651",
+          "name": "WCPAF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023-2025"
+        },
+        {
+          "id": "653",
+          "name": "WCPCA",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024-2025"
+        },
+        {
+          "id": "2595",
+          "name": "FIFA IC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "649",
+          "name": "WCPO",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024-2025"
+        },
+        {
+          "id": "892",
+          "name": "WCP-PO",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "304",
+          "name": "FCWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "44",
+          "name": "FIFA OG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "185",
+          "name": "FIFA OG W",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "388",
+          "name": "WWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "76",
+          "name": "FIFAWYC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "222",
+          "name": "MR Tourn",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "387",
+          "name": "FIFA WU20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "261",
+          "name": "WCU17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "609",
+          "name": "Fut W5",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "730",
+          "name": "WCWU17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1252",
+          "name": "ARAB CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "88",
+          "name": "FICC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "329",
+          "name": "LG Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2011"
+        },
+        {
+          "id": "41",
+          "name": "INT CF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "300",
+          "name": "FRGFB",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013"
+        },
+        {
+          "id": "845",
+          "name": "WFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2012"
+        },
+        {
+          "id": "1180",
+          "name": "WWUFT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1181",
+          "name": "MWUFT",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1294",
+          "name": "TM U16",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1336",
+          "name": "INT Kass",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2020"
+        },
+        {
+          "id": "1322",
+          "name": "OSN Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013"
+        },
+        {
+          "id": "1299",
+          "name": "ICC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1489",
+          "name": "COTIF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1726",
+          "name": "China Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1861",
+          "name": "AOC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2042",
+          "name": "PACG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "2043",
+          "name": "PACGW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "1366",
+          "name": "INT FRL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1223",
+          "name": "GMC U18",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1218",
+          "name": "Futsal WCPEU",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "434",
+          "name": "ALGC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "768",
+          "name": "F.D.D.H",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014"
+        },
+        {
+          "id": "2341",
+          "name": "FLA CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2348",
+          "name": "WCWP-PO",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "2497",
+          "name": "IND OG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "349",
+          "name": "FANSC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2008-2009"
+        },
+        {
+          "id": "2756",
+          "name": "FIFA Women’s CC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2810",
+          "name": "WC Qualifying",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "2824",
+          "name": "FIFA Series",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2832",
+          "name": "FIFA W Series",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_53",
+      "name": "Europe",
+      "flag": "images/164454912155.png",
+      "area": "1",
+      "competitions": [
+        {
+          "id": "67",
+          "name": "EURO Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023-2024"
+        },
+        {
+          "id": "103",
+          "name": "UEFA CL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "113",
+          "name": "UEFA EL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1864",
+          "name": "UEFA NL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2187",
+          "name": "UEFA ECL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "109",
+          "name": "UEFA SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "223",
+          "name": "UEFACW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "114",
+          "name": "UEFA U21Q",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2027"
+        },
+        {
+          "id": "1164",
+          "name": "UEFA U21",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "215",
+          "name": "UEFA U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "210",
+          "name": "UEFA U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "534",
+          "name": "UEFA WUC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "256",
+          "name": "UEFA-W U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "498",
+          "name": "Emirates C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "382",
+          "name": "AMST",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2009"
+        },
+        {
+          "id": "526",
+          "name": "EU-WU17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "668",
+          "name": "Baltic Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "561",
+          "name": "UFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2020-2022"
+        },
+        {
+          "id": "690",
+          "name": "NTW U23",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2009"
+        },
+        {
+          "id": "605",
+          "name": "CIS Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016"
+        },
+        {
+          "id": "741",
+          "name": "UEFA U21FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2008"
+        },
+        {
+          "id": "617",
+          "name": "INT BL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2010-2011"
+        },
+        {
+          "id": "418",
+          "name": "TIP CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "608",
+          "name": "CO Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2008"
+        },
+        {
+          "id": "147",
+          "name": "ROYAL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2006-2007"
+        },
+        {
+          "id": "755",
+          "name": "SCA CLY Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2010"
+        },
+        {
+          "id": "806",
+          "name": "Wembley Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2009"
+        },
+        {
+          "id": "834",
+          "name": "Audi Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "836",
+          "name": "ONW Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "844",
+          "name": "GF CUP U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2009"
+        },
+        {
+          "id": "875",
+          "name": "WWCPE",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1045",
+          "name": "WBCUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1178",
+          "name": "Dublin SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2011"
+        },
+        {
+          "id": "1327",
+          "name": "UEFA YL U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1306",
+          "name": "MGF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1469",
+          "name": "TDC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1813",
+          "name": "PLI CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1856",
+          "name": "INT DCUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1944",
+          "name": "Europe CEC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "79",
+          "name": "TOTO",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2008"
+        },
+        {
+          "id": "1230",
+          "name": "CNCup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2011"
+        },
+        {
+          "id": "1225",
+          "name": "Copa del Sol",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014"
+        },
+        {
+          "id": "2499",
+          "name": "EL U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2503",
+          "name": "UEFA WNL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "2576",
+          "name": "UEFACW Q",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024-2025"
+        },
+        {
+          "id": "697",
+          "name": "NT U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "2735",
+          "name": "UEFA W EL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_56",
+      "name": "Asia",
+      "flag": "images/164454830315.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "95",
+          "name": "AFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024-2027"
+        },
+        {
+          "id": "192",
+          "name": "ACLE",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1385",
+          "name": "AFC U23",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "350",
+          "name": "ACL2",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "251",
+          "name": "AFC CC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013-2014"
+        },
+        {
+          "id": "53",
+          "name": "EASTC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "979",
+          "name": "SAGA",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "291",
+          "name": "EAG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013"
+        },
+        {
+          "id": "293",
+          "name": "SEAG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1124",
+          "name": "ASEAN Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "470",
+          "name": "WAFFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1044",
+          "name": "AFC PC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014"
+        },
+        {
+          "id": "655",
+          "name": "AFC FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "220",
+          "name": "KIR Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "182",
+          "name": "ARCL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "161",
+          "name": "GC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "401",
+          "name": "AGS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "405",
+          "name": "AGSW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "515",
+          "name": "MC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "432",
+          "name": "ASEANYC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018"
+        },
+        {
+          "id": "307",
+          "name": "SAFF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "560",
+          "name": "Pan Arab",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "520",
+          "name": "GCC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "851",
+          "name": "ONC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2012"
+        },
+        {
+          "id": "477",
+          "name": "PEACE Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2012"
+        },
+        {
+          "id": "600",
+          "name": "AGC U23",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "571",
+          "name": "SEAGW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "629",
+          "name": "AFC W",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "725",
+          "name": "AFFWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "992",
+          "name": "WAWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "731",
+          "name": "AFC WU19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018-2019"
+        },
+        {
+          "id": "396",
+          "name": "WPEA Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2010"
+        },
+        {
+          "id": "187",
+          "name": "A3CC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2007"
+        },
+        {
+          "id": "564",
+          "name": "EFFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1331",
+          "name": "WEAG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2013"
+        },
+        {
+          "id": "798",
+          "name": "Asian CQW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1136",
+          "name": "OPAW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023-2024"
+        },
+        {
+          "id": "295",
+          "name": "AFAYC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019-2020"
+        },
+        {
+          "id": "435",
+          "name": "AFC ACW U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "689",
+          "name": "ASEAN U16",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "516",
+          "name": "AFF U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1253",
+          "name": "Arab U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "699",
+          "name": "GF C U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "399",
+          "name": "AFC U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019-2020"
+        },
+        {
+          "id": "726",
+          "name": "ASEAN U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1444",
+          "name": "AFC WSAG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1625",
+          "name": "Asian Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016"
+        },
+        {
+          "id": "1638",
+          "name": "GF C U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016"
+        },
+        {
+          "id": "1725",
+          "name": "CSL NYCup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016-2017"
+        },
+        {
+          "id": "1981",
+          "name": "AFF FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1985",
+          "name": "CAFA W",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "2047",
+          "name": "Asia EC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "2077",
+          "name": "AFC C W",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1403",
+          "name": "WAFF-U16",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "1404",
+          "name": "SAFF U18",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1370",
+          "name": "South A G",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "503",
+          "name": "AFF U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2007"
+        },
+        {
+          "id": "1254",
+          "name": "Arab Cup U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1220",
+          "name": "Gulf Cup U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1408",
+          "name": "WAFF U23",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2319",
+          "name": "AFF C U23",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2385",
+          "name": "SACU20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "2402",
+          "name": "AFC U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2409",
+          "name": "AFC U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2437",
+          "name": "AFC U20 WAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "2456",
+          "name": "CAFA U-20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2471",
+          "name": "CEB AC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2574",
+          "name": "ASEAN CC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2581",
+          "name": "ACGL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "2594",
+          "name": "SACU17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2672",
+          "name": "SAFF U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2678",
+          "name": "CA U17 C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2685",
+          "name": "AFFWC U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2768",
+          "name": "WAFF-U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2790",
+          "name": "EAFF U15",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2807",
+          "name": "SAFF U19 WC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2879",
+          "name": "FIFA ASEAN C",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_54",
+      "name": "Americas",
+      "flag": "images/164454838750.png",
+      "area": "2",
+      "competitions": [
+        {
+          "id": "224",
+          "name": "AMEC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "89",
+          "name": "CON CLA",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "232",
+          "name": "CGC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "263",
+          "name": "CON CSA",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "344",
+          "name": "CNCF CHL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "424",
+          "name": "UNCAFNC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "270",
+          "name": "RESU",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "175",
+          "name": "CNCF U20Q",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "489",
+          "name": "PAGM",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "487",
+          "name": "PAGW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "213",
+          "name": "CSU20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "429",
+          "name": "CNCF U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "621",
+          "name": "CON WU20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "188",
+          "name": "CGC CZ",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2017"
+        },
+        {
+          "id": "679",
+          "name": "CNCF WU20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "691",
+          "name": "CNCF W U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "734",
+          "name": "CNCF U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "682",
+          "name": "CONMEBOLFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016"
+        },
+        {
+          "id": "673",
+          "name": "CNCF FC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2021"
+        },
+        {
+          "id": "889",
+          "name": "LIB CF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1121",
+          "name": "WWCQ CONC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1123",
+          "name": "CON W",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1167",
+          "name": "LIBC U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1171",
+          "name": "NCAOW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019-2020"
+        },
+        {
+          "id": "1211",
+          "name": "CS U15",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "1177",
+          "name": "NCAO",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2021"
+        },
+        {
+          "id": "1212",
+          "name": "SAG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1289",
+          "name": "WAG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1290",
+          "name": "CAG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1808",
+          "name": "CNCF CLG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1862",
+          "name": "CFU CUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1907",
+          "name": "CFU WCS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018"
+        },
+        {
+          "id": "1964",
+          "name": "CONCACAF NL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "1968",
+          "name": "Campeones Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2056",
+          "name": "LABSC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "2059",
+          "name": "SAWC U19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "2088",
+          "name": "COP CE",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019-2020"
+        },
+        {
+          "id": "2089",
+          "name": "SAOQ",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "2482",
+          "name": "CNCF CACup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1368",
+          "name": "CNCF WCQ",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1371",
+          "name": "CNCF WCAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014"
+        },
+        {
+          "id": "1345",
+          "name": "SAme GF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "974",
+          "name": "CON WU17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2481",
+          "name": "NCAL Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2505",
+          "name": "CNCF GWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023-2024"
+        },
+        {
+          "id": "2585",
+          "name": "CNCF WCC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "2765",
+          "name": "CNL W",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "2774",
+          "name": "NC A S",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_97",
+      "name": "Oceania",
+      "flag": "images/164454879388.png",
+      "area": "4",
+      "competitions": [
+        {
+          "id": "543",
+          "name": "Oce CL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "968",
+          "name": "OFC W U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2015"
+        },
+        {
+          "id": "1025",
+          "name": "OFC W U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "1128",
+          "name": "OFC U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "1149",
+          "name": "OFCCU20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016"
+        },
+        {
+          "id": "1332",
+          "name": "OP OFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "1806",
+          "name": "BQC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1953",
+          "name": "OFCCU19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1965",
+          "name": "OFCCU19",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1372",
+          "name": "OFC PC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2014-2015"
+        },
+        {
+          "id": "2502",
+          "name": "OFC W U16",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2534",
+          "name": "OP WOFC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "2545",
+          "name": "OFC NC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "2619",
+          "name": "MSG PM Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2803",
+          "name": "OFC P L",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_55",
+      "name": "Africa",
+      "flag": "images/164454829320.png",
+      "area": "5",
+      "competitions": [
+        {
+          "id": "93",
+          "name": "CAF NC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2028"
+        },
+        {
+          "id": "239",
+          "name": "CAF CL",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "262",
+          "name": "CAF Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "176",
+          "name": "CAF U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "581",
+          "name": "CECAFA Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2021"
+        },
+        {
+          "id": "624",
+          "name": "Fut AC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2020"
+        },
+        {
+          "id": "738",
+          "name": "NAFCUP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2015"
+        },
+        {
+          "id": "765",
+          "name": "Non-Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "781",
+          "name": "AYC U17",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        },
+        {
+          "id": "931",
+          "name": "N AFR YC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2023"
+        },
+        {
+          "id": "1051",
+          "name": "CAF WNC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1052",
+          "name": "CAF SC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024-2025"
+        },
+        {
+          "id": "1133",
+          "name": "AAS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "1138",
+          "name": "OPAF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022-2023"
+        },
+        {
+          "id": "1333",
+          "name": "CAF YCQ",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "1311",
+          "name": "COSAFA Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1297",
+          "name": "WCA S",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2018"
+        },
+        {
+          "id": "1387",
+          "name": "AAS WNC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2024"
+        },
+        {
+          "id": "1666",
+          "name": "CAF WCC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1722",
+          "name": "CAF CoC20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1812",
+          "name": "WCOS CW",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2090",
+          "name": "WCWU17 AQ",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2020"
+        },
+        {
+          "id": "1226",
+          "name": "CAN W-U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025-2026"
+        },
+        {
+          "id": "1213",
+          "name": "CECAFA CC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026"
+        },
+        {
+          "id": "2615",
+          "name": "COSAFA WC-U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2675",
+          "name": "WAFU W",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2779",
+          "name": "North WC-U20",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "2886",
+          "name": "AFRNC U23",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_110",
+      "name": "Beach Soccer",
+      "flag": "images/164454816728.png",
+      "area": "0",
+      "competitions": [
+        {
+          "id": "1315",
+          "name": "Europe BSWCP",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1310",
+          "name": "BSAC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1307",
+          "name": "BSWC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1282",
+          "name": "CONMEBOL QF",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2025"
+        },
+        {
+          "id": "1280",
+          "name": "WCA S",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2019"
+        },
+        {
+          "id": "1679",
+          "name": "ASI BGS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2016"
+        },
+        {
+          "id": "1244",
+          "name": "MCBS",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2012"
+        },
+        {
+          "id": "1229",
+          "name": "BSIC",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022"
+        },
+        {
+          "id": "1219",
+          "name": "Lagos Cup",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2015"
+        },
+        {
+          "id": "2401",
+          "name": "WOR BG",
+          "kind": "cup",
+          "topTier": false,
+          "season": "2022-2023"
+        }
+      ]
+    },
+    {
+      "id": "InfoID_175",
+      "name": "Cambodia",
+      "flag": "images/1gsenz9csk1n.png",
+      "area": "3",
+      "competitions": [
+        {
+          "id": "1538",
+          "name": "CPL",
+          "kind": "league",
+          "topTier": false,
+          "season": "2026-2027"
+        }
+      ]
+    }
+  ]
+}

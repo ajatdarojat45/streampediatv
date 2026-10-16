@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Radio, MoreHorizontal } from 'lucide-react';
+import { Radio, MoreHorizontal, Trophy } from 'lucide-react';
 import { POPULAR_SPORTS, MORE_SPORTS } from '@/lib/sports';
 import { usePrefetchCategory } from '@/lib/streamingQueries';
 
@@ -41,6 +41,16 @@ export function SportNav() {
           <Link href="/" className={isActive('/') ? TAB_LIVE_ACTIVE : TAB_IDLE}>
             <Radio className="h-4 w-4 shrink-0" />
             Live
+          </Link>
+
+          <Link
+            href="/competitions"
+            role="tab"
+            aria-selected={isActive('/competitions')}
+            className={isActive('/competitions') ? TAB_ACTIVE : TAB_IDLE}
+          >
+            <Trophy className="h-4 w-4 shrink-0" />
+            Competitions
           </Link>
 
           {POPULAR_SPORTS.map((s) => {
