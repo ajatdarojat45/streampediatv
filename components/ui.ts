@@ -114,9 +114,17 @@ export const INPUT =
 /** Dropdown trigger (season, competition, view pickers). */
 export const SELECT =
   'inline-flex items-center gap-2 rounded-sm border border-border bg-card px-3 py-2 text-[13px] font-semibold text-text transition-all hover:border-border-hover disabled:opacity-50';
-/** Dropdown popup — floats, scrolls on its own (season lists run long). */
-export const MENU =
-  'absolute left-0 top-[calc(100%+6px)] z-30 max-h-[320px] w-[min(78vw,300px)] overflow-y-auto rounded-sm border border-border bg-panel p-1.5 shadow-md';
+/** Dropdown popup — floats over the page, scrolls on its own (season lists run
+ *  long). It comes in two pieces because the library that draws
+ *  `components/Select.tsx` places the popup itself: `MENU_BOX` is the surface it
+ *  floats, `MENU_LIST` the inset of the list it scrolls inside that surface. */
+export const MENU_BOX = 'rounded-sm border border-border bg-panel shadow-md';
+/** Inset of that popup's scrolling list, so its options sit off the border. */
+export const MENU_LIST = 'p-1.5';
 export const MENU_ITEM =
   'block w-full rounded-sm px-2.5 py-1.5 text-left text-[13px] text-text transition-colors hover:bg-accent-soft hover:text-accent';
 export const MENU_ITEM_ON = `${MENU_ITEM} bg-accent-soft font-bold text-accent`;
+/** The same highlight as `MENU_ITEM`'s `:hover`, as plain classes — for a menu
+ *  whose focus is reported to the component instead of by the pointer (a
+ *  keyboard walk through `components/Select.tsx`), where `:hover` never fires. */
+export const MENU_ITEM_FOCUS = 'bg-accent-soft text-accent';

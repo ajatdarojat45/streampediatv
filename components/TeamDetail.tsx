@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link, { useLinkStatus } from 'next/link';
-import { ChevronDown, ChevronLeft, ChevronRight, Info, Loader2, Shirt, Trophy, UserRound } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info, Loader2, Shirt, Trophy, UserRound } from 'lucide-react';
 import { LocalTime } from '@/components/LocalTime';
+import { Select } from '@/components/Select';
 import type {
   NowgoalSquadPlayer,
   NowgoalStandingRow,
@@ -12,15 +13,11 @@ import type {
   NowgoalTeamForm,
   NowgoalTeamTransfer,
   NowgoalTeamView,
-  NowgoalViewOption,
 } from '@/lib/types';
 import {
   BADGE,
   GROUP_HEAD,
   LABEL,
-  MENU,
-  MENU_ITEM,
-  MENU_ITEM_ON,
   PANEL,
   PANEL_TITLE,
   PILL_ROW,
@@ -106,81 +103,6 @@ function Avatar({ src, name, size = 'h-8 w-8' }: { src: string; name: string; si
 function Pending() {
   const { pending } = useLinkStatus();
   return pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : null;
-}
-
-/** One dropdown of the toolbar: a button carrying the current label and a list of
- *  the other values, each a plain link to the same page with one query changed —
- *  so a dropdown value can be copied, shared and opened in a new tab like any
- *  other URL. Picking one closes the list and lets the link navigate. */
-function Select({
-  value,
-  options,
-  hrefOf,
-  label,
-}: {
-  value: string;
-  options: NowgoalViewOption[];
-  hrefOf: (key: string) => string;
-  label: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const box = useRef<HTMLDivElement | null>(null);
-  const current = options.find((option) => option.key === value)?.label ?? value;
-
-  // Close on an outside click or Escape — the same behaviour the directory's
-  // federation panels have.
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (event: MouseEvent) => {
-      if (box.current && !box.current.contains(event.target as Node)) setOpen(false);
-    };
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
-  return (
-    <div className="relative" ref={box}>
-      <button
-        type="button"
-        className={SELECT}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={label}
-        onClick={() => setOpen((was) => !was)}
-      >
-        <span className="text-muted">{label}</span>
-        <span className="max-w-[180px] truncate">{current}</span>
-        <ChevronDown
-          className={`h-3.5 w-3.5 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden="true"
-        />
-      </button>
-      {open ? (
-        <div className={MENU} role="listbox" aria-label={label}>
-          {options.map((option) => (
-            <Link
-              key={option.key}
-              href={hrefOf(option.key)}
-              scroll={false}
-              role="option"
-              aria-selected={option.key === value}
-              className={option.key === value ? MENU_ITEM_ON : MENU_ITEM}
-              onClick={() => setOpen(false)}
-            >
-              {option.label}
-            </Link>
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
 }
 
 /** Prev/next of the fixture list: the club's calendar runs to a hundred pages,
