@@ -44,8 +44,9 @@ import type {
   NowgoalFederationEntry,
 } from './types';
 
-/** Origin of the football site this catalogue belongs to — also where a
- *  competition's own page lives (`/league/{id}`). */
+/** Origin of the football site this catalogue belongs to — its own competition
+ *  pages live under `/league/{id}` there, and its season files (which the
+ *  competition page reads, see lib/nowgoalLeague.ts) under `/jsData/`. */
 export const NOWGOAL_FOOTBALL_ORIGIN =
   process.env.RB_NOWGOAL_FOOTBALL_ORIGIN || 'https://football.nowgoal50.com';
 
@@ -59,8 +60,10 @@ export const NOWGOAL_FEED_PATH = '/jsData/infoHeaderEn.js';
 const FLAG_PATH = '/football/Image/info/';
 /** Competition crests, addressed by the same competition ids the feed uses. */
 const CREST_PATH = '/mini/fbleague/';
-/** Competition pages on the football origin. */
-const COMPETITION_PATH = '/league/';
+/** Competition pages: this app's own detail route for one competition
+ *  (`app/competitions/[id]/page.tsx`), which is also where every entry of the
+ *  directory opens. */
+const COMPETITION_PATH = '/competitions/';
 
 /** The feed's six area buckets, in the publisher's own order and wording
  *  (`_locModel.T` of its pages: T_Area_Intercontinental … T_Area_Africa). */
@@ -92,9 +95,10 @@ export function competitionCrest(id: string): string {
   return id ? `${NOWGOAL_IMAGE_ORIGIN}${CREST_PATH}${id}.png` : '';
 }
 
-/** Competition page on the publisher's site (`/league/{id}`). */
+/** This app's own page for one competition (`/competitions/{id}` — the id is the
+ *  publisher's own, so the two always agree). */
 export function competitionHref(id: string): string {
-  return `${NOWGOAL_FOOTBALL_ORIGIN}${COMPETITION_PATH}${id}`;
+  return `${COMPETITION_PATH}${id}`;
 }
 
 /** Continent label of a feed area id (`'Other'` for an id added later). */

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { ChevronDown, Globe, Loader2, RefreshCw, Search, Trophy } from 'lucide-react';
 import { refreshCompetitionCatalogue } from '@/app/competitions/actions';
 import type {
@@ -126,23 +127,16 @@ function CompetitionCrest({ src, name }: { src: string; name: string }) {
   );
 }
 
-/** One competition inside a federation panel. The entry is the publisher's own
- *  competition page, i.e. another site, so it opens in a new tab rather than
- *  navigating this directory away. */
+/** One competition inside a federation panel. The entry is this app's own page
+ *  for that competition (`/competitions/{id}`), so it opens in the same tab —
+ *  the panel closes on navigation, which is the only state it holds. */
 function FederationEntry({ item }: { item: NowgoalCompetitionEntry }) {
   const title = `${item.name} — fixtures, results & standings`;
   return (
     <li className={MENU_ITEM}>
-      <a
-        className={MENU_LINK}
-        href={item.href}
-        title={title}
-        aria-label={title}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <Link className={MENU_LINK} href={item.href} title={title} aria-label={title}>
         {item.name}
-      </a>
+      </Link>
       {item.season && (
         <span className="ml-1.5 whitespace-nowrap text-[11px] text-muted">{item.season}</span>
       )}
@@ -249,13 +243,11 @@ function TopFlightTile({
 }) {
   const title = `${competition.name} — ${federation}, ${competition.season}`;
   return (
-    <a
+    <Link
       href={competition.href}
       className="flex items-center gap-3 rounded-[var(--radius-sm)] border border-border bg-card px-3.5 py-3 no-underline transition-all hover:border-[#c7ccd2]"
       title={title}
       aria-label={title}
-      target="_blank"
-      rel="noopener noreferrer"
     >
       <CompetitionCrest src={competition.crest} name={competition.name} />
       <span className="min-w-0 flex-1">
@@ -265,7 +257,7 @@ function TopFlightTile({
           {competition.season ? ` · ${competition.season}` : ''}
         </span>
       </span>
-    </a>
+    </Link>
   );
 }
 

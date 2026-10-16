@@ -252,7 +252,7 @@ export interface NowgoalCatalogueFile {
 export interface NowgoalCompetitionEntry extends NowgoalCompetition {
   /** Absolute crest URL, or `''` when the feed publishes none. */
   crest: string;
-  /** Absolute competition page on the publisher's site. */
+  /** This app's own route for the competition, `/competitions/{id}`. */
   href: string;
 }
 
@@ -290,4 +290,234 @@ export interface NowgoalCatalogue {
   /** When the catalogue in use was read: the fetch time for a live read, the
    *  generator run that wrote the snapshot for a fallback (`''` if neither). */
   generatedAt: string;
+}
+
+/* ------------------------------------------------------------------------- *
+ * NowGoal competition detail — one season of one competition, normalised
+ * (see lib/nowgoalLeague.ts, which reads the publisher's own season files).
+ * ------------------------------------------------------------------------- */
+
+/** A team as the season file names it: id, display name and absolute crest. */
+export interface NowgoalTeamRef {
+  id: string;
+  name: string;
+  /** Absolute crest URL, or `''` — the client falls back to the initial. */
+  crest: string;
+}
+
+/** One fixture of a season file, with both sides resolved to team names. */
+export interface NowgoalFixture {
+  id: string;
+  /** Kick-off in ms since epoch, converted off the feed's GMT+8 wall clock, or
+   *  `null` when the file publishes no usable stamp. */
+  kickoffMs: number | null;
+  /** The feed's own state field: `-1` finished, `0` not started, `-10`…`-14`
+   *  cancelled/pending/abandoned/paused/postponed, a positive value in play. */
+  state: number;
+  home: NowgoalTeamRef;
+  away: NowgoalTeamRef;
+  /** Full-time score exactly as published (`3-0`), `''` before kick-off. */
+  score: string;
+  /** Half-time score as published, `''` when the file has none. */
+  halfScore: string;
+  homeRed: number;
+  awayRed: number;
+  /** The publisher's own aside on the tie — leg/extra time/penalties notes,
+   *  already turned into plain English (see `fixtureNote`), `''` when none. */
+  note: string;
+}
+
+/** One round (league) or stage/group (cup), with the fixtures filed under it. */
+export interface NowgoalRound {
+  /** Key inside the season file, e.g. `R_7` (league) or `G29090A` (cup). */
+  key: string;
+  /** Label the page shows, e.g. `Round 7` or `League Round A`. */
+  label: string;
+  fixtures: NowgoalFixture[];
+}
+
+/** One standings row. The feed publishes two row layouts; both land here. */
+export interface NowgoalStandingRow {
+  rank: number;
+  team: NowgoalTeamRef;
+  played: number;
+  win: number;
+  draw: number;
+  lose: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDiff: number;
+  points: number;
+  /** Band colour the feed files the row under (`ColorList`), `''` when none —
+   *  the league tables mark promotion/relegation bands with it. */
+  band: string;
+  /** Cups only: the feed marks the rows that advance to the next stage. */
+  qualified: boolean;
+}
+
+/** One standings table: a league's total/home/away view, or a cup group. */
+export interface NowgoalStandingTable {
+  /** `all` · `home` · `away` for a league, `S{stage}{group}` for a cup group,
+   *  `S{id}_all` for one section of a competition filed in sub-leagues. */
+  key: string;
+  label: string;
+  rows: NowgoalStandingRow[];
+  /** Bands of this table, when the file marks any (a league's promotion and
+   *  relegation places); cups mark qualifiers per row instead. */
+  bands?: NowgoalStandingBand[];
+  /** How many rounds this table can be rebuilt up to — `0` when it is not a
+   *  per-round table (a cup group). */
+  roundsPlayed?: number;
+  /** The sub-league this table belongs to, when the competition files several
+   *  (`SubLeagueInfo`), so a per-round rebuild knows which fixtures it counts. */
+  scope?: string;
+}
+
+/** One player row of the statistics plate, in the file's own column order. */
+export interface NowgoalPlayerRow {
+  playerId: string;
+  name: string;
+  /** Photo path as published, resolved by `playerPhoto` into an absolute URL. */
+  photo: string;
+  teamId: string;
+  teamName: string;
+  teamCrest: string;
+  columns: number[];
+}
+
+/** One statistics metric the publisher's own page offers for a plate. */
+export interface NowgoalStatMetric {
+  id: string;
+  label: string;
+}
+
+/** A statistics plate as the page renders it: the requested metric, sorted and
+ *  paged, already formatted. */
+export interface NowgoalStatTable {
+  /** Label of the second column (the per-match average, or `''` when the metric
+   *  has a single column). */
+  secondLabel: string;
+  rows: {
+    rank: number;
+    name: string;
+    /** Absolute photo URL, or `''`. */
+    photo: string;
+    teamName: string;
+    teamCrest: string;
+    value: string;
+    second: string;
+  }[];
+  page: number;
+  pageCount: number;
+  total: number;
+}
+
+/** A promotion/qualification band of a league table (`ColorList`). */
+export interface NowgoalStandingBand {
+  color: string;
+  label: string;
+}
+
+/** One row of the team statistics plate: the team plus its numeric columns. */
+export interface NowgoalTeamRow {
+  team: NowgoalTeamRef;
+  columns: number[];
+}
+
+/** Everything the detail page needs about one season of one competition. */
+export interface NowgoalSeasonData {
+  /** Competition id — the id in its own `/league/{id}` page. */
+  id: string;
+  /** Which season-file flavour this is: `s{id}` a league, `c{id}` a cup. */
+  kind: 'league' | 'cup';
+  /** Full name the season file publishes, e.g. `English Premier League`. */
+  name: string;
+  /** Compact label the file publishes, e.g. `ENG PR`. */
+  shortName: string;
+  /** Season label this file was read for, e.g. `2026-2027`. */
+  season: string;
+  /** Absolute competition crest, or `''`. */
+  crest: string;
+  /** The publisher's own description of the competition, as plain text. */
+  description: string;
+  /** Teams the season file lists (20 for a league, up to 650 for a cup). */
+  teams: number;
+  /** Fixtures, one entry per round (league) or stage/group (cup). */
+  rounds: NowgoalRound[];
+  /** Standings tables: a league carries three views, a cup one per group. */
+  tables: NowgoalStandingTable[];
+  /** 1-based index into {@link rounds} of the round the publisher's own fixtures
+   *  tab opens on: the round in progress for a league, the stage it flags as
+   *  current for a cup (`0` when it flags nothing). */
+  currentRound: number;
+  /** Player rows, still numeric (the requested metric picks the columns). */
+  players: NowgoalPlayerRow[];
+  /** Team rows of the same plate, still numeric. */
+  teamRows: NowgoalTeamRow[];
+  /** When the file itself was last written, as ms since epoch. */
+  updatedMs: number | null;
+}
+
+/** One selectable option of the detail page: a season, a round, a table. */
+export interface NowgoalViewOption {
+  key: string;
+  label: string;
+}
+
+/** Which tab of `/competitions/[id]` is open. */
+export type NowgoalViewTab = 'overview' | 'standings' | 'fixtures' | 'stats';
+
+/** One strip of the detail page, already narrowed to the open tab: the server
+ *  picks the season, the round and the page and hands the client only the rows
+ *  that tab shows, so a season file never reaches the browser whole. */
+export interface NowgoalCompetitionView {
+  id: string;
+  kind: 'league' | 'cup';
+  name: string;
+  shortName: string;
+  season: string;
+  crest: string;
+  /** The publisher's own description of the competition, as plain text. */
+  description: string;
+  /** Country or region that runs it, as the catalogue files it (`''` when the
+   *  competition is not in the catalogue the page could read). */
+  federation: string;
+  /** Teams the season file lists. */
+  teams: number;
+  /** Rounds a league publishes / stages a cup publishes. */
+  rounds: number;
+  /** When the publisher last wrote the season file, ms since epoch. */
+  updatedMs: number | null;
+  /** The tabs this competition has data for, in display order. */
+  tabs: NowgoalViewOption[];
+  tab: NowgoalViewTab;
+  /** Season dropdown, newest first. */
+  seasons: NowgoalViewOption[];
+  /** Fixtures tab: the round (league) / stage+group (cup) dropdown and the
+   *  fixtures it points at. */
+  roundOptions: NowgoalViewOption[];
+  round: string;
+  roundLabel: string;
+  fixtures: NowgoalFixture[];
+  /** Standings tab: a league's total/home/away views or a cup's groups. */
+  tableOptions: NowgoalViewOption[];
+  table: string;
+  tableLabel: string;
+  standings: NowgoalStandingRow[];
+  /** Bands of the league table, for its legend. */
+  bands: NowgoalStandingBand[];
+  /** Standings tab of a league: the round the table is cut at (`0` = every
+   *  round the feed has results for). */
+  standingsRoundOptions: NowgoalViewOption[];
+  standingsRound: number;
+  /** Overview tab: the leading rows of the first table. */
+  preview: NowgoalStandingRow[];
+  /** Stats tab: the open plate, its metric dropdown and one page of rows. */
+  plate: 'player' | 'team';
+  /** The plates this season publishes numbers for (`player` and/or `team`). */
+  plates: NowgoalViewOption[];
+  /** The open plate's metrics, as its dropdown lists them. */
+  metricOptions: NowgoalViewOption[];
+  metric: string;
+  stat: NowgoalStatTable | null;
 }
