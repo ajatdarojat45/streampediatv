@@ -521,3 +521,453 @@ export interface NowgoalCompetitionView {
   metric: string;
   stat: NowgoalStatTable | null;
 }
+
+/* ------------------------------------------------------------------------- *
+ * NowGoal club detail — one club, one competition and one season at a time
+ * (see lib/nowgoalTeam.ts, which reads the publisher's own club page).
+ * ------------------------------------------------------------------------- */
+
+/** One player of a club's squad list, as the club's own detail file files them
+ *  (`lineupDetail`, with the photo the position lists carry). */
+export interface NowgoalSquadPlayer {
+  id: string;
+  name: string;
+  /** Absolute photo URL, or `''` when the file files the player in no position
+   *  list (only its lineup row, which carries no photo). */
+  photo: string;
+  /** Shirt number as published, `''` when the file has none. */
+  number: string;
+  /** The group the file files them under — `Forward`, `Midfielder`, `Defender`
+   *  or `Goalkeeper` — or `''` when it files them under none. */
+  group: string;
+  /** The file's own role text, e.g. `Centre Forward`, `Left-Back`. */
+  role: string;
+  /** Birthday as published (`2001-03-17`), `''` when it has none. */
+  birthday: string;
+  /** Age in years at the file's own last update, `null` without a birthday. */
+  age: number | null;
+  heightCm: number | null;
+  weightKg: number | null;
+  country: string;
+  /** Estimated value in millions of pounds — the file publishes it in £10k
+   *  units, so `1500` is £15M (the publisher's own `toExp` divides by 100).
+   *  `null` when the file has no value for the player. */
+  valueMillions: number | null;
+  /** Contract expiry as published (`2027-06-30`), `''` when it has none. */
+  contractExpiry: string;
+}
+
+/** One honour of the club's own list (`TeamHonor`). */
+export interface NowgoalHonour {
+  /** The honour as the file names it, e.g. `ITALIAN CHAMPION`. */
+  title: string;
+  /** The seasons it was won in, as published (`75/76`), newest first. */
+  seasons: string[];
+}
+
+/** The club itself, as its own detail file describes it (`TeamInfo`, `coach`). */
+export interface NowgoalTeamInfo {
+  id: string;
+  name: string;
+  /** Absolute crest, or `''` — the client falls back to the initial. */
+  crest: string;
+  city: string;
+  stadium: string;
+  /** Capacity as published, `null` when the file has none. */
+  capacity: number | null;
+  /** Year the club was founded, as published (`1906`), `''` when unknown. */
+  founded: string;
+  /** Estimated squad value in millions of pounds, `null` when unknown. */
+  valueMillions: number | null;
+  /** Average age of the squad as published (`26.1`), `''` when unknown. */
+  avgAge: string;
+  /** The competition the club is filed under, and its crest — the id is the one
+   *  `/competitions/[id]` reads, so the page can link to it. */
+  leagueId: string;
+  leagueName: string;
+  leagueCrest: string;
+  coach: { id: string; name: string; photo: string } | null;
+  honours: NowgoalHonour[];
+  /** The publisher's own style notes (`teamCharacter`). It publishes no legend
+   *  for the two fields that file them, so only their texts are kept. */
+  traits: string[];
+  /** When the file itself was last written, ms since epoch. */
+  updatedMs: number | null;
+}
+
+/** One fixture of the club's own schedule endpoint, which publishes the two
+ *  sides inline rather than as ids into a table. */
+export interface NowgoalTeamFixture extends NowgoalFixture {
+  /** Competition the fixture is filed under (`SclassID`). */
+  competitionId: string;
+  /** That competition's name, as the endpoint's own list names it. */
+  competition: string;
+  /** The competition's country flag, or `''`. */
+  countryFlag: string;
+  /** The rank the endpoint publishes per side — a league position (`16`), or a
+   *  competition-coded one (`ITA D1-14`) for a match outside that league. `''`
+   *  when it has none (a fixture not played yet). */
+  rank: { home: string; away: string };
+  /** The club's own rating for the match, `null` when the endpoint has none. */
+  rating: number | null;
+  /** How the club fared in a finished fixture — `''` before it is played. */
+  result: '' | 'W' | 'D' | 'L';
+}
+
+/** One competition the club played in, with the seasons it played it in (the
+ *  club file's `TeamOrderInfo`, and its `PlayerStatsSclassList` for the
+ *  competitions it publishes a player plate for). */
+export interface NowgoalTeamCompetition {
+  id: string;
+  name: string;
+  /** `cup` for a competition whose season file is a cup's (`c{id}`). */
+  kind: 'league' | 'cup';
+  /** Seasons the club has data for, newest first. */
+  seasons: NowgoalViewOption[];
+  /** Per season, the section of that competition's season file the club's
+   *  matches are filed under — a sub-league's section, a cup's group — as
+   *  `{ [season]: sectionId }`. Empty for a competition the source publishes no
+   *  sections for. */
+  sections: Record<string, string>;
+}
+
+/** One transfer of the club's own endpoint. */
+export interface NowgoalTeamTransfer {
+  playerId: string;
+  name: string;
+  /** Absolute photo URL, or `''`. */
+  photo: string;
+  /** The other club's id — the endpoint publishes no name for it — and its
+   *  crest, or `''`. */
+  teamId: string;
+  teamCrest: string;
+  /** Fee as published (`-` for an undisclosed one, `€ 12.5M` otherwise). */
+  fee: string;
+  /** Date of the move as published, turned into `YYYY-MM-DD`. */
+  date: string;
+  /** The publisher's own kind of move (`Full Ownership`, `Loan`, …). */
+  type: string;
+  /** `in` when the player joined this club, `out` when he left it. */
+  direction: 'in' | 'out';
+}
+
+/** One fact of the club's own season: a label and an already-formatted value. */
+export interface NowgoalTeamFact {
+  label: string;
+  value: string;
+}
+
+/** The club's own row of one view of a competition's table. */
+export interface NowgoalTeamRecord {
+  /** The view's own label: `Total`, `Home`, `Away`, or a cup group's name. */
+  label: string;
+  row: NowgoalStandingRow;
+}
+
+/** The club's recent results, newest first. */
+export interface NowgoalTeamForm {
+  results: ('W' | 'D' | 'L')[];
+  /** What the run is, in words (`Last 6 matches, newest first`). */
+  note: string;
+}
+
+/** The club's own numbers for one competition and season: its rows in the
+ *  competition's table plus what its finished fixtures of that competition add
+ *  up to. Everything here is read from the competition's own season file, so a
+ *  number either comes from the publisher's own table or is derived from the
+ *  fixtures it publishes — nothing is estimated. */
+export interface NowgoalTeamSeasonStats {
+  /** The club's own row of every view the file publishes for its section, in
+   *  the file's own order (`Total`, `Home`, `Away`, or the group it was drawn
+   *  in when the competition is a cup). */
+  records: NowgoalTeamRecord[];
+  /** Facts derived from the club's finished fixtures of that competition. */
+  facts: NowgoalTeamFact[];
+  form: NowgoalTeamForm;
+  /** Played fixtures the derived facts were read from. */
+  played: number;
+}
+
+/** The open competition's table, as the club's own page shows it. */
+export interface NowgoalTeamStanding {
+  /** The tables the club's section of that competition publishes, as the
+   *  fallback dropdown lists them. */
+  tableOptions: NowgoalViewOption[];
+  /** The region pills (`All` · `Home` · `Away`) when the section publishes
+   *  them — a league does, a cup group does not. */
+  viewOptions: NowgoalViewOption[];
+  table: string;
+  label: string;
+  rows: NowgoalStandingRow[];
+  bands: NowgoalStandingBand[];
+}
+
+/** Which tab of `/teams/[id]` is open. */
+export type NowgoalTeamTab = 'fixtures' | 'players' | 'stats' | 'standing' | 'info' | 'transfers';
+
+/** Which plate of the players tab is open. */
+export type NowgoalTeamPlayerTab = 'lineup' | 'data';
+
+/** `/teams/[id]`: one club, with the rows of the tab that is open. The server
+ *  picks the competition, the season and the page and hands the client only
+ *  what that tab shows, so neither a squad plate nor a season file reaches the
+ *  browser whole. */
+export interface NowgoalTeamView {
+  info: NowgoalTeamInfo;
+  /** The tabs this club has data for, in display order. */
+  tabs: NowgoalViewOption[];
+  tab: NowgoalTeamTab;
+
+  /* Fixtures tab — the club's own schedule endpoint, ten fixtures a page. */
+  /** Competitions the endpoint files the club's fixtures under, `All` first
+   *  (key `0`). */
+  competitions: NowgoalViewOption[];
+  competition: string;
+  fixtures: NowgoalTeamFixture[];
+  fixturePage: number;
+  fixturePageCount: number;
+
+  /* Players tab. */
+  playerTab: NowgoalTeamPlayerTab;
+  /** The club's squad, as its own lineup lists it (the coach is not in it).
+   *  Only the players tab is sent it; every other tab gets an empty list and
+   *  reads {@link squadSize} for the count. */
+  squad: NowgoalSquadPlayer[];
+  /** Players the club's own file lists. */
+  squadSize: number;
+  /** Competitions the file publishes a player plate for, newest season first. */
+  playerCompetitions: NowgoalViewOption[];
+  /** The open player competition (an id of {@link playerCompetitions}). */
+  playerCompetition: string;
+  /** Seasons of the selected player competition, newest first. */
+  playerSeasons: NowgoalViewOption[];
+  playerSeason: string;
+  /** The open plate's metrics, as its dropdown lists them. */
+  metricOptions: NowgoalViewOption[];
+  metric: string;
+  stat: NowgoalStatTable | null;
+
+  /* Stats and standing tabs — both cut from one competition's season file, and
+   * both offered over the competitions the club's own file lists. */
+  seasonCompetitions: NowgoalViewOption[];
+  statCompetition: string;
+  /** Seasons of the selected stats competition, newest first. */
+  statSeasons: NowgoalViewOption[];
+  statSeason: string;
+  stats: NowgoalTeamSeasonStats | null;
+  standCompetition: string;
+  /** Seasons of the selected standing competition, newest first. */
+  standSeasons: NowgoalViewOption[];
+  standSeason: string;
+  standing: NowgoalTeamStanding | null;
+
+  /* Transfers tab. */
+  transferYears: NowgoalViewOption[];
+  transferYear: string;
+  transferDirection: 'in' | 'out';
+  transfers: NowgoalTeamTransfer[];
+}
+
+/* ------------------------------------------------------------------------- *
+ * NowGoal player detail — one player, one competition and one season at a time
+ * (see lib/nowgoalPlayer.ts, which reads the publisher's own player page).
+ * ------------------------------------------------------------------------- */
+
+/** One attribute of the player's own radar (`RadarInfo`), on the publisher's own
+ *  0–100 scale. */
+export interface NowgoalPlayerAttribute {
+  /** The publisher's own short label — `PAC`, `SHO`, `PHY`, `PAS`, `DEF` and
+   *  `DRI` for an outfield player, `DIV`, `HAN`, `POS`, `KIC`, `SPD` and `REF`
+   *  for a goalkeeper. It publishes no longer name for any of them. */
+  key: string;
+  /** The value as published (`0`–`100`). */
+  value: number;
+}
+
+/** The player himself, as his own detail file describes him (`PlayerInfo`,
+ *  `RadarInfo`). */
+export interface NowgoalPlayerInfo {
+  id: string;
+  name: string;
+  /** Absolute photo URL, or `''` — the page falls back to its own icon. */
+  photo: string;
+  /** The club the file files him under, and its crest — the id is the one
+   *  `/teams/[id]` reads, so the page can link to it. */
+  teamId: string;
+  teamName: string;
+  teamCrest: string;
+  country: string;
+  /** The country's flag, addressed the way the publisher's own header does, or
+   *  `''`. */
+  countryFlag: string;
+  /** Shirt number as published, `''` when the file has none. */
+  number: string;
+  /** Estimated value in millions of pounds — the file publishes it in £10k
+   *  units, so `500` is £5M (the publisher's own `toExp` divides by 100).
+   *  `null` when the file has no value for him. */
+  valueMillions: number | null;
+  /** Contract expiry as published (`2029-06-30`), `''` when it has none. */
+  contractExpiry: string;
+  /** Birthday as published (`2000-02-18`), `''` when it has none. */
+  birthday: string;
+  /** Age in years at the file's own last update, `null` without a birthday. */
+  age: number | null;
+  heightCm: number | null;
+  weightKg: number | null;
+  /** Preferred foot as the publisher's own map names it — `Left`, `Right` or
+   *  `Both` — or `''`. */
+  foot: string;
+  /** The competition the player's own page opens its statistics on (`PlayerInfo`
+   *  index 15), which is the one he plays in now. `''` when it names none. */
+  competitionId: string;
+  /** That competition's crest, addressed the way every other crest in the app is
+   *  (the site's own `_miniLeaguePicUrl`), or `''`. */
+  competitionCrest: string;
+  /** The six attributes of his own radar, in the publisher's own order. */
+  attributes: NowgoalPlayerAttribute[];
+  /** When the file itself was last written, ms since epoch. */
+  updatedMs: number | null;
+}
+
+/** One figure of the player's own statistics plate: a label and an
+ *  already-formatted value. */
+export interface NowgoalPlayerFact {
+  label: string;
+  value: string;
+}
+
+/** One block of the player's own statistics plate (`Important`, `Offensive`,
+ *  `Passing`, `Defensive`), as the publisher's own page lays it out. */
+export interface NowgoalPlayerStatBlock {
+  label: string;
+  facts: NowgoalPlayerFact[];
+}
+
+/** The player's own numbers for one competition and one season, added up off
+ *  the rows of his own match log that are filed under them — nothing here is
+ *  estimated, and every label is the publisher's own. */
+export interface NowgoalPlayerSeasonStats {
+  competitionId: string;
+  competition: string;
+  season: string;
+  /** Matches of that competition and season his own log files him in. */
+  matches: number;
+  blocks: NowgoalPlayerStatBlock[];
+}
+
+/** The player's own numbers for one match, as the log files them — the columns
+ *  the publisher's own statistics plate adds up (`initTechStats`). */
+export interface NowgoalPlayerMatchStats {
+  /** Minutes he was on the pitch. */
+  minutes: number;
+  /** The rating the publisher published for him, or `null` when it published
+   *  none — it files a `0` for a match it has no rating for. */
+  rating: number | null;
+  goals: number;
+  /** The goals of his that were penalties, which the plate prints beside the
+   *  goals (`Goals(P)`). */
+  penalties: number;
+  assists: number;
+  /** The three card marks of the publisher's own rows. */
+  red: number;
+  yellow: number;
+  twoYellow: number;
+  shots: number;
+  /** Shots on goal (`Shots (SOG)`). */
+  shotsOnTarget: number;
+  fouled: number;
+  offsides: number;
+  /** Matches the publisher filed him as the best player of. */
+  best: number;
+  passes: number;
+  passesCompleted: number;
+  keyPasses: number;
+  longPasses: number;
+  throughBalls: number;
+  breakLoose: number;
+  tackles: number;
+  interceptions: number;
+  clearances: number;
+  steals: number;
+  blocked: number;
+  headers: number;
+  fouls: number;
+}
+
+/** One match of the player's own log (`playerCount`), which the publisher files
+ *  once per match the player appears in. */
+export interface NowgoalPlayerMatch {
+  id: string;
+  /** Kick-off as ms since epoch, or `null` for a stamp it could not read. */
+  kickoffMs: number | null;
+  competitionId: string;
+  competition: string;
+  /** The competition's country flag, or `''`. */
+  countryFlag: string;
+  home: { id: string; name: string; crest: string };
+  away: { id: string; name: string; crest: string };
+  /** The final score as published (`2-1`). */
+  score: string;
+  /** Competition season the match is filed under (`2026-2027`). */
+  season: string;
+  stats: NowgoalPlayerMatchStats;
+  /** The publisher's own highlight link for the match, `''` when it has none. */
+  highlights: string;
+}
+
+/** One move of the player's own transfer list (`TransferInfo`). */
+export interface NowgoalPlayerTransfer {
+  /** The season label the file files the move under (`2025-2026`). */
+  season: string;
+  /** The club he moved to. */
+  teamId: string;
+  teamName: string;
+  teamCrest: string;
+  /** The club he moved from — the publisher publishes both ends of a move,
+   *  unlike the club's own transfer endpoint. */
+  fromTeamId: string;
+  fromTeamName: string;
+  fromTeamCrest: string;
+  /** Fee the file publishes, in millions of pounds — it stores it in £10k
+   *  units, so `750` is £7.5M — or `null` when it has none. */
+  feeMillions: number | null;
+  /** Date of the move as published, `YYYY-MM-DD`. */
+  date: string;
+  /** The publisher's own kind of move (`Full Ownership`, `Loan`, …), `''` for
+   *  one its map does not carry. */
+  type: string;
+}
+
+/** Which tab of `/players/[id]` is open. */
+export type NowgoalPlayerTab = 'info' | 'stats' | 'matches' | 'transfer';
+
+/** `/players/[id]`: one player, with the rows of the tab that is open. The
+ *  server picks the competition, the season and the page and hands the client
+ *  only what that tab shows, so a career log of two hundred matches never
+ *  reaches the browser whole. */
+export interface NowgoalPlayerView {
+  info: NowgoalPlayerInfo;
+  /** The tabs this player has data for, in display order. */
+  tabs: NowgoalViewOption[];
+  tab: NowgoalPlayerTab;
+
+  /* Stats tab — one competition and one season of the player's own log. */
+  /** Competitions the log files him in, most recent match first. */
+  statCompetitions: NowgoalViewOption[];
+  statCompetition: string;
+  /** Seasons of the selected competition, newest first. */
+  statSeasons: NowgoalViewOption[];
+  statSeason: string;
+  stats: NowgoalPlayerSeasonStats | null;
+
+  /* Matches tab — the log, ten to a page, newest first. Only the open page is
+   *  ever sent to the client. */
+  matches: NowgoalPlayerMatch[];
+  matchPage: number;
+  matchPageCount: number;
+  /** Matches the log holds in total. */
+  matchCount: number;
+
+  /* Transfer tab — his whole career, newest first. */
+  transfers: NowgoalPlayerTransfer[];
+}

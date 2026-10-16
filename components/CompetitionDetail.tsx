@@ -57,12 +57,16 @@ function FixtureRow({ fixture: f }: { fixture: NowgoalFixture }) {
         <span className="text-[11px] leading-[1.35] text-muted">
           {f.kickoffMs ? <LocalTime ts={f.kickoffMs} /> : '—'}
         </span>
-        <span className="flex min-w-0 items-center justify-end gap-2">
+        <Link
+          href={`/teams/${f.home.id}`}
+          scroll={false}
+          className="flex min-w-0 items-center justify-end gap-2 no-underline text-text hover:text-accent"
+        >
           <span className="min-w-0 truncate text-[13.5px] font-semibold max-[640px]:text-[12.5px]">
             {f.home.name}
           </span>
           <Crest src={f.home.crest} name={f.home.name} />
-        </span>
+        </Link>
         <span className="min-w-[64px] text-center">
           {special ? (
             <span className="text-[11px] font-semibold text-muted">{special}</span>
@@ -82,12 +86,16 @@ function FixtureRow({ fixture: f }: { fixture: NowgoalFixture }) {
             </span>
           ) : null}
         </span>
-        <span className="flex min-w-0 items-center gap-2">
+        <Link
+          href={`/teams/${f.away.id}`}
+          scroll={false}
+          className="flex min-w-0 items-center gap-2 no-underline text-text hover:text-accent"
+        >
           <Crest src={f.away.crest} name={f.away.name} />
           <span className="min-w-0 truncate text-[13.5px] font-semibold max-[640px]:text-[12.5px]">
             {f.away.name}
           </span>
-        </span>
+        </Link>
       </div>
       {aside.length ? (
         <p className="m-0 mt-2 border-t border-border-soft pt-2 text-[11px] leading-[1.5] text-muted">
@@ -147,10 +155,16 @@ function StandingsTable({
                 </span>
               </td>
               <td className={`${TD} min-w-[180px]`}>
-                <span className="flex items-center gap-2">
+                <Link
+                  href={`/teams/${row.team.id}`}
+                  scroll={false}
+                  className="flex items-center gap-2 no-underline text-text hover:text-accent"
+                >
                   <Crest src={row.team.crest} name={row.team.name} />
-                  <span className="min-w-0 truncate text-[13.5px] font-semibold">{row.team.name}</span>
-                </span>
+                  <span className="min-w-0 truncate text-[13.5px] font-semibold">
+                    {row.team.name}
+                  </span>
+                </Link>
               </td>
               <td className={`${TD} text-center`}>{row.played}</td>
               <td className={`${TD} text-center`}>{row.win}</td>

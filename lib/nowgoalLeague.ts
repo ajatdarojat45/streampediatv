@@ -511,10 +511,12 @@ function readTeamRows(section: unknown, teams: Map<string, NowgoalTeamRef>): Now
 /** The player plate: read out of the `playerTech_{id}.json` payload, where
  *  `TechCountInfo.Pid` names a player (`[[name, photo], teamId]`) and
  *  `TechCountInfo.Total.Value` carries one numeric row per player, in the same
- *  order. A row the file cannot name is dropped rather than rendered blank. */
+ *  order. A row the file cannot name is dropped rather than rendered blank.
+ *  `teams` names the clubs the rows are filed under; a caller that reads the
+ *  file for one club (see `getTeamPlayerStats`) leaves it out. */
 function readPlayers(
   payload: RawPlayerFile | null,
-  teams: Map<string, NowgoalTeamRef>,
+  teams: Map<string, NowgoalTeamRef> = new Map(),
 ): NowgoalPlayerRow[] {
   const info = payload?.TechCountInfo;
   const pid = (info?.Pid ?? {}) as Record<string, unknown>;
@@ -973,6 +975,40 @@ export function teamStats(data: NowgoalSeasonData, metricId: string, page: numbe
     })),
     metricId,
     TEAM_SECOND_LABEL,
+    page,
+  );
+}
+
+/** The statistics plate of one season, narrowed to one club — what the club's
+ *  own page reads for its player data (its `getPlayerStatsData`): the same
+ *  `playerTech_{id}.json` the competition page reads, with the rows the file
+ *  files under `teamId` kept and everything else dropped. `null` when the file
+ *  is not there or files nobody under that club — a competition the club has no
+ *  player numbers for. */
+export async function getTeamPlayerStats(
+  id: string,
+  season: string,
+  teamId: string,
+  metricId: string,
+  page: number,
+): Promise<NowgoalStatTable | null> {
+  const payload = await fetchJson<RawPlayerFile>(
+    `/jsData/Count/json/${season}/playerTech_${id}_en.json`,
+    PLAYER_STATS_REVALIDATE,
+  );
+  const squad = readPlayers(payload).filter((player) => player.teamId === teamId);
+  if (!squad.length) return null;
+  return buildStatTable(
+    PLAYER_METRICS,
+    squad.map((player) => ({
+      name: player.name,
+      photo: playerPhoto(player.photo),
+      teamName: '',
+      teamCrest: '',
+      columns: player.columns,
+    })),
+    metricId,
+    PLAYER_SECOND_LABEL,
     page,
   );
 }
