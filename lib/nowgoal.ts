@@ -54,6 +54,11 @@ export const NOWGOAL_FOOTBALL_ORIGIN =
 export const NOWGOAL_IMAGE_ORIGIN =
   process.env.RB_NOWGOAL_IMAGE_ORIGIN || 'https://imgcms.thscore.fun';
 
+/** Live-score host: the match pages this app reads one match's own detail and
+ *  analysis off (`/detail/{id}`, `/analysis/{id}` — see lib/nowgoalMatch.ts). */
+export const NOWGOAL_LIVE_ORIGIN =
+  process.env.RB_NOWGOAL_LIVE_ORIGIN || 'https://live.nowgoal50.com';
+
 /** The feed on that origin: one `arr[n]` line per federation. */
 export const NOWGOAL_FEED_PATH = '/jsData/infoHeaderEn.js';
 /** Country flags, under the `flag` path the feed publishes (`images/*.png`). */

@@ -971,3 +971,284 @@ export interface NowgoalPlayerView {
   /* Transfer tab — his whole career, newest first. */
   transfers: NowgoalPlayerTransfer[];
 }
+
+/* ------------------------------------------------------------------------- *
+ * NowGoal match detail — one match, read off the publisher's own two pages
+ * (see lib/nowgoalMatch.ts): its detail page carries the timeline, the events,
+ * the statistics and the lineups, its analysis page the two teams' form, the
+ * strength comparison, the head-to-head list, the fixtures and the injuries.
+ * ------------------------------------------------------------------------- */
+
+/** One side of a match, as the publisher's own header names it. */
+export interface NowgoalMatchSide {
+  id: string;
+  name: string;
+  /** Absolute crest URL, or `''` — the client falls back to the initial. */
+  crest: string;
+}
+
+/** The match itself: what it is, when it kicked off, and where it stands. */
+export interface NowgoalMatchHeader {
+  /** Competition id (the publisher's own, also the `/competitions/[id]` id). */
+  competitionId: string;
+  competition: string;
+  /** The publisher's own round/stage line (`Round 1`), `''` when it prints none. */
+  round: string;
+  /** Kick-off in ms since epoch, off the page's GMT+8 wall clock, or `null`. */
+  kickoffMs: number | null;
+  /** Venue as the page's own markup publishes it, `''` when none. */
+  venue: string;
+  home: NowgoalMatchSide;
+  away: NowgoalMatchSide;
+  /** Full-time goals, `null` before the first one is scored. */
+  homeScore: number | null;
+  awayScore: number | null;
+  /** The publisher's own state word for the header (`Finished`, `Not Started`). */
+  state: string;
+  /** The publisher's own state field: `-1` finished, `0` not started, a
+   *  positive value in play, `-10`…`-14` cancelled/pending/abandoned/paused/
+   *  postponed. */
+  stateCode: number;
+  /** The clock the page prints next to the score while a match is in play
+   *  (`63'`), `''` when it prints none. */
+  minute: string;
+  /** Half-time and second-half splits, in the order the page prints them, each
+   *  as the publisher labelled it (`Score 1st Half`, `2-0`). */
+  splits: { label: string; score: string }[];
+}
+
+/** One entry of the match's own event list, as the publisher's detail page
+ *  files it — a goal with its scorer and assist, a card, or a substitution with
+ *  the two players it swaps. */
+export interface NowgoalMatchEvent {
+  /** The publisher's own event label, verbatim (`Goal`, `Yellow Card`,
+   *  `Substitution`, …). */
+  label: string;
+  /** What that label means, for the icon and the colour the row is drawn in. */
+  kind: 'goal' | 'own-goal' | 'penalty' | 'yellow' | 'red' | 'substitution' | 'var' | 'other';
+  /** The clock the page prints (`82'`), decoded off the page's own entity. */
+  minute: string;
+  /** Minute as a number, for laying the marker out on the timeline. */
+  minuteValue: number;
+  side: 'home' | 'away';
+  /** The running score after this event (`3-0`), `''` when the row carries none. */
+  score: string;
+  /** Who the row names, in the order it names them. A goal names its scorer and
+   *  (when the page publishes one) his assistant, a substitution the player who
+   *  comes on and the one he replaces, and a card or any other event simply the
+   *  player it is filed against (`player`). */
+  players: { id: string; name: string; role: 'scorer' | 'assist' | 'in' | 'out' | 'player' }[];
+}
+
+/** One period marker of the event list — the page prints the score at half-time
+ *  and at full-time as its own row. */
+export interface NowgoalMatchPeriod {
+  /** The publisher's own abbreviation (`HT`, `FT`). */
+  label: string;
+  /** The score it was taken at (`2-0`), `''` when the page prints none. */
+  score: string;
+}
+
+/** One statistics row: the label the publisher prints between the two values. */
+export interface NowgoalMatchStatRow {
+  label: string;
+  home: string;
+  away: string;
+}
+
+/** One of the page's statistics views (`FT`, `1st Half`, `2nd Half`, `ET`). */
+export interface NowgoalMatchStatGroup {
+  /** The publisher's own button label. */
+  label: string;
+  rows: NowgoalMatchStatRow[];
+}
+
+
+
+/** One player of a lineup, with the events the page hangs off him. */
+export interface NowgoalMatchLineupPlayer {
+  id: string;
+  /** Shirt number the page prints (`1`), `''` when it prints none. */
+  number: string;
+  name: string;
+  /** The publisher's own rating for this match (`7.0`), `''` when it rated him
+   *  nothing (a substitute who stayed on the bench, a match not yet rated). */
+  rating: string;
+  /** What the page shows beside him: his goals, assists, cards and whether he
+   *  came on or off, each with its own clock. */
+  events: { label: string; minute: string }[];
+}
+
+/** One team's lineup: the formation, the starting eleven as the publisher lays
+ *  it out on its own pitch (one group per line), and the substitutes. */
+export interface NowgoalMatchLineupSide {
+  /** Formation the page prints (`4-2-3-1`), `''` when it prints none. */
+  formation: string;
+  /** The starting eleven, grouped the way the publisher's own pitch groups it
+   *  (goalkeeper first, then each line out). */
+  lines: NowgoalMatchLineupPlayer[][];
+  /** The substitutes, in the order the page benches them. */
+  bench: NowgoalMatchLineupPlayer[];
+}
+
+/** The lineups of this match — empty formations and groups when the publisher
+ *  has not published them yet (a match that has not kicked off). */
+export interface NowgoalMatchLineup {
+  home: NowgoalMatchLineupSide;
+  away: NowgoalMatchLineupSide;
+}
+
+/** The highlight video the page publishes, when it publishes one. */
+export interface NowgoalMatchVideo {
+  /** YouTube id, or `''` when the page's own link is not a YouTube one. */
+  id: string;
+  /** Embed URL (`https://www.youtube.com/embed/{id}`), `''` when there is none. */
+  embed: string;
+}
+
+/** One line of the analysis page's strength comparison. */
+export interface NowgoalMatchStrengthRow {
+  label: string;
+  /** The two sides' own values, already formatted (`1.67`, `7.15`, `3-1-2`). */
+  home: string;
+  away: string;
+  /** The share each side holds of the two values (`56`), split the way the
+   *  publisher's own strength script splits them. */
+  homePct: number;
+  awayPct: number;
+}
+
+/** The analysis page's own "Who will win?" poll: how many readers picked
+ *  either side (the publisher's buttons are Home and Away). */
+export interface NowgoalMatchVote {
+  home: number;
+  away: number;
+  homePct: number;
+  awayPct: number;
+  total: number;
+}
+
+/** One meeting of a last-matches list (the head-to-head list or either side's
+ *  own recent matches), as the analysis page's row publishes it. */
+export interface NowgoalMatchMeeting {
+  /** Schedule id of that meeting — `/matches/{id}` in this app, `''` when the
+   *  row carries none. */
+  matchId: string;
+  /** Competition short label (`ENG PR`) and the full name behind it. */
+  competition: string;
+  competitionName: string;
+  /** Kick-off in ms since epoch, or `null` when the row's stamp is unusable. */
+  kickoffMs: number | null;
+  /** The row's own stamp, as published (`2026-08-16 14:00:00`). */
+  date: string;
+  home: { id: string; name: string };
+  away: { id: string; name: string };
+  /** Full-time score (`3-0`) and half-time score (`2-0`), `''` when none. */
+  score: string;
+  halfScore: string;
+  /** Corners (`2-4`) and the half-time corners behind them, `''` when none. */
+  corner: string;
+  halfCorner: string;
+  /** How the side the list follows fared: `W`, `D`, `L`, or `''`. */
+  result: 'W' | 'D' | 'L' | '';
+}
+
+/** What the publisher publishes about the match itself (`/detail/{id}`). */
+export interface NowgoalMatchDetail {
+  header: NowgoalMatchHeader;
+  /** The period markers of the event list (half-time, full-time). */
+  periods: NowgoalMatchPeriod[];
+  /** The events, in the match's own order — the page prints them newest-first
+   *  and the reader turns them around. */
+  events: NowgoalMatchEvent[];
+  /** The statistics views the page publishes (its `FT` plate always, the half
+   *  plates when it has them, extra time only for a match that went there). */
+  stats: NowgoalMatchStatGroup[];
+  lineup: NowgoalMatchLineup;
+  video: NowgoalMatchVideo | null;
+}
+
+/** What the publisher publishes around the match (`/analysis/{id}`). */
+export interface NowgoalMatchAnalysis {
+  strength: NowgoalMatchStrengthRow[];
+  vote: NowgoalMatchVote | null;
+  /** The head-to-head list, most recent first. */
+  meetings: NowgoalMatchMeeting[];
+  /** Each side's own recent results, most recent first. */
+  homeForm: NowgoalMatchMeeting[];
+  awayForm: NowgoalMatchMeeting[];
+  /** Each side's own next matches. */
+  homeFixtures: NowgoalMatchFixture[];
+  awayFixtures: NowgoalMatchFixture[];
+  /** Each side's injured and suspended players. */
+  homeAbsences: NowgoalMatchAbsence[];
+  awayAbsences: NowgoalMatchAbsence[];
+}
+
+/** Which tab of `/matches/[id]` is open. */
+export type NowgoalMatchTab = 'detail' | 'lineup' | 'h2h';
+
+/** Which list of the h2h tab's "last matches" plate is open. */
+export type NowgoalMatchLastTab = 'home' | 'h2h' | 'away';
+
+/** Which side's list of the h2h tab's "fixtures" plate is open. */
+export type NowgoalMatchFixTab = 'home' | 'away';
+
+/** `/matches/[id]`: one match, with the rows of the tab that is open. The
+ *  server reads the publisher's own two pages (one read each, cached) and hands
+ *  the client only the lists that tab shows, so a head-to-head list of fifty
+ *  meetings never reaches the browser while the timeline is the open tab. */
+export interface NowgoalMatchView {
+  header: NowgoalMatchHeader;
+  /** The tabs this match has data for, in display order. */
+  tabs: NowgoalViewOption[];
+  tab: NowgoalMatchTab;
+
+  /* Detail tab — the match's own timeline, events, statistics and highlight. */
+  periods: NowgoalMatchPeriod[];
+  events: NowgoalMatchEvent[];
+  stats: NowgoalMatchStatGroup[];
+  video: NowgoalMatchVideo | null;
+
+  /* Line up tab — the two formations and everyone the page lists as out. */
+  lineup: NowgoalMatchLineup;
+  homeAbsences: NowgoalMatchAbsence[];
+  awayAbsences: NowgoalMatchAbsence[];
+
+  /* H2H tab — the strength split, the poll, and the two two-sided plates. Each
+   * plate sends only the list it has open (see `last` / `fix`), with the four
+   * counts so the closed buttons can still say how much is behind them. */
+  strength: NowgoalMatchStrengthRow[];
+  vote: NowgoalMatchVote | null;
+  last: NowgoalMatchLastTab;
+  meetings: NowgoalMatchMeeting[];
+  lastCounts: Record<NowgoalMatchLastTab, number>;
+  fix: NowgoalMatchFixTab;
+  fixtures: NowgoalMatchFixture[];
+  fixCounts: Record<NowgoalMatchFixTab, number>;
+}
+
+/** One fixture of the analysis page's own "Fixture (3 Matches)" list — the
+ *  publisher's own next matches for each side. */
+export interface NowgoalMatchFixture {
+  competition: string;
+  competitionName: string;
+  kickoffMs: number | null;
+  date: string;
+  /** Where the listed side plays it (`Home`, `Away`), as the page prints it. */
+  venue: string;
+  opponent: string;
+  /** The page's own countdown (`10 Days`), `''` when it prints none. */
+  countdown: string;
+}
+
+/** One injured or suspended player of the analysis page's own lists. */
+export interface NowgoalMatchAbsence {
+  /** The section the page files him under — its own word for it (`Injury`). */
+  kind: string;
+  /** Position code the page prints (`RB`, `CM`), `''` when it prints none. */
+  position: string;
+  number: string;
+  id: string;
+  name: string;
+}

@@ -488,7 +488,9 @@ function SquadList({ squad }: { squad: NowgoalSquadPlayer[] }) {
 
 /** One fixture of the club's schedule: kick-off, both sides with their crests and
  *  the rank the endpoint publishes for each, the score (or the state that
- *  stopped it), the club's own rating and how the club fared. */
+ *  stopped it), the club's own rating, how the club fared and the `Match` link
+ *  into the tie's own page (`/matches/{id}` — the same id the season files carry,
+ *  so a competition page links a fixture to the same page). */
 function FixtureRow({ fixture: f, teamId }: { fixture: NowgoalTeamFixture; teamId: string }) {
   const special = f.state < -1 ? (SPECIAL_STATE[f.state] ?? 'Off') : '';
   const score = f.score ? f.score.replace('-', ' - ') : '';
@@ -549,6 +551,15 @@ function FixtureRow({ fixture: f, teamId }: { fixture: NowgoalTeamFixture; teamI
           </span>
         ) : null}
         {f.note ? <span className="text-[11px] text-muted">{f.note}</span> : null}
+        {f.id ? (
+          <Link
+            href={`/matches/${f.id}`}
+            scroll={false}
+            className="text-[11px] font-semibold text-accent no-underline hover:underline"
+          >
+            Match
+          </Link>
+        ) : null}
       </span>
     </li>
   );

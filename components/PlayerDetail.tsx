@@ -449,7 +449,8 @@ function money(millions: number | null): string {
 /** One match of the player's own log: when it was played, both sides, the score,
  *  and what he did in it — the row the publisher's own page prints, plus the
  *  minutes and rating it files per match. Both clubs link to their own pages,
- *  which is what the publisher's row does too. */
+ *  which is what the publisher's row does too, and the row's `Match` link opens
+ *  the tie's own page (`/matches/{id}` — the log files the match id itself). */
 function MatchRow({ match: m }: { match: NowgoalPlayerMatch }) {
   const band = m.stats.rating === null ? null : ratingBand(m.stats.rating);
   return (
@@ -501,6 +502,15 @@ function MatchRow({ match: m }: { match: NowgoalPlayerMatch }) {
           >
             Highlights
           </a>
+        ) : null}
+        {m.id ? (
+          <Link
+            href={`/matches/${m.id}`}
+            scroll={false}
+            className="text-[11px] font-semibold text-accent no-underline hover:underline"
+          >
+            Match
+          </Link>
         ) : null}
       </span>
     </li>

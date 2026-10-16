@@ -42,7 +42,9 @@ const TAB_ROW =
 
 /** One fixture: kick-off, both sides with their crests, the score as published
  *  (or `VS` before kick-off, or the reason it will not be played), the half-time
- *  score, and the publisher's own aside on the tie. */
+ *  score, the publisher's own aside on the tie, and the `Match` link into the
+ *  tie's own page (`/matches/{id}` — the feed's `ID` is that page's id, which is
+ *  why both clubs' own pages link their schedules the same way). */
 function FixtureRow({ fixture: f }: { fixture: NowgoalFixture }) {
   const special = f.state < -1 ? (SPECIAL_STATE[f.state] ?? 'Off') : '';
   const played = f.state === -1;
@@ -97,9 +99,18 @@ function FixtureRow({ fixture: f }: { fixture: NowgoalFixture }) {
           </span>
         </Link>
       </div>
-      {aside.length ? (
-        <p className="m-0 mt-2 border-t border-border-soft pt-2 text-[11px] leading-[1.5] text-muted">
-          {aside.join(' · ')}
+      {aside.length || f.id ? (
+        <p className="m-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-border-soft pt-2 text-[11px] leading-[1.5] text-muted">
+          {aside.length ? <span className="min-w-0">{aside.join(' · ')}</span> : null}
+          {f.id ? (
+            <Link
+              href={`/matches/${f.id}`}
+              scroll={false}
+              className="font-semibold text-accent no-underline hover:underline"
+            >
+              Match
+            </Link>
+          ) : null}
         </p>
       ) : null}
     </li>
