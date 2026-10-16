@@ -18,10 +18,10 @@ import {
 import type { MatchEvent, MatchEvents, Team } from '@/lib/types';
 import { eventMinute, eventTypeLabel } from '@/lib/matchProto';
 import { playerAvatarUrl } from '@/lib/logos';
+import {
+  PANEL,
+} from '@/components/ui';
 
-/** Surface panel, matching the `.panel` style used across the detail page. */
-const PANEL =
-  'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
 
 /** Team logo with a monogram fallback. */
 function TeamLogo({ name, logo }: { name?: string; logo?: string }) {
@@ -30,7 +30,7 @@ function TeamLogo({ name, logo }: { name?: string; logo?: string }) {
   }
   return (
     <span
-      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft"
+      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-bold text-muted"
     >
       {(name ?? '?').charAt(0).toUpperCase()}
     </span>
@@ -98,23 +98,23 @@ function eventMeta(code: number): { Icon: EventIcon; cls: string; filled?: boole
     case 101:
     case 103:
     case 10020:
-      return { Icon: Volleyball, cls: 'text-[#16a34a]' };
+      return { Icon: Volleyball, cls: 'text-success-ink' };
     case 102:
-      return { Icon: Volleyball, cls: 'text-[#dc2626]' };
+      return { Icon: Volleyball, cls: 'text-live-ink' };
     case 104:
     case 10021:
       return { Icon: X, cls: 'text-muted' };
     case 106:
-      return { Icon: RectangleVertical, cls: 'text-[#eab308]', filled: true };
+      return { Icon: RectangleVertical, cls: 'text-warn', filled: true };
     case 107:
     case 108:
-      return { Icon: RectangleVertical, cls: 'text-[#dc2626]', filled: true };
+      return { Icon: RectangleVertical, cls: 'text-live-ink', filled: true };
     case 105:
       return { Icon: Repeat, cls: 'text-accent' };
     case 109:
       return { Icon: Flag, cls: 'text-muted' };
     case 10001: // kick off
-      return { Icon: Whistle, cls: 'text-[#16a34a]' };
+      return { Icon: Whistle, cls: 'text-success-ink' };
     case 10002: // full time: EVENT_END / FINISH / extra time / penalty finish
     case 10005:
     case 10010:
@@ -142,10 +142,10 @@ function Avatar({
       src={url}
       alt={name ?? ''}
       loading="lazy"
-      className="h-8 w-8 shrink-0 rounded-full bg-[#f1f3f5] object-cover [[data-theme=dark]_&]:bg-border-soft"
+      className="h-8 w-8 shrink-0 rounded-full bg-surface-3 object-cover"
     />
   ) : (
-    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e8eaed] text-[12px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft">
+    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[12px] font-bold text-muted">
       {initial}
     </span>
   );
@@ -178,7 +178,7 @@ function subLine(e: MatchEvent, away: boolean): ReactNode {
           away
         )}`}
       >
-        <ArrowDown size={11} className="shrink-0 text-[#dc2626]" />
+        <ArrowDown size={11} className="shrink-0 text-live-ink" />
         {e.substitutionOut.name}
       </span>
     );
@@ -206,7 +206,7 @@ function EventRow({
           away
         )}`}
       >
-        <ArrowUp size={13} className="shrink-0 text-[#16a34a]" />
+        <ArrowUp size={13} className="shrink-0 text-success-ink" />
         {e.substitutionIn?.name ?? 'Substitution'}
       </span>
     ) : (
@@ -317,7 +317,7 @@ export function Timeline({
         </span>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 

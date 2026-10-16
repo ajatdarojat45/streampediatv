@@ -44,6 +44,14 @@ export const MORE_SPORTS: Sport[] = SPORTS.slice(4);
 
 const sportByValue = new Map(SPORTS.map((s) => [s.value, s]));
 
+/** Canonical position of a sport in SPORTS. The nav, the picker and every feed
+ *  that sections matches by sport read in this one order; a code the app does
+ *  not know sorts last. */
+export function sportRank(code?: number): number {
+  const index = SPORTS.findIndex((s) => s.value === (code ?? -1));
+  return index === -1 ? SPORTS.length : index;
+}
+
 export function sportLabel(code?: number): string {
   return sportByValue.get(code ?? -1)?.label ?? `Sport ${code}`;
 }

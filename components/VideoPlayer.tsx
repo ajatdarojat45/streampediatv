@@ -67,15 +67,15 @@ export interface VideoPlayerProps {
 
 /** Round glass icon-button used throughout the live control bar. */
 const CTRL_BTN =
-  'inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/90 transition-colors duration-150 hover:bg-white/10 hover:text-white';
+  'inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/90 transition-colors hover:bg-white/10 hover:text-white';
 
 /** Floating centre play/pause button (semi-transparent, nudges on hover). */
 const CENTER_BTN =
-  'inline-flex cursor-pointer items-center justify-center rounded-full bg-black/50 p-4 text-white shadow-[0_8px_28px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-black/70';
+  'inline-flex cursor-pointer items-center justify-center rounded-full bg-black/50 p-4 text-white shadow-[0_8px_28px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-all hover:scale-105 hover:bg-black/70';
 
 /** Bold red LIVE badge — same recipe as the match-card `LIVE` tag. */
 const LIVE_BADGE =
-  'inline-flex shrink-0 items-center gap-1 rounded bg-[#d93025] px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.06em] text-white';
+  'inline-flex shrink-0 items-center gap-1 rounded bg-live px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.06em] text-white';
 
 /**
  * Lightweight video player built on native Hls.js (no Plyr) so the bundle stays
@@ -387,7 +387,7 @@ export default function VideoPlayer({
           {/* Live control bar: play/pause · volume · PiP · fullscreen. The red
               LIVE badge itself is rendered top-left (persistent, even when idle). */}
           <div
-            className={`absolute inset-x-0 bottom-0 z-[6] flex items-center gap-1 bg-gradient-to-t from-black/80 to-transparent px-2.5 pb-2.5 pt-8 transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+            className={`absolute inset-x-0 bottom-0 z-[6] flex items-center gap-1 bg-gradient-to-t from-black/80 to-transparent px-2.5 pb-2.5 pt-8 transition-opacity ${controlsVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
           >
             <button
               type="button"
@@ -422,7 +422,7 @@ export default function VideoPlayer({
                 value={isMuted ? 0 : volume}
                 onChange={(e) => changeVolume(Number(e.target.value))}
                 aria-label="Volume"
-                className="h-1 w-0 cursor-pointer opacity-0 transition-all duration-200 accent-[var(--accent)] group-hover/vol:w-20 group-hover/vol:opacity-100 max-[640px]:hidden"
+                className="h-1 w-0 cursor-pointer opacity-0 transition-all accent-[var(--accent)] group-hover/vol:w-20 group-hover/vol:opacity-100 max-[640px]:hidden"
               />
             </div>
 

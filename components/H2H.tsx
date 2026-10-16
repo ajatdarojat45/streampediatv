@@ -7,10 +7,10 @@ import type { MatchAnalysis, Match, Team } from '@/lib/types';
 import { computeH2HSummary } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
 import { watchHref } from '@/lib/sports';
+import {
+  PANEL,
+} from '@/components/ui';
 
-/** Surface panel, matching the `.panel` style used across the detail page. */
-const PANEL =
-  'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
 
 /** Logo sizes — kept identical to the match-card `LOGO_SIZE` tokens:
  *  team `h-6 w-6 rounded-md`, league `h-4 w-4 rounded-[4px]`, monogram `text-[11px]`. */
@@ -27,7 +27,7 @@ function TeamLogo({ name, logo, size = TEAM_LOGO_SIZE }: { name?: string; logo?:
   }
   return (
     <span
-      className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft`}
+      className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-bold text-muted`}
     >
       {(name ?? '?').charAt(0).toUpperCase()}
     </span>
@@ -62,7 +62,7 @@ function MeetingRow({ m, sportType }: { m: Match; sportType?: number }) {
   const stage = m.stage || m.round || m.group;
   const competition = league?.name || stage;
   const card =
-    'block w-full rounded-lg border border-l-[3px] border-border border-l-[#9ca3af] bg-card px-3.5 py-2.5';
+    'block w-full rounded-lg border border-l-[3px] border-border border-l-[var(--neutral)] bg-card px-3.5 py-2.5';
   const body = (
     <div className="flex min-w-0 flex-col">
       {competition && (
@@ -107,7 +107,7 @@ function MeetingRow({ m, sportType }: { m: Match; sportType?: number }) {
   return (
     <Link
       href={watchHref(m.matchId, m.sportType ?? sportType)}
-      className={`${card} transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`}
+      className={`${card} transition-[border-color,transform,box-shadow] hover:-translate-y-px hover:shadow`}
     >
       {body}
     </Link>
@@ -157,20 +157,20 @@ export function H2H({
         <div className="flex items-center gap-2.5">
           {/* Home team's win % — left */}
           <span className="shrink-0 tabular-nums">
-            <span className="text-[15px] font-extrabold text-[#16a34a]">{summary.winPct}%</span>
+            <span className="text-[15px] font-extrabold text-success-ink">{summary.winPct}%</span>
             <span className="ml-0.5 text-[11px] font-semibold text-muted">W</span>
           </span>
 
-          <div className="flex h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-[#e5e7eb] [[data-theme=dark]_&]:bg-border-soft">
-            <div className="h-full bg-[#16a34a]" style={{ width: `${summary.winPct}%` }} />
-            <div className="h-full bg-[#9ca3af]" style={{ width: `${summary.drawPct}%` }} />
-            <div className="h-full bg-[#dc2626]" style={{ width: `${summary.lossPct}%` }} />
+          <div className="flex h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-track">
+            <div className="h-full bg-success" style={{ width: `${summary.winPct}%` }} />
+            <div className="h-full bg-neutral" style={{ width: `${summary.drawPct}%` }} />
+            <div className="h-full bg-live" style={{ width: `${summary.lossPct}%` }} />
           </div>
 
           {/* Away team's win % (= home's loss %) — right */}
           <span className="shrink-0 tabular-nums">
             <span className="text-[11px] font-semibold text-muted">W</span>
-            <span className="ml-0.5 text-[15px] font-extrabold text-[#16a34a]">{summary.lossPct}%</span>
+            <span className="ml-0.5 text-[15px] font-extrabold text-success-ink">{summary.lossPct}%</span>
           </span>
         </div>
 
@@ -181,7 +181,7 @@ export function H2H({
 
       {/* Past meetings, most recent first — the section collapses as a whole and
           the list previews `H2H_PREVIEW` meetings, the rest behind "Show all". */}
-      <div className="mt-1 border-t border-[rgba(0,0,0,0.06)] pt-3 [[data-theme=dark]_&]:border-[rgba(255,255,255,0.08)]">
+      <div className="mt-1 border-t border-border-soft pt-3">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -193,7 +193,7 @@ export function H2H({
           </span>
           <ChevronDown
             size={16}
-            className={`shrink-0 text-muted transition-transform duration-200 ${
+            className={`shrink-0 text-muted transition-transform ${
               open ? 'rotate-180' : ''
             }`}
           />
@@ -214,7 +214,7 @@ export function H2H({
                 {expanded ? 'Show less' : `Show all ${h2h.length} meetings`}
                 <ChevronDown
                   size={14}
-                  className={`shrink-0 transition-transform duration-200 ${
+                  className={`shrink-0 transition-transform ${
                     expanded ? 'rotate-180' : ''
                   }`}
                 />

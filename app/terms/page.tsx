@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { PANEL } from '@/components/ui';
 
 export const metadata: Metadata = {
   title: 'Terms of Service — StreampediaTV',
 };
 
-/** Panel card wrapper for the legal copy (`.panel`). */
-const PANEL = 'rounded border border-border bg-panel p-6 shadow max-sm:p-3.5';
 /** Document title (`.panel h2`). */
 const H2 = 'mb-2.5 text-[19px] font-bold';
 /** Numbered section heading (`.panel h3`). */

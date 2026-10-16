@@ -7,10 +7,11 @@ import type { MatchAnalysis, Match, Team, MatchOutcome } from '@/lib/types';
 import { matchOutcome } from '@/lib/matchProto';
 import { LocalTime } from '@/components/LocalTime';
 import { watchHref } from '@/lib/sports';
+import {
+  PANEL,
+} from '@/components/ui';
 
 /** Surface panel, matching the `.panel` style used across the detail page. */
-const PANEL =
-  'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
 
 /** Logo sizes — kept identical to the match-card `LOGO_SIZE` tokens (see H2H). */
 const TEAM_LOGO_SIZE = 'h-6 w-6';
@@ -18,9 +19,9 @@ const LEAGUE_LOGO_SIZE = 'h-4 w-4';
 
 /** Outcome → background token, shared by the per-row badge and the form dots. */
 const OUTCOME_BG: Record<MatchOutcome, string> = {
-  W: 'bg-[#16a34a]',
-  D: 'bg-[#9ca3af]',
-  L: 'bg-[#dc2626]',
+  W: 'bg-success',
+  D: 'bg-neutral',
+  L: 'bg-live',
 };
 
 /** How many of the most recent results the compact form strip shows, and how
@@ -38,7 +39,7 @@ function TeamLogo({ name, logo, size = TEAM_LOGO_SIZE }: { name?: string; logo?:
   }
   return (
     <span
-      className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft`}
+      className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-bold text-muted`}
     >
       {(name ?? '?').charAt(0).toUpperCase()}
     </span>
@@ -94,10 +95,10 @@ function FormRow({ m, refTeam, played, sportType }: { m: Match; refTeam?: Team; 
   const border = !played
     ? 'border-l-accent'
     : outcome === 'W'
-      ? 'border-l-[#16a34a]'
+      ? 'border-l-[var(--success)]'
       : outcome === 'L'
-        ? 'border-l-[#dc2626]'
-        : 'border-l-[#9ca3af]';
+        ? 'border-l-[var(--live)]'
+        : 'border-l-[var(--neutral)]';
   const homeIsRef = isSameTeam(m.home, refTeam);
   const awayIsRef = isSameTeam(m.away, refTeam);
   const card = `block w-full rounded-lg border border-l-[3px] border-border ${border} bg-card px-3.5 py-2.5`;
@@ -153,7 +154,7 @@ function FormRow({ m, refTeam, played, sportType }: { m: Match; refTeam?: Team; 
   return (
     <Link
       href={watchHref(m.matchId, m.sportType ?? sportType)}
-      className={`${card} transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`}
+      className={`${card} transition-[border-color,transform,box-shadow] hover:-translate-y-px hover:shadow`}
     >
       {body}
     </Link>
@@ -229,7 +230,7 @@ function TeamGroup({
             {expanded ? 'Show less' : 'Show more'}
             <ChevronDown
               size={14}
-              className={`shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+              className={`shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
             />
           </button>
         )}
@@ -294,7 +295,7 @@ function TeamMatchesPanel({
         </div>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 

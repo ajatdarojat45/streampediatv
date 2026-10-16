@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { BTN_GHOST, PANEL } from '@/components/ui';
 import { TeamDetail } from '@/components/TeamDetail';
 import { PLAYER_METRIC_OPTIONS, getSeason, getTeamPlayerStats } from '@/lib/nowgoalLeague';
 import {
@@ -281,7 +282,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  *  gone. */
 function TeamUnavailable({ id }: { id: string }) {
   return (
-    <section className="mb-4 rounded border border-border bg-panel px-5 py-5">
+    <section className={PANEL}>
       <h1 className="m-0 text-[20px] font-extrabold">Club {id} is not answering</h1>
       <p className="m-0 mt-2 max-w-[640px] text-[13.5px] leading-[1.7] text-muted">
         The publisher's own club file could not be read just now. That is a problem on their
@@ -295,9 +296,8 @@ function TeamUnavailable({ id }: { id: string }) {
   );
 }
 
-/** The retry link of the unavailable state (the toolbar button's own shape). */
-const RETRY =
-  'mt-3.5 inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2 text-[13px] font-semibold text-text no-underline transition-all hover:border-[#c7ccd2]';
+/** The retry link of the unavailable state. */
+const RETRY = `mt-3.5 ${BTN_GHOST}`;
 
 export default async function TeamPage({ params, searchParams }: PageProps) {
   const { id } = await params;

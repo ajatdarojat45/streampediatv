@@ -11,34 +11,22 @@ import type {
   NowgoalStatTable,
   NowgoalViewOption,
 } from '@/lib/types';
+import {
+  BADGE,
+  MENU,
+  MENU_ITEM,
+  MENU_ITEM_ON,
+  PANEL,
+  PANEL_TITLE,
+  PILL_ROW,
+  SELECT,
+  TAB,
+  TAB_ACTIVE,
+  TAB_IDLE,
+  TD,
+  TH,
+} from '@/components/ui';
 
-/** Surface panel (`class="panel"`), the card every page of the app renders. */
-const PANEL =
-  'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
-/** Tab pair — the same pill pair the sport pages and the directory use. */
-const TAB =
-  'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-all';
-const TAB_IDLE = `${TAB} border-border bg-panel text-muted hover:border-[#c7ccd2] hover:text-text`;
-const TAB_ACTIVE = `${TAB} border-accent bg-accent-soft text-accent`;
-/** Dropdown button — the control the toolbar row is made of. */
-const SELECT =
-  'inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2 text-[13px] font-semibold text-text transition-all hover:border-[#c7ccd2] disabled:opacity-50';
-/** Dropdown popup. It floats above the content and scrolls on its own, because
- *  a season list runs to two dozen entries. */
-const MENU =
-  'absolute left-0 top-[calc(100%+6px)] z-30 max-h-[320px] w-[min(78vw,300px)] overflow-y-auto rounded-[var(--radius-sm)] border border-border bg-panel p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.16)]';
-const MENU_ITEM =
-  'block w-full rounded px-2.5 py-1.5 text-left text-[13px] text-text transition-colors hover:bg-accent-soft hover:text-accent';
-const MENU_ITEM_ON = `${MENU_ITEM} bg-accent-soft font-bold text-accent`;
-/** Table cells. */
-const TH = 'px-2 py-2 text-[11px] font-bold uppercase tracking-[0.04em] text-muted';
-const TD = 'px-2 py-2 text-[13px] tabular-nums';
-/** Fact chip of the hero. */
-const CHIP =
-  'inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-semibold text-muted';
-/** Tab row — one swipeable line on a narrow screen, like the directory's. */
-const TAB_ROW =
-  'flex flex-nowrap gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 /** One fixture: kick-off, both sides with their crests, the score as published
  *  (or `VS` before kick-off, or the reason it will not be played), the half-time
@@ -83,7 +71,7 @@ function FixtureRow({ fixture: f }: { fixture: NowgoalFixture }) {
             <span className="mt-0.5 block text-[10.5px] text-muted">HT {f.halfScore}</span>
           ) : null}
           {live ? (
-            <span className="mt-0.5 block text-[10.5px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">
+            <span className="mt-0.5 block text-[10.5px] font-semibold text-live-ink">
               Live
             </span>
           ) : null}
@@ -157,7 +145,7 @@ function StandingsTable({
                   <span
                     className={
                       qualified && row.qualified
-                        ? 'font-bold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]'
+                        ? 'font-bold text-live-ink'
                         : 'text-muted'
                     }
                   >
@@ -207,7 +195,7 @@ function Crest({ src, name, size = 'h-6 w-6' }: { src: string; name: string; siz
   if (!src || broken) {
     return (
       <span
-        className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft`}
+        className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-bold text-muted`}
         aria-hidden="true"
       >
         {(name || '?').trim().charAt(0).toUpperCase() || '?'}
@@ -314,7 +302,7 @@ function Select({
 /** Value of one fact chip in the overview's fact grid. */
 function Fact({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <li className="rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2">
+    <li className="rounded-sm border border-border bg-card px-3 py-2">
       <span className="block text-[11px] uppercase tracking-[0.04em] text-muted">{label}</span>
       <span className="mt-0.5 block text-[13px] font-semibold text-text">{value}</span>
     </li>
@@ -328,7 +316,7 @@ function Avatar({ src, name }: { src: string; name: string }) {
   if (!src || broken) {
     return (
       <span
-        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#e8eaed] text-[10px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft"
+        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[10px] font-bold text-muted"
         aria-hidden="true"
       >
         {(name || '?').trim().charAt(0).toUpperCase() || '?'}
@@ -408,7 +396,7 @@ function Pager({
   hrefOf: (page: number) => string;
 }) {
   if (pageCount <= 1) return null;
-  const step = `inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border px-3 py-2 text-[12px]`;
+  const step = `inline-flex items-center gap-2 rounded-sm border border-border px-3 py-2 text-[12px]`;
   return (
     <div className="mt-3 flex items-center justify-center gap-2 text-[12px] text-muted">
       {page > 1 ? (
@@ -511,7 +499,7 @@ export function CompetitionDetail({ view }: { view: NowgoalCompetitionView }) {
                 {view.name}
               </h1>
               <p className="m-0 mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px] text-muted">
-                <span className={CHIP}>{view.season}</span>
+                <span className={BADGE}>{view.season}</span>
                 {view.teams ? <span>{view.teams} teams</span> : null}
                 {view.rounds ? (
                   <span>
@@ -533,7 +521,7 @@ export function CompetitionDetail({ view }: { view: NowgoalCompetitionView }) {
           </div>
         </div>
 
-        <div className={`mt-3 ${TAB_ROW}`} role="tablist" aria-label="Competition sections">
+        <div className={`mt-3 ${PILL_ROW}`} role="tablist" aria-label="Competition sections">
           {view.tabs.map((tab) => (
             <Link
               key={tab.key}
@@ -586,7 +574,7 @@ export function CompetitionDetail({ view }: { view: NowgoalCompetitionView }) {
             />
           ) : null}
           {view.tab === 'stats' && view.plates.length > 1 ? (
-            <div className={TAB_ROW} role="tablist" aria-label="Statistics plate">
+            <div className={PILL_ROW} role="tablist" aria-label="Statistics plate">
               {view.plates.map((plate) => (
                 <Link
                   key={plate.key}
@@ -650,7 +638,7 @@ export function CompetitionDetail({ view }: { view: NowgoalCompetitionView }) {
                 ) : null}
               </>
             ) : (
-              <p className="m-0 mt-3 rounded-[var(--radius-sm)] border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted">
+              <p className="m-0 mt-3 rounded-sm border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted">
                 This competition has no table for the season in view yet.
               </p>
             )}
@@ -672,7 +660,7 @@ export function CompetitionDetail({ view }: { view: NowgoalCompetitionView }) {
                 ))}
               </ul>
             ) : (
-              <p className="m-0 mt-3 rounded-[var(--radius-sm)] border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted">
+              <p className="m-0 mt-3 rounded-sm border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted">
                 No fixture is filed under this round yet.
               </p>
             )}
@@ -701,7 +689,7 @@ export function CompetitionDetail({ view }: { view: NowgoalCompetitionView }) {
                 />
               </>
             ) : (
-              <p className="m-0 mt-3 rounded-[var(--radius-sm)] border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted">
+              <p className="m-0 mt-3 rounded-sm border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted">
                 No statistics are published for this competition yet.
               </p>
             )}
@@ -712,7 +700,7 @@ export function CompetitionDetail({ view }: { view: NowgoalCompetitionView }) {
         {view.tab === 'overview' ? (
           <>
             <div className="flex flex-wrap items-end justify-between gap-2">
-              <h2 className="m-0 flex items-center gap-2 text-[15px] font-bold">
+              <h2 className={PANEL_TITLE}>
                 <Info className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
                 About this competition
               </h2>

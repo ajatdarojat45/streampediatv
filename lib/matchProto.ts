@@ -27,6 +27,7 @@
 //   PBTeam:    2=name, 3=logo, 4=score
 
 import { iterFields } from './proto';
+import { matchDateMs } from './datetime';
 import { countryLogoUrl, teamLogoUrl } from './logos';
 import type { Team, League, Contender, Match, Stream, MatchDetail, MatchAnalysis, H2HSummary, MatchOutcome, LineupPlayer, MatchLineup, MatchEvent, MatchEvents, MatchStat, MatchStats } from './types';
 
@@ -69,6 +70,36 @@ export const isLiveStatus = (code?: number): boolean =>
 /** Match already started (live now, or finished/cancelled/cut)? */
 export const isStarted = (code?: number): boolean =>
   isLiveStatus(code) || (code ?? 0) >= 10000;
+
+/** The three slices both feeds are sectioned and filtered by. */
+export type MatchPhase = 'live' | 'upcoming' | 'finished';
+
+/** Which slice a status code belongs to: in play, not kicked off, or over. One
+ *  rule for the home feed, a category feed and their status tabs alike. */
+export const matchPhase = (status?: number): MatchPhase =>
+  isLiveStatus(status) ? 'live' : !status ? 'upcoming' : 'finished';
+
+/** Position of a phase in the feed order (live → upcoming → finished). */
+const PHASE_RANK: Record<MatchPhase, number> = { live: 0, upcoming: 1, finished: 2 };
+
+/** The order every list of matches is drawn in: live first, then upcoming
+ *  (soonest kick-off first), then finished (the most recent result first). */
+export function sortMatchesByPhase<T extends Match>(list: T[]): T[] {
+  return [...list].sort((a, b) => {
+    const phase = PHASE_RANK[matchPhase(a.status)];
+    const other = PHASE_RANK[matchPhase(b.status)];
+    if (phase !== other) return phase - other;
+    const at = matchDateMs(a.matchDate);
+    const bt = matchDateMs(b.matchDate);
+    // A match the feed gave no date for sorts last either way.
+    if (at === null && bt === null) return 0;
+    const av = at ?? Infinity;
+    const bv = bt ?? Infinity;
+    // Upcoming reads top-down (the next kick-off first), finished bottom-up
+    // (the freshest scoreline first).
+    return phase === PHASE_RANK.finished ? bv - av : av - bv;
+  });
+}
 
 /** name in data.proto = map<languageCode, string>; each entry is {1: key, 2: value}. */
 function decodeNameEntry(buf: Uint8Array): [number, string] | null {

@@ -24,29 +24,17 @@ import AdBanner from '@/components/AdBanner';
 import { ADSENSE_CLIENT, AD_SLOTS } from '@/lib/ads';
 import { MatchTabs } from '@/components/MatchTabs';
 import type { Match, Stream } from '@/lib/types';
+import { BADGE, BTN_ACCENT, BTN_GHOST, ERROR, ICON_BTN, PANEL, PANEL_EMPTY } from '@/components/ui';
 
-/** Surface panel (`.panel`): bordered card on the app background. */
-const PANEL = 'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
-/** Panel + centered empty/loading state (`.panel.empty-state`). */
-const PANEL_EMPTY =
-  'mb-4 rounded border border-border bg-panel px-5 py-10 text-center max-[640px]:px-4 max-[640px]:py-8';
-/** Inline error banner (`.error-banner`). */
-const ERROR_BANNER =
-  'mb-4 rounded-xl border border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.12)] px-4 py-3 text-[13px] whitespace-pre-wrap break-words text-[#c5221f] [[data-theme=dark]_&]:border-[#ef4444] [[data-theme=dark]_&]:bg-[rgba(255,255,255,0.08)] [[data-theme=dark]_&]:text-[#fca5a5]';
+/* Panels, buttons and banners come from the app's shared vocabulary
+ * (components/ui.ts). What stays local is the player overlay's own chrome. */
+
 /** Channel label in the player overlay — plain text (no pill). A text-shadow
  * keeps it legible over bright video; the active channel is cyan + underlined. */
 const CHANNEL_BASE =
-  'pointer-events-auto inline-block max-w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap text-[12px] font-semibold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)] transition-opacity duration-150';
+  'pointer-events-auto inline-block max-w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap text-[12px] font-semibold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)] transition-opacity';
 const CHANNEL_IDLE = `${CHANNEL_BASE} opacity-70 hover:opacity-100`;
 const CHANNEL_ACTIVE = `${CHANNEL_BASE} text-[#22d3ee] underline decoration-2 underline-offset-4`;
-/** Action pill under the video (`.watch-action-btn`). */
-const ACTION_BASE =
-  'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-all duration-150';
-const ACTION_IDLE = `${ACTION_BASE} border-border bg-panel text-text hover:border-[#c7ccd2]`;
-const ACTION_ACTIVE = `${ACTION_BASE} border-accent bg-accent-soft text-accent`;
-/** Fact chip in the match head — season/stage, channels, H2H. */
-const META_CHIP =
-  'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-panel px-2.5 py-[3px] text-[12px] text-muted';
 
 interface ResolvedStream {
   key: number;
@@ -278,7 +266,7 @@ export function WatchPageContent({ id }: { id: string }) {
         <div className="inline-flex items-center gap-3">
           <button
             type="button"
-            className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-sm border border-border bg-panel text-[16px] text-muted transition-all duration-150 hover:border-[#c7ccd2] hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
+            className={ICON_BTN}
             onClick={handleRefresh}
             disabled={detailQuery.isFetching}
             title="Refresh"
@@ -296,7 +284,7 @@ export function WatchPageContent({ id }: { id: string }) {
         </section>
       )}
 
-      {err && <div className={ERROR_BANNER}>{err}</div>}
+      {err && <div className={ERROR}>{err}</div>}
 
       {!busy && !err && match && (
         <>
@@ -307,19 +295,19 @@ export function WatchPageContent({ id }: { id: string }) {
             {(stageLabel || channelCount > 0 || h2h.total > 0) && (
               <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2">
                 {stageLabel && (
-                  <span className={META_CHIP}>
+                  <span className={BADGE}>
                     <Trophy size={13} className="shrink-0" aria-hidden="true" />
                     {stageLabel}
                   </span>
                 )}
                 {channelCount > 0 && (
-                  <span className={META_CHIP}>
+                  <span className={BADGE}>
                     <Tv size={13} className="shrink-0" aria-hidden="true" />
                     {channelCount} {channelCount > 1 ? 'channels' : 'channel'}
                   </span>
                 )}
                 {h2h.total > 0 && (
-                  <span className={META_CHIP}>
+                  <span className={BADGE}>
                     H2H {h2h.wins}W {h2h.draws}D {h2h.losses}L
                   </span>
                 )}
@@ -388,19 +376,19 @@ export function WatchPageContent({ id }: { id: string }) {
 
             </div>
 
-            {resolveErr && <div className={ERROR_BANNER}>{resolveErr}</div>}
+            {resolveErr && <div className={ERROR}>{resolveErr}</div>}
 
           </section>
 
           {/* 3. Actions under the player — share, like */}
           <div className="mb-4 flex flex-wrap gap-2">
-            <button type="button" className={ACTION_IDLE} onClick={handleShare}>
+            <button type="button" className={BTN_GHOST} onClick={handleShare}>
               <Share2 size={16} />
               Share
             </button>
             <button
               type="button"
-              className={liked ? ACTION_ACTIVE : ACTION_IDLE}
+              className={liked ? BTN_ACCENT : BTN_GHOST}
               onClick={() => setLiked((v) => !v)}
             >
               <ThumbsUp size={16} />

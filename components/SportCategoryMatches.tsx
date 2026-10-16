@@ -8,45 +8,35 @@ import { useRB } from '@/components/RBProvider';
 import { MatchRowSkeleton } from '@/components/Match';
 import { EmptyMatches, type EmptyKind } from '@/components/EmptyMatches';
 import { groupMatchesByLeague, LeagueGroupSection } from '@/components/LeagueGroup';
-import { isLiveStatus } from '@/lib/matchProto';
-import { matchDateMs } from '@/lib/datetime';
+import { matchPhase, sortMatchesByPhase, type MatchPhase } from '@/lib/matchProto';
 import { useSportMatches } from '@/lib/queries';
 import { watchHref } from '@/lib/sports';
 import AdBanner from '@/components/AdBanner';
 import { ADSENSE_CLIENT, AD_SLOTS } from '@/lib/ads';
 import type { Match } from '@/lib/types';
+import { COUNT_IDLE, ERROR, ICON_BTN, INPUT } from '@/components/ui';
+import {
+  StatusFilter,
+  filterMatches,
+  matchFilterCounts,
+  matchFilterLabel,
+  type MatchFilter,
+} from '@/components/StatusFilter';
 
-const FILTER_TABS = [
-  { key: 'all', label: 'All' },
-  { key: 'live', label: 'Live' },
-  { key: 'upcoming', label: 'Upcoming' },
-  { key: 'finished', label: 'Finished' },
-] as const;
-
-const MATCH_GROUPS = [
+/** The three sections a category feed is drawn in. Their order is the order
+ *  lib/matchProto.ts sorts every list in, so a section never disagrees with the
+ *  rows inside it. */
+const MATCH_GROUPS: { key: MatchPhase; label: string; icon: LucideIcon }[] = [
   { key: 'live', label: 'Live', icon: Radio },
   { key: 'upcoming', label: 'Upcoming', icon: Clock },
   { key: 'finished', label: 'Finished', icon: CircleCheck },
-] as const;
+];
 
-/* Filter-tab pills (`.filter-tab` / `.filter-count`). Active state is a
- * separate string so its color utilities don't fight the idle ones. */
-const FILTER_TAB =
-  'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-all';
-const FILTER_TAB_IDLE = `${FILTER_TAB} border-border bg-panel text-muted hover:border-[#c7ccd2] hover:text-text`;
-const FILTER_TAB_ACTIVE = `${FILTER_TAB} border-accent bg-accent-soft text-accent`;
-
-const FILTER_COUNT = 'min-w-5 rounded-full px-2 py-px text-center text-[11px] font-bold';
-const FILTER_COUNT_IDLE = `${FILTER_COUNT} bg-[#f1f3f4] text-muted [[data-theme=dark]_&]:bg-border-soft`;
-const FILTER_COUNT_ACTIVE = `${FILTER_COUNT} bg-[rgba(26,115,232,0.2)] text-accent`;
 
 /* Group heading (`.group-title` / `.group-title.is-live`). */
-const GROUP_TITLE = 'inline-flex items-center gap-2 text-sm font-bold text-text';
+const GROUP_TITLE = 'inline-flex items-center gap-2 text-[13px] font-bold text-text';
 const GROUP_TITLE_LIVE =
-  'inline-flex items-center gap-2 text-sm font-bold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]';
-
-type FilterKey = (typeof FILTER_TABS)[number]['key'];
-type Category = 'live' | 'upcoming' | 'finished';
+  'inline-flex items-center gap-2 text-[13px] font-bold text-live-ink';
 
 interface MatchGroup {
   key: string;
@@ -55,12 +45,6 @@ interface MatchGroup {
   isLive: boolean;
   items: Match[];
 }
-
-const categoryOf = (m: Match): Category => {
-  if (isLiveStatus(m.status)) return 'live';
-  if (!m.status) return 'upcoming';
-  return 'finished';
-};
 
 interface SportCategoryMatchesProps {
   sportType: number;
@@ -73,15 +57,21 @@ interface SportCategoryMatchesProps {
  *  not per card. The status header is a toggle — collapsed groups show only
  *  the header row. The caller decides which group starts expanded: the first
  *  non-empty group (live → upcoming → finished) opens by default so the list
- *  never looks empty, while the rest start collapsed. */
+ *  never looks empty, while the rest start collapsed.
+ *
+ *  `showHeader` is off when the caller has already pinned this phase with the
+ *  filter row above — the tab says "Live", so the section no longer has to, and
+ *  the league groups move up under the tab they belong to. */
 function StatusGroupSection({
   group,
   onMatchClick,
   defaultOpen,
+  showHeader = true,
 }: {
   group: MatchGroup;
   onMatchClick: (m: Match) => void;
   defaultOpen?: boolean;
+  showHeader?: boolean;
 }) {
   const leagueGroups = useMemo(
     () => groupMatchesByLeague(group.items),
@@ -89,6 +79,37 @@ function StatusGroupSection({
   );
   const openByDefault = defaultOpen ?? group.isLive;
   const [open, setOpen] = useState(openByDefault);
+  /** The league sub-sections of this status, drawn at one open state. */
+  const leagues = (expand: boolean) => (
+    <div className="flex flex-col gap-4">
+      {leagueGroups.map((lg) => (
+        <LeagueGroupSection key={lg.key} group={lg} onMatchClick={onMatchClick} defaultOpen={expand} />
+      ))}
+    </div>
+  );
+  // No header (the filter row above already names this phase): the league
+  // groups move straight up under that tab, expanded.
+  if (!showHeader) {
+    return (
+      <section className="mb-[22px]">
+        {group.items.length === 0 ? (
+          <p className="px-1 text-[13px] text-muted">
+            No {group.label.toLowerCase()} matches right now.
+          </p>
+        ) : (
+          leagues(true)
+        )}
+      </section>
+    );
+  }
+  const body =
+    group.items.length === 0 ? (
+      <p className="px-1 text-[13px] text-muted">
+        No {group.label.toLowerCase()} matches right now.
+      </p>
+    ) : (
+      leagues(openByDefault)
+    );
   return (
     <section className="mb-[22px]">
       <button
@@ -100,36 +121,26 @@ function StatusGroupSection({
         <span className={group.isLive ? GROUP_TITLE_LIVE : GROUP_TITLE}>
           <group.icon className="h-[15px] w-[15px]" />
           {group.label}
-          <span className="rounded-full border border-border bg-panel px-2 py-px text-[11px] font-bold text-muted">{group.items.length}</span>
+          <span className={COUNT_IDLE}>{group.items.length}</span>
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-muted transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
+          className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? '' : '-rotate-90'}`}
         />
       </button>
-      {open &&
-        (group.items.length === 0 ? (
-          <p className="px-1 text-[13px] text-muted">
-            No {group.label.toLowerCase()} matches right now.
-          </p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {leagueGroups.map((lg) => (
-              <LeagueGroupSection key={lg.key} group={lg} onMatchClick={onMatchClick} defaultOpen={openByDefault} />
-            ))}
-          </div>
-        ))}
+      {open && body}
     </section>
   );
 }
 
 /** Match list for /sports/[category] — the same layout as the home page
- *  (search bar + filter tabs + grouped Live/Upcoming/Finished MatchRow list),
- *  scoped to one sport, plus top & in-feed AdBanner slots. */
+ *  (one toolbar with the search in it, the same status filter row, the same
+ *  grouped MatchRow list), scoped to one sport, plus top & in-feed AdBanner
+ *  slots. */
 export function SportCategoryMatches({ sportType, category, label }: SportCategoryMatchesProps) {
   const router = useRouter();
   const { setCfg } = useRB();
   const [query, setQuery] = useState('');
-  const [tab, setTab] = useState<FilterKey>('all');
+  const [tab, setTab] = useState<MatchFilter>('all');
 
   // Keep the shared config aligned so the watch page resolves this sport.
   useEffect(() => {
@@ -157,34 +168,15 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
     );
   }, [list, query]);
 
-  // Order: live → upcoming → finished (identical to the home page).
-  const sorted = useMemo(() => {
-    const rank = (m: Match): number => (isLiveStatus(m.status) ? 0 : !m.status ? 1 : 2);
-    const byTime = (a: Match, b: Match): number =>
-      (matchDateMs(a.matchDate) ?? Infinity) - (matchDateMs(b.matchDate) ?? Infinity);
-    return [...filtered].sort((a, b) => {
-      const ra = rank(a);
-      const rb = rank(b);
-      if (ra !== rb) return ra - rb;
-      return ra === 2 ? byTime(b, a) : byTime(a, b);
-    });
-  }, [filtered]);
+  // Order: live → upcoming → finished (lib/matchProto.ts — the same rule the
+  // home feed orders and filters by).
+  const sorted = useMemo(() => sortMatchesByPhase(filtered), [filtered]);
 
-  const liveCount = list.filter((m) => isLiveStatus(m.status)).length;
-  const upcomingCount = list.filter((m) => !isLiveStatus(m.status) && !m.status).length;
-  const finishedCount = list.length - liveCount - upcomingCount;
-
-  const counts: Record<FilterKey, number> = {
-    all: list.length,
-    live: liveCount,
-    upcoming: upcomingCount,
-    finished: finishedCount,
-  };
-
-  const visible = useMemo(() => {
-    if (tab === 'all') return sorted;
-    return sorted.filter((m) => categoryOf(m) === tab);
-  }, [sorted, tab]);
+  // Counts and rows both read off what the search left behind, so a tab never
+  // promises rows the search has already taken away.
+  const counts = useMemo(() => matchFilterCounts(filtered), [filtered]);
+  const liveCount = counts.live;
+  const visible = useMemo(() => filterMatches(sorted, tab), [sorted, tab]);
 
   const groups = useMemo<MatchGroup[]>(
     () =>
@@ -193,7 +185,7 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
         label: g.label,
         icon: g.icon,
         isLive: g.key === 'live',
-        items: visible.filter((m) => categoryOf(m) === g.key),
+        items: visible.filter((m) => matchPhase(m.status) === g.key),
       // Keep the Live group on the "All" tab even when it has no matches so the
       // section header never disappears — but only while there are matches to
       // show. When the list is empty (or a search has no hits) the empty state
@@ -209,7 +201,7 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
   // Live group never forces the whole list to render collapsed.
   const firstOpenKey = groups.find((g) => g.items.length > 0)?.key;
 
-  const tabLabel = FILTER_TABS.find((t) => t.key === tab)?.label ?? 'All';
+  const tabLabel = matchFilterLabel(tab);
   const emptyKind: EmptyKind = query ? 'search' : list.length === 0 ? 'none' : 'filter';
   const emptyTitle =
     list.length === 0 ? 'No matches' : query ? 'No results' : `No ${tabLabel.toLowerCase()} matches`;
@@ -226,67 +218,55 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
       <AdBanner slotId={AD_SLOTS.topLeaderboard} client={ADSENSE_CLIENT} category={category} size="leaderboard" />
 
 
-      <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-accent no-underline hover:underline">← All sports</Link>
-        <div className="inline-flex items-center gap-3">
-          <span className="font-mono text-xs text-muted">{label}</span>
+      {/* Toolbar — the sport's name, its counters, the way back to the feed and
+       *  the search, in one row: the search and the refresh on the right (the
+       *  search drops to its own full-width row inside it on a phone). The
+       *  home feed carries the same toolbar, so the two read as siblings. */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <h2 className="m-0 text-[15px] font-bold text-text">{label}</h2>
+        {matches && (
+          <>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-3 px-2.5 py-1 text-[12px] text-muted [&_strong]:font-bold [&_strong]:text-text">
+              <strong>{counts.all}</strong> matches
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-live-border bg-live-soft px-2.5 py-1 text-[12px] text-live-ink">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+              {liveCount} live
+            </span>
+          </>
+        )}
+        <div className="ml-auto flex w-full min-w-0 items-center gap-2 min-[641px]:w-auto min-[641px]:min-w-[220px] min-[641px]:flex-1 min-[641px]:max-w-[360px]">
+          <input
+            className={INPUT}
+            type="search"
+            placeholder="Search teams, leagues, or matches…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <Link
+            href="/"
+            className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-accent no-underline hover:underline"
+          >
+            ← All sports
+          </Link>
           <button
             type="button"
-            className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-[var(--radius-sm)] border border-border bg-panel text-base text-muted transition-all hover:border-[#c7ccd2] hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
+            className={ICON_BTN}
             onClick={() => void matchesQuery.refetch()}
             disabled={matchesQuery.isFetching}
             title="Refresh"
+            aria-label="Refresh"
           >
             {matchesQuery.isFetching ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />}
           </button>
         </div>
       </div>
 
-      {/* Search + counters. The row is a horizontal scroll container (same
-       *  pattern as the sport nav) so on narrow/mobile screens the input and
-       *  the match/live pills can be swiped into view instead of being
-       *  clipped by the viewport. */}
-      <section className="mb-[18px] flex flex-nowrap items-center gap-3 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <input
-          className="min-w-[170px] flex-1 rounded-xl border border-border bg-panel px-4 py-[11px] text-sm text-text transition-[border-color,box-shadow] placeholder:text-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
-          type="search"
-          placeholder="Search teams, leagues, or matches…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {matches && (
-          <span className="flex shrink-0 gap-2.5 whitespace-nowrap">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-panel px-3.5 py-1.5 text-[13px] text-muted [&_strong]:text-text"><strong>{list.length}</strong> matches</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(239,68,68,0.4)] bg-live-soft px-3.5 py-1.5 text-[13px] text-[#d93025]"><span className="h-[7px] w-[7px] shrink-0 rounded-full bg-current" />{liveCount} live</span>
-          </span>
-        )}
-      </section>
+      {/* The status tabs, on the same row layout as the home feed's: the one
+       *  control that turns the whole category into a phase at a time. */}
+      <StatusFilter value={tab} counts={counts} onChange={setTab} />
 
-      {/* Filter tabs. Same horizontal scroll container pattern as the sport
-       *  nav so "All / Live / Upcoming / Finished" stay on a single line and
-       *  can be swiped into view on narrow screens instead of wrapping or
-       *  being clipped by the viewport. */}
-      <section className="mb-4 flex flex-nowrap gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist">
-        {FILTER_TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.key}
-            className={tab === t.key ? FILTER_TAB_ACTIVE : FILTER_TAB_IDLE}
-            onClick={() => setTab(t.key)}
-          >
-            {t.label}
-            <span className={tab === t.key ? FILTER_COUNT_ACTIVE : FILTER_COUNT_IDLE}>{counts[t.key]}</span>
-          </button>
-        ))}
-      </section>
-
-      {err && (
-        <div className="mb-4 rounded-xl border border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.12)] px-4 py-3 text-[13px] whitespace-pre-wrap break-words text-[#c5221f] [[data-theme=dark]_&]:border-[#ef4444] [[data-theme=dark]_&]:bg-[rgba(255,255,255,0.08)] [[data-theme=dark]_&]:text-[#fca5a5]">
-          {err}
-        </div>
-      )}
+      {err && <div className={ERROR}>{err}</div>}
 
       {busy && !matches && (
         <div className="flex flex-col gap-2">
@@ -299,7 +279,8 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
           kind={emptyKind}
           title={emptyTitle}
           desc={emptyDesc}
-          onClear={query ? () => setQuery('') : undefined}
+          clearLabel={query ? 'Clear search' : 'Show all matches'}
+          onClear={query ? () => setQuery('') : tab !== 'all' ? () => setTab('all') : undefined}
           onRetry={list.length === 0 ? () => void matchesQuery.refetch() : undefined}
           retryBusy={matchesQuery.isFetching}
         />
@@ -316,6 +297,9 @@ export function SportCategoryMatches({ sportType, category, label }: SportCatego
             // matches, otherwise upcoming, otherwise finished. An empty Live
             // group stays visible (All tab) but collapsed.
             defaultOpen={g.key === firstOpenKey}
+            // A pinned tab already names the phase it shows, so its section
+            // header would only repeat the tab: the league groups move up.
+            showHeader={tab === 'all'}
           />
 
           {/* In-feed banner — between the first group and the rest of the list. */}

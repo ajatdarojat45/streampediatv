@@ -164,7 +164,7 @@ export function MatchTabs({
                 key={t.id}
                 type="button"
                 onClick={() => setActive(t.id)}
-                className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-4 py-2.5 text-[14px] font-semibold transition-colors duration-150 max-[640px]:px-2 max-[640px]:py-2 max-[640px]:text-[13px] ${
+                className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-4 py-2.5 text-[14px] font-semibold transition-colors max-[640px]:px-2 max-[640px]:py-2 max-[640px]:text-[13px] ${
                   on
                     ? 'border-accent text-accent'
                     : 'border-transparent text-muted hover:text-text'

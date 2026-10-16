@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { ICON_BTN } from '@/components/ui';
 
 type Theme = 'light' | 'dark';
 
@@ -35,7 +36,7 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-full bg-panel border border-border text-muted transition-all hover:border-[#c7ccd2] hover:text-text"
+      className={ICON_BTN}
       onClick={toggle}
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >

@@ -109,50 +109,59 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   </div>
                 </aside>
                 <div className="min-h-[60vh] min-w-0 flex-1">
-                  <header className="sticky top-0 z-20 mb-5 flex items-center justify-between bg-[rgba(248,249,250,0.72)] py-3 shadow-[0_1px_0_rgba(255,255,255,0.65)_inset,0_10px_30px_-18px_rgba(15,23,42,0.35)] backdrop-blur-[14px] backdrop-saturate-150 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:content-[''] after:bg-[linear-gradient(90deg,transparent,var(--accent),transparent)] max-[640px]:mb-4 max-[640px]:py-2.5 [[data-theme=dark]_&]:bg-[rgba(10,14,21,0.72)] [[data-theme=dark]_&]:shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)]">
-                    <Link href="/" className="group flex items-center gap-3 no-underline max-[640px]:gap-2.5">
-                      <span className="inline-flex h-[42px] w-[42px] items-center justify-center rounded ring-1 ring-inset ring-[rgba(255,255,255,0.28)] [background:var(--grad)] text-[22px] shadow-[0_8px_20px_-6px_rgba(26,115,232,0.55)] max-[640px]:h-9 max-[640px]:w-9 max-[640px]:rounded-[10px] max-[640px]:text-[18px] max-[640px]:[&>svg]:h-[18px] max-[640px]:[&>svg]:w-[18px]"><Play size={22} /></span>
-                      <div>
-                        <h1 className="m-0 text-[19px] font-bold leading-[1.1] tracking-[-0.02em] transition-colors duration-150 group-hover:text-accent max-[640px]:text-[16px]">StreampediaTV</h1>
-                        <p className="mt-0.5 text-[12px] text-muted max-[640px]:text-[11px]">Live Sports Streaming</p>
-                      </div>
+                  {/* Sticky app bar — one hairline, one blur, no drop-shadow
+                   *  tricks: the page content is the only thing that moves. */}
+                  <header className="sticky top-0 z-20 mb-5 flex items-center justify-between gap-3 border-b border-border-soft bg-glass py-3 backdrop-blur-md max-[640px]:mb-4 max-[640px]:py-2.5">
+                    <Link href="/" className="group flex min-w-0 items-center gap-2.5 no-underline">
+                      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white shadow-sm [background:var(--grad)]">
+                        <Play size={18} />
+                      </span>
+                      <span className="min-w-0">
+                        <h1 className="m-0 truncate text-[17px] font-bold leading-tight tracking-[-0.01em] transition-colors group-hover:text-accent">StreampediaTV</h1>
+                        <p className="m-0 truncate text-[11px] leading-tight text-muted">Live Sports Streaming</p>
+                      </span>
                     </Link>
-                    <div className="inline-flex items-center gap-2">
+                    <div className="inline-flex shrink-0 items-center gap-2">
+                      {/* Site-wide live indicator, hidden on the narrowest
+                       *  screens where the sport tabs need the room. */}
+                      <span className="hidden items-center gap-1.5 rounded-full border border-live-border bg-live-soft px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-live-ink min-[420px]:inline-flex">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current animate-blink" />
+                        Live
+                      </span>
                       <ThemeToggle />
-                      <span className="inline-flex items-center gap-[7px] rounded-full border border-[rgba(239,68,68,0.4)] bg-live-soft px-3.5 py-[7px] text-xs font-bold tracking-[0.08em] text-[#d93025] max-[640px]:px-[11px] max-[640px]:py-1.5 max-[640px]:text-[11px] [[data-theme=dark]_&]:border-[rgba(239,68,68,0.5)] [[data-theme=dark]_&]:text-[#fca5a5]"><span className="h-[7px] w-[7px] shrink-0 rounded-full bg-current" />LIVE</span>
                     </div>
                   </header>
                   <SportNav />
                   <main>{children}</main>
-                  <footer className="mt-10 border-t border-border-soft pt-[18px] text-center text-xs text-muted">
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-6 pb-[18px] max-[640px]:grid-cols-[1fr] max-[640px]:gap-[18px] max-[640px]:pb-3.5">
+                  <footer className="mt-10 border-t border-border-soft pt-5 text-[12px] text-muted">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-6 pb-5 max-[640px]:grid-cols-[1fr] max-[640px]:gap-5">
                       <div className="min-w-0 text-left">
-                        <h3 className="mb-2.5 text-[13px] font-bold uppercase tracking-[0.06em] text-text">Categories</h3>
+                        <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-text">Categories</h3>
                         <FooterCategories />
                       </div>
                       <div className="min-w-0 text-center max-[640px]:text-left">
-                        <h3 className="mb-2.5 text-[13px] font-bold uppercase tracking-[0.06em] text-text">Contact Us</h3>
-                        <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[13px]">
+                        <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-text">Contact Us</h3>
+                        <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                           <li>
-                            <a href={`mailto:${contactEmail}`} className="text-muted no-underline transition-colors duration-150 hover:text-accent hover:underline">
+                            <a href={`mailto:${contactEmail}`} className="text-muted no-underline transition-colors hover:text-accent">
                               {contactEmail}
                             </a>
                           </li>
                         </ul>
                       </div>
                       <div className="min-w-0 text-right max-[640px]:text-left">
-                        <h3 className="mb-2.5 text-[13px] font-bold uppercase tracking-[0.06em] text-text">Terms</h3>
-                        <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[13px]">
+                        <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-text">Terms</h3>
+                        <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                           <li>
-                            <Link href="/privacy" className="text-muted no-underline transition-colors duration-150 hover:text-accent hover:underline">Privacy Policy</Link>
+                            <Link href="/privacy" className="text-muted no-underline transition-colors hover:text-accent">Privacy Policy</Link>
                           </li>
                           <li>
-                            <Link href="/terms" className="text-muted no-underline transition-colors duration-150 hover:text-accent hover:underline">Terms of Service</Link>
+                            <Link href="/terms" className="text-muted no-underline transition-colors hover:text-accent">Terms of Service</Link>
                           </li>
                         </ul>
                       </div>
                     </div>
-                    <p>StreampediaTV @ 2026</p>
+                    <p className="m-0 border-t border-border-soft pt-4 text-[11px]">StreampediaTV @ 2026</p>
                   </footer>
                 </div>
                 <aside className="hidden w-40 min-w-0 shrink-0 basis-40 min-[768px]:block" aria-label="Advertisement">

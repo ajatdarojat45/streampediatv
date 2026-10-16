@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { TeamLogo, MatchRow } from '@/components/Match';
+import { COUNT_IDLE } from '@/components/ui';
 import type { Match } from '@/lib/types';
 
 /** One league sub-group inside a Live/Upcoming/Finished status group. */
@@ -63,17 +64,15 @@ export function LeagueGroupSection({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="mb-1.5 flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-0.5 text-left text-[13px] font-bold text-text transition-colors hover:bg-border-soft/60"
+        className="mb-1.5 flex w-full cursor-pointer items-center gap-2 rounded-sm px-1 py-1 text-left transition-colors hover:bg-surface-2"
       >
         {group.logo && (
           <TeamLogo path={group.logo} name={group.name} kind="league" size="league" />
         )}
-        <span className="min-w-0 flex-1 truncate">{group.name}</span>
-        <span className="rounded-full border border-border bg-panel px-2 py-px text-[11px] font-bold text-muted">
-          {group.items.length}
-        </span>
+        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-muted">{group.name}</span>
+        <span className={COUNT_IDLE}>{group.items.length}</span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-muted transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
+          className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? '' : '-rotate-90'}`}
         />
       </button>
       {open && (

@@ -3,6 +3,7 @@
 import type { ComponentType } from 'react';
 import { CalendarX2, Inbox, SearchX } from 'lucide-react';
 import type { LucideProps } from 'lucide-react';
+import { BTN_ACCENT, BTN_GHOST, PANEL_EMPTY } from '@/components/ui';
 
 /** Empty-state kind → icon + default copy. `search` = query returned nothing,
  *  `filter` = a status tab is empty, `none` = the feed itself is empty. */
@@ -32,6 +33,7 @@ export function EmptyMatches({
   kind,
   title,
   desc,
+  clearLabel = 'Clear search',
   onClear,
   onRetry,
   retryBusy = false,
@@ -39,6 +41,9 @@ export function EmptyMatches({
   kind: EmptyKind;
   title?: string;
   desc?: string;
+  /** The clear button's own words — a failed search is cleared, a filter is
+   *  stepped out of ("Show all matches"). */
+  clearLabel?: string;
   onClear?: () => void;
   onRetry?: () => void;
   retryBusy?: boolean;
@@ -46,30 +51,21 @@ export function EmptyMatches({
   const meta = KIND_META[kind];
   const Icon = meta.Icon;
   return (
-    <section className="mb-4 flex flex-col items-center rounded border border-border bg-panel px-5 py-12 text-center max-[640px]:px-4 max-[640px]:py-10">
-      <span className="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent">
-        <Icon className="h-7 w-7" />
+    <section className={`${PANEL_EMPTY} flex flex-col items-center`}>
+      <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-accent-soft text-accent">
+        <Icon className="h-6 w-6" />
       </span>
-      <h2 className="m-0 mb-1.5 text-[19px] font-bold">{title ?? meta.title}</h2>
-      <p className="m-0 mb-4 max-w-[380px] text-sm leading-[1.65] text-muted">{desc ?? meta.desc}</p>
+      <h2 className="m-0 mb-1.5 text-[17px] font-bold">{title ?? meta.title}</h2>
+      <p className="m-0 mb-4 max-w-[380px] text-[13px] text-muted">{desc ?? meta.desc}</p>
       {(onClear || onRetry) && (
         <span className="flex flex-wrap items-center justify-center gap-2">
           {onClear && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-[13px] font-semibold text-text transition-all hover:border-[#c7ccd2]"
-            >
-              Clear search
+            <button type="button" onClick={onClear} className={BTN_GHOST}>
+              {clearLabel}
             </button>
           )}
           {onRetry && (
-            <button
-              type="button"
-              onClick={onRetry}
-              disabled={retryBusy}
-              className="inline-flex items-center gap-2 rounded-full border border-transparent bg-accent px-4 py-2 text-[13px] font-semibold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <button type="button" onClick={onRetry} disabled={retryBusy} className={BTN_ACCENT}>
               Try again
             </button>
           )}

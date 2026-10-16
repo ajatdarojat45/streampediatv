@@ -4,21 +4,29 @@ import { Fragment, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, RefreshCw, ChevronDown, type LucideIcon } from 'lucide-react';
 import { MatchRowSkeleton } from '@/components/Match';
-import { EmptyMatches } from '@/components/EmptyMatches';
+import { EmptyMatches, type EmptyKind } from '@/components/EmptyMatches';
 import { groupMatchesByLeague, LeagueGroupSection } from '@/components/LeagueGroup';
-import { isLiveStatus } from '@/lib/matchProto';
-import { matchDateMs } from '@/lib/datetime';
+import { isLiveStatus, sortMatchesByPhase } from '@/lib/matchProto';
 import { useSportMatches } from '@/lib/queries';
-import { sportLabel, sportIcon, watchHref } from '@/lib/sports';
+import { sportLabel, sportIcon, sportRank, watchHref } from '@/lib/sports';
 import AdBanner from '@/components/AdBanner';
 import { ADSENSE_CLIENT, AD_SLOTS } from '@/lib/ads';
+import { COUNT, COUNT_IDLE, ERROR, ICON_BTN, INPUT } from '@/components/ui';
+import {
+  StatusFilter,
+  filterMatches,
+  matchFilterCounts,
+  matchFilterLabel,
+  type MatchFilter,
+} from '@/components/StatusFilter';
 import type { Match } from '@/lib/types';
 
 interface MatchGroup {
   key: string;
   label: string;
   icon: LucideIcon;
-  isLive: boolean;
+  /** The sport this group is — what the sections are ordered by. */
+  sport: number;
   items: Match[];
 }
 
@@ -36,21 +44,24 @@ function SportGroupSection({
 }) {
   const leagueGroups = useMemo(() => groupMatchesByLeague(group.items), [group.items]);
   const [open, setOpen] = useState(defaultOpen);
+  /** The count pill turns live-red only when this sport actually has a match
+   *  in play — the same reserved-red rule the cards follow. */
+  const hasLive = group.items.some((m) => isLiveStatus(m.status));
   return (
-    <section className="mb-[22px]">
+    <section className="mb-5">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="mb-2.5 flex w-full cursor-pointer items-center justify-between rounded-lg px-1 py-0.5 text-left transition-colors hover:bg-border-soft/60"
+        className="mb-2 flex w-full cursor-pointer items-center justify-between gap-2 rounded-sm px-1 py-1 text-left transition-colors hover:bg-surface-2"
       >
-        <span className="inline-flex items-center gap-2 text-sm font-bold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">
-          <group.icon className="h-[15px] w-[15px]" />
-          {group.label}
-          <span className="rounded-full border border-border bg-panel px-2 py-px text-[11px] font-bold text-muted">{group.items.length}</span>
+        <span className="inline-flex min-w-0 items-center gap-2 text-[13px] font-bold text-text">
+          <group.icon className="h-4 w-4 shrink-0 text-muted" />
+          <span className="truncate">{group.label}</span>
+          <span className={hasLive ? `${COUNT} bg-live-soft text-live-ink` : COUNT_IDLE}>{group.items.length}</span>
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-muted transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
+          className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? '' : '-rotate-90'}`}
         />
       </button>
       {open && (
@@ -67,6 +78,9 @@ function SportGroupSection({
 function MatchListContent() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  // The same filter row the category feeds carry, so both feeds are narrowed
+  // by one vocabulary instead of two.
+  const [tab, setTab] = useState<MatchFilter>('all');
 
   // The home page is the aggregate "Live" feed across every sport.
   const matchesQuery = useSportMatches(0);
@@ -91,49 +105,53 @@ function MatchListContent() {
     );
   }, [list, query]);
 
-  // Order: live → upcoming → finished.
-  const sorted = useMemo(() => {
-    const rank = (m: Match): number => {
-      if (isLiveStatus(m.status)) return 0;
-      if (!m.status) return 1;
-      return 2;
-    };
-    const byTime = (a: Match, b: Match): number =>
-      (matchDateMs(a.matchDate) ?? Infinity) - (matchDateMs(b.matchDate) ?? Infinity);
-    return [...filtered].sort((a, b) => {
-      const ra = rank(a);
-      const rb = rank(b);
-      if (ra !== rb) return ra - rb;
-      return ra === 2 ? byTime(b, a) : byTime(a, b);
-    });
-  }, [filtered]);
+  // Order: live → upcoming → finished, then grouped by sport (shared rules —
+  // lib/matchProto.ts for the order, lib/sports.ts for the sport order).
+  const sorted = useMemo(() => sortMatchesByPhase(filtered), [filtered]);
 
-  const liveCount = list.filter((m) => isLiveStatus(m.status)).length;
+  // The counts and the visible rows both read off what the search left, so a
+  // tab never promises rows the search has already taken away.
+  const counts = useMemo(() => matchFilterCounts(filtered), [filtered]);
+  const visible = useMemo(() => filterMatches(sorted, tab), [sorted, tab]);
+  const liveCount = counts.live;
 
-  // Group the live feed by sport type.
+  // Group the feed by sport: the sports with a match in play first, then the
+  // canonical sport order the nav and the picker read in — a section keeps its
+  // place between two loads instead of following whichever match sorted first.
   const groups = useMemo<MatchGroup[]>(() => {
     const map = new Map<number, Match[]>();
-    for (const m of sorted) {
+    for (const m of visible) {
       const st = m.sportType ?? 90;
       const arr = map.get(st) ?? [];
       arr.push(m);
       map.set(st, arr);
     }
-    return [...map.entries()].map(([st, items]) => ({
-      key: `sport-${st}`,
-      label: sportLabel(st),
-      icon: sportIcon(st),
-      isLive: true,
-      items,
-    }));
-  }, [sorted]);
+    return [...map.entries()]
+      .map(([st, items]) => ({
+        key: `sport-${st}`,
+        label: sportLabel(st),
+        icon: sportIcon(st),
+        sport: st,
+        items,
+      }))
+      .sort((a, b) => {
+        const liveA = a.items.some((m) => isLiveStatus(m.status)) ? 0 : 1;
+        const liveB = b.items.some((m) => isLiveStatus(m.status)) ? 0 : 1;
+        return liveA - liveB || sportRank(a.sport) - sportRank(b.sport);
+      });
+  }, [visible]);
 
-  const emptyTitle = query ? 'No results' : 'No matches';
+  const tabLabel = matchFilterLabel(tab);
+  const emptyKind: EmptyKind = query ? 'search' : list.length === 0 ? 'none' : 'filter';
+  const emptyTitle =
+    list.length === 0 ? 'No matches' : query ? 'No results' : `No ${tabLabel.toLowerCase()} matches`;
   const emptyDesc = list.length === 0
     ? 'The server may be rejecting the request — try another source or reload.'
     : query
       ? `No matches for "${query.trim()}". Try a different keyword or clear the search.`
-      : 'There are no live matches right now. Check back soon.';
+      : `No ${tabLabel.toLowerCase()} matches across the sports right now — another tab may have some.`;
+  // One button clears whatever emptied the list: the search, or the filter.
+  const clearList = query ? () => setQuery('') : tab !== 'all' ? () => setTab('all') : undefined;
 
   return (
     <>
@@ -141,46 +159,49 @@ function MatchListContent() {
       <AdBanner slotId={AD_SLOTS.topLeaderboard} client={ADSENSE_CLIENT} category="live" size="leaderboard" />
 
 
-      <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
-        <span className="font-mono text-xs text-muted">Live</span>
-        <div className="inline-flex items-center gap-3">
+      {/* Toolbar — what the page is, how much of it there is, and what narrows
+       *  it, in one row: label + counters on the left, the search and the
+       *  refresh on the right (the search drops to its own full-width row
+       *  inside it on a phone, where a slim field would be unusable). */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <h2 className="m-0 text-[15px] font-bold text-text">Matches</h2>
+        {matches && (
+          <>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-3 px-2.5 py-1 text-[12px] text-muted [&_strong]:font-bold [&_strong]:text-text">
+              <strong>{counts.all}</strong> matches
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-live-border bg-live-soft px-2.5 py-1 text-[12px] text-live-ink">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+              {liveCount} live
+            </span>
+          </>
+        )}
+        <div className="ml-auto flex w-full min-w-0 items-center gap-2 min-[641px]:w-auto min-[641px]:min-w-[220px] min-[641px]:flex-1 min-[641px]:max-w-[360px]">
+          <input
+            className={INPUT}
+            type="search"
+            placeholder="Search teams, leagues, or matches…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
           <button
             type="button"
-            className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-[var(--radius-sm)] border border-border bg-panel text-base text-muted transition-all hover:border-[#c7ccd2] hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
+            className={ICON_BTN}
             onClick={() => void matchesQuery.refetch()}
             disabled={matchesQuery.isFetching}
             title="Refresh"
+            aria-label="Refresh"
           >
             {matchesQuery.isFetching ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />}
           </button>
         </div>
       </div>
 
-      {/* Search + counters. The row is a horizontal scroll container (same
-       *  pattern as the sport nav) so on narrow/mobile screens the input and
-       *  the match/live pills can be swiped into view instead of being
-       *  clipped by the viewport. */}
-      <section className="mb-[18px] flex flex-nowrap items-center gap-3 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <input
-          className="min-w-[170px] flex-1 rounded-xl border border-border bg-panel px-4 py-[11px] text-sm text-text transition-[border-color,box-shadow] placeholder:text-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
-          type="search"
-          placeholder="Search teams, leagues, or matches…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {matches && (
-          <span className="flex shrink-0 gap-2.5 whitespace-nowrap">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-panel px-3.5 py-1.5 text-[13px] text-muted [&_strong]:text-text"><strong>{list.length}</strong> matches</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(239,68,68,0.4)] bg-live-soft px-3.5 py-1.5 text-[13px] text-[#d93025]"><span className="h-[7px] w-[7px] shrink-0 rounded-full bg-current" />{liveCount} live</span>
-          </span>
-        )}
-      </section>
+      {/* Which slice of the feed is on screen. Directly above the sections it
+       *  narrows, so one tap turns the whole feed into "just the live ones". */}
+      <StatusFilter value={tab} counts={counts} onChange={setTab} />
 
-      {err && (
-        <div className="mb-4 rounded-xl border border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.12)] px-4 py-3 text-[13px] whitespace-pre-wrap break-words text-[#c5221f] [[data-theme=dark]_&]:border-[#ef4444] [[data-theme=dark]_&]:bg-[rgba(255,255,255,0.08)] [[data-theme=dark]_&]:text-[#fca5a5]">
-          {err}
-        </div>
-      )}
+      {err && <div className={ERROR}>{err}</div>}
 
       {busy && !matches && (
         <div className="flex flex-col gap-2">
@@ -188,12 +209,13 @@ function MatchListContent() {
         </div>
       )}
 
-      {!busy && matches && sorted.length === 0 && (
+      {!busy && matches && visible.length === 0 && (
         <EmptyMatches
-          kind={query ? 'search' : 'none'}
+          kind={emptyKind}
           title={emptyTitle}
           desc={emptyDesc}
-          onClear={query ? () => setQuery('') : undefined}
+          clearLabel={query ? 'Clear search' : 'Show all matches'}
+          onClear={clearList}
           onRetry={list.length === 0 ? () => void matchesQuery.refetch() : undefined}
           retryBusy={matchesQuery.isFetching}
         />

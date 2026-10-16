@@ -9,39 +9,29 @@ import type {
   NowgoalCompetitionEntry,
   NowgoalFederationEntry,
 } from '@/lib/types';
+import {
+  BADGE,
+  COUNT_IDLE,
+  COUNT_ON,
+  ICON_BTN,
+  PANEL,
+  PANEL_TITLE,
+  PILL_ROW,
+  TAB,
+  TAB_ACTIVE,
+  TAB_IDLE,
+} from '@/components/ui';
 
-/** Surface panel (`.panel`) — the same card the rest of the app renders. */
-const PANEL =
-  'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
-/** Continent pills (the feed's own active/idle tab pair). */
-const TAB =
-  'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-all';
-const TAB_IDLE = `${TAB} border-border bg-panel text-muted hover:border-[#c7ccd2] hover:text-text`;
-const TAB_ACTIVE = `${TAB} border-accent bg-accent-soft text-accent`;
-const TAB_COUNT = 'min-w-5 rounded-full px-2 py-px text-center text-[11px] font-bold';
-const TAB_COUNT_IDLE = `${TAB_COUNT} bg-[#f1f3f4] text-muted [[data-theme=dark]_&]:bg-border-soft`;
-const TAB_COUNT_ACTIVE = `${TAB_COUNT} bg-[rgba(26,115,232,0.2)] text-accent`;
-/** Continent tab row — one swipeable line on a narrow screen. */
-const TAB_ROW =
-  'flex flex-nowrap gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
-/** Refresh button — the 38px icon button the sport pages already carry (see
- *  components/SportCategoryMatches.tsx). The page is served from a half-day
- *  cache, so this is how a visitor asks for the list as it stands right now. */
-const REFRESH_BUTTON =
-  'inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-border bg-panel text-base text-muted transition-all hover:border-[#c7ccd2] hover:text-text disabled:cursor-not-allowed disabled:opacity-50';
 /** Note a failed refresh leaves behind: the grid below keeps the previous list,
  *  so the page never claims a read it did not get. */
 const REFRESH_FAILED = 'Could not refresh just now — the list below is the last one we read.';
-const REFRESH_NOTE = 'm-0 mt-2 text-[12px] leading-[1.6] text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]';
-/** Competition-count chip on a card and on a headline tile. */
-const BADGE =
-  'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-semibold text-muted';
+const REFRESH_NOTE = 'm-0 mt-2 text-[12px] leading-[1.6] text-live-ink';
 /** Federation card: the hover/focus target whose panel lists the competitions
  *  it runs. The open state borrows the pill pair's active colours, so "this one
  *  is open" reads the same on a card as on a tab. */
 const CARD =
-  'flex w-full flex-col items-center gap-1.5 rounded-[var(--radius-sm)] border px-2.5 py-3 text-center transition-all';
-const CARD_IDLE = `${CARD} border-border bg-card hover:border-[#c7ccd2] hover:bg-accent-soft`;
+  'flex w-full flex-col items-center gap-1.5 rounded-sm border px-2.5 py-3 text-center transition-all';
+const CARD_IDLE = `${CARD} border-border bg-card hover:border-border-hover hover:bg-accent-soft`;
 const CARD_OPEN = `${CARD} border-accent bg-accent-soft`;
 /** Badge box of a card: a fixed square, so the wide country flags and the
  *  publisher's own region badges (Europe, International) share a baseline. */
@@ -51,7 +41,7 @@ const CARD_BADGE = 'flex h-10 w-full items-center justify-center';
  *  away from the cursor and flicker. The card swaps `left-0`/`right-0` when a
  *  full-width panel would run past the viewport. */
 const MENU =
-  'absolute top-[calc(100%+6px)] z-30 w-[min(88vw,640px)] rounded-[var(--radius-sm)] border border-border bg-panel p-3 shadow-[0_12px_32px_rgba(0,0,0,0.16)]';
+  'absolute top-[calc(100%+6px)] z-30 w-[min(88vw,640px)] rounded-sm border border-border bg-panel p-3 shadow-[0_12px_32px_rgba(0,0,0,0.16)]';
 const MENU_HEAD =
   'm-0 mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-border-soft pb-2 text-[12px] text-muted';
 const MENU_LIST = 'm-0 list-none columns-2 gap-x-4 min-[560px]:columns-3 min-[900px]:columns-4';
@@ -78,7 +68,7 @@ function FederationBadge({ src, name }: { src: string; name: string }) {
   if (!src || broken) {
     return (
       <span
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#e8eaed] text-[15px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-[15px] font-bold text-muted"
         aria-hidden="true"
       >
         {initial(name)}
@@ -108,7 +98,7 @@ function CompetitionCrest({ src, name }: { src: string; name: string }) {
   if (!src || broken) {
     return (
       <span
-        className={`${size} inline-flex items-center justify-center bg-[#e8eaed] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft`}
+        className={`${size} inline-flex items-center justify-center bg-surface-2 font-bold text-muted`}
         aria-hidden="true"
       >
         {initial(name)}
@@ -245,7 +235,7 @@ function TopFlightTile({
   return (
     <Link
       href={competition.href}
-      className="flex items-center gap-3 rounded-[var(--radius-sm)] border border-border bg-card px-3.5 py-3 no-underline transition-all hover:border-[#c7ccd2]"
+      className="flex items-center gap-3 rounded-sm border border-border bg-card px-3.5 py-3 no-underline transition-all hover:border-border-hover"
       title={title}
       aria-label={title}
     >
@@ -399,7 +389,7 @@ export function CompetitionsDirectory({ catalogue: initial }: { catalogue: Nowgo
           </div>
           <button
             type="button"
-            className={REFRESH_BUTTON}
+            className={ICON_BTN}
             onClick={() => void refresh()}
             disabled={refreshing}
             title="Refresh"
@@ -464,7 +454,7 @@ export function CompetitionsDirectory({ catalogue: initial }: { catalogue: Nowgo
        *  competition it runs. */}
       <section className={PANEL}>
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 className="m-0 flex items-center gap-2 text-[15px] font-bold">
+          <h2 className={PANEL_TITLE}>
             <Globe className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
             Browse by federation
           </h2>
@@ -487,7 +477,7 @@ export function CompetitionsDirectory({ catalogue: initial }: { catalogue: Nowgo
           )}
         </p>
 
-        <div className={`mt-3 ${TAB_ROW}`} role="tablist" aria-label="Continents">
+        <div className={`mt-3 ${PILL_ROW}`} role="tablist" aria-label="Continents">
           <button
             type="button"
             role="tab"
@@ -496,7 +486,7 @@ export function CompetitionsDirectory({ catalogue: initial }: { catalogue: Nowgo
             onClick={() => pickTab('all')}
           >
             All
-            <span className={tab === 'all' ? TAB_COUNT_ACTIVE : TAB_COUNT_IDLE}>{tabs.all}</span>
+            <span className={tab === 'all' ? COUNT_ON : COUNT_IDLE}>{tabs.all}</span>
           </button>
           {continents.map((c) => (
             <button
@@ -509,7 +499,7 @@ export function CompetitionsDirectory({ catalogue: initial }: { catalogue: Nowgo
               title={`${c.competitions} competitions in ${c.federations} federations`}
             >
               {c.label}
-              <span className={tab === c.key ? TAB_COUNT_ACTIVE : TAB_COUNT_IDLE}>
+              <span className={tab === c.key ? COUNT_ON : COUNT_IDLE}>
                 {tabs.counts.get(c.key) ?? 0}
               </span>
             </button>
@@ -530,7 +520,7 @@ export function CompetitionsDirectory({ catalogue: initial }: { catalogue: Nowgo
             ))}
           </ul>
         ) : (
-          <div className="mt-2 rounded-[var(--radius-sm)] border border-dashed border-border px-4 py-8 text-center">
+          <div className="mt-2 rounded-sm border border-dashed border-border px-4 py-8 text-center">
             <p className="m-0 text-[13px] text-muted">No federation in this view.</p>
             <button
               type="button"

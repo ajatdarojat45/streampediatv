@@ -13,10 +13,10 @@ import {
 import type { MatchLineup, Team, LineupPlayer } from '@/lib/types';
 import { positionLabel, type PlayerEventStats } from '@/lib/matchProto';
 import { playerAvatarUrl } from '@/lib/logos';
+import {
+  PANEL,
+} from '@/components/ui';
 
-/** Surface panel, matching the `.panel` style used across the detail page. */
-const PANEL =
-  'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
 
 /** PBPlayerPositionType → compact badge (GK / DEF / MID / FWD). */
 const positionAbbr = (code?: number): string =>
@@ -67,12 +67,12 @@ function EventBadges({ stats }: { stats?: PlayerEventStats }) {
   );
   return (
     <span className="flex shrink-0 items-center gap-1">
-      {goals > 0 && chip('g', 'text-[#16a34a]', goals > 1 ? String(goals) : '', <Volleyball size={11} />)}
+      {goals > 0 && chip('g', 'text-success-ink', goals > 1 ? String(goals) : '', <Volleyball size={11} />)}
       {assists > 0 && chip('a', 'text-accent', `AST${assists > 1 ? ` ${assists}` : ''}`, <Star size={11} />)}
-      {subIn && chip('in', 'text-[#16a34a]', '', <ArrowUp size={12} />)}
-      {subOut && chip('out', 'text-[#dc2626]', '', <ArrowDown size={12} />)}
-      {yellow > 0 && chip('y', 'text-[#eab308]', yellow > 1 ? String(yellow) : '', <RectangleVertical size={11} fill="currentColor" />)}
-      {red > 0 && chip('r', 'text-[#dc2626]', red > 1 ? String(red) : '', <RectangleVertical size={11} fill="currentColor" />)}
+      {subIn && chip('in', 'text-success-ink', '', <ArrowUp size={12} />)}
+      {subOut && chip('out', 'text-live-ink', '', <ArrowDown size={12} />)}
+      {yellow > 0 && chip('y', 'text-warn', yellow > 1 ? String(yellow) : '', <RectangleVertical size={11} fill="currentColor" />)}
+      {red > 0 && chip('r', 'text-live-ink', red > 1 ? String(red) : '', <RectangleVertical size={11} fill="currentColor" />)}
     </span>
   );
 }
@@ -103,10 +103,10 @@ function PlayerRow({
       src={avatar}
       alt={name}
       loading="lazy"
-      className="h-8 w-8 shrink-0 rounded-full bg-[#f1f3f5] object-cover [[data-theme=dark]_&]:bg-border-soft"
+      className="h-8 w-8 shrink-0 rounded-full bg-surface-3 object-cover"
     />
   ) : (
-    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e8eaed] text-[12px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft">
+    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[12px] font-bold text-muted">
       {initial}
     </span>
   );
@@ -156,7 +156,7 @@ function TeamHeader({
       {logo ? (
         <img src={logo} alt="" loading="lazy" className="h-6 w-6 shrink-0 rounded object-contain" />
       ) : (
-        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft">
+        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded bg-surface-2 text-[11px] font-bold text-muted">
           {(title ?? '?').charAt(0).toUpperCase()}
         </span>
       )}
@@ -251,7 +251,7 @@ export function Lineup({
         </span>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -294,7 +294,7 @@ export function Lineup({
               </span>
               <ChevronDown
                 size={16}
-                className={`shrink-0 text-muted transition-transform duration-200 ${subsOpen ? 'rotate-180' : ''}`}
+                className={`shrink-0 text-muted transition-transform ${subsOpen ? 'rotate-180' : ''}`}
               />
             </button>
           )}

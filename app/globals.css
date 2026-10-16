@@ -2,53 +2,124 @@
 @tailwind components;
 @tailwind utilities;
 
+/* --------------------------------------------------------------------------
+ * Design tokens — the only place a colour, radius, shadow or easing is
+ * written. Everything downstream (components/ui.ts and the components) reads
+ * them through Tailwind's theme aliases (tailwind.config.js), so light/dark
+ * differences live *here* and never as `[[data-theme=dark]_&]` overrides at
+ * the call site.
+ *
+ *   surface          the page ground → panel (cards on it) → card (rows in a
+ *                    card) → surface-2/3 (neutral fills: monograms, count
+ *                    pills, skeletons)
+ *   border           default hairline → border-soft (dividers) → border-hover
+ *                    (every interactive hover)
+ *   ink              text → muted (secondary) → -ink tones for the semantic
+ *                    colours on their own soft backgrounds
+ * ------------------------------------------------------------------------ */
 :root {
   color-scheme: light;
-  --bg: #f8f9fa;
+  --bg: #f7f8fa;
   --panel: #ffffff;
   --card: #ffffff;
-  --border: #dadce0;
-  --border-soft: #e8eaed;
-  --text: #202124;
-  --muted: #5f6368;
+  --border: #e1e5ea;
+  --border-soft: #eef0f3;
+  --border-hover: #c6ccd5;
+  --text: #1f2328;
+  --muted: #626a75;
   --accent: #1a73e8;
   --accent-2: #1967d2;
   --accent-soft: #e8f0fe;
   --live: #d93025;
-  --live-soft: #fce8e6;
+  --live-ink: #c5221f;
+  --live-soft: #fdecea;
+  --live-border: rgba(217, 48, 37, 0.26);
+  /* Ink for text sitting ON a solid `--live` fill (the LIVE stamp). */
+  --live-on: #ffffff;
+  /* Placeholder sweep of the loading skeletons. */
+  --shimmer: rgba(255, 255, 255, 0.55);
   --success: #188038;
+  --success-ink: #137333;
+  --success-soft: #e6f4ea;
+  --success-border: #c7e3cd;
+  --danger-ink: #c5221f;
+  --danger-soft: rgba(239, 68, 68, 0.1);
+  --danger-border: rgba(239, 68, 68, 0.36);
+  /* Booking yellow — the one "caution" tone the match log prints. */
+  --warn-ink: #8a6d1f;
+  --warn-soft: #fdf6dd;
+  --warn-border: #f0dfa8;
+  --neutral: #9ca3af;
+  /* Track behind a split bar (possession, form, win share). */
+  --track: #e5e7eb;
+  /* Solid booking-yellow ink (card icons); reads on both themes as-is. */
+  --warn: #eab308;
+  --surface-2: #eceef1;
+  --surface-3: #f3f4f6;
+  /* The translucent bars that sit over the page (sticky header, player chrome)
+   * — one token so light/dark needs no override at the call site. */
+  --glass: rgba(247, 248, 250, 0.86);
   --grad: linear-gradient(135deg, #1a73e8, #1967d2);
-  --radius: 12px;
+  --radius: 14px;
   --radius-sm: 8px;
-  --shadow: 0 1px 3px rgba(60, 64, 67, 0.12);
-  --detail-score-bg: linear-gradient(135deg, #f8f9fa, #eef1f4);
+  --radius-card: 10px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.04);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 12px 28px -12px rgba(16, 24, 40, 0.24);
+  --detail-score-bg: linear-gradient(135deg, #f7f8fa, #eef1f4);
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0a0e15;
-  --panel: #121a25;
-  --card: #151f2c;
-  --border: #223042;
-  --border-soft: #1b2836;
-  --text: #eaf0f7;
-  --muted: #8b98aa;
+  --bg: #0b1016;
+  --panel: #131b25;
+  --card: #161f2b;
+  --border: #24303f;
+  --border-soft: #1c2634;
+  --border-hover: #35455a;
+  --text: #e9eff7;
+  --muted: #93a1b3;
   --accent: #22d3ee;
   --accent-2: #3b82f6;
-  --accent-soft: rgba(34, 211, 238, 0.14);
+  --accent-soft: rgba(34, 211, 238, 0.12);
   --live: #ef4444;
-  --live-soft: rgba(239, 68, 68, 0.14);
+  --live-ink: #f87171;
+  --live-soft: rgba(239, 68, 68, 0.12);
+  --live-border: rgba(239, 68, 68, 0.4);
+  --live-on: #16181d;
+  --shimmer: rgba(255, 255, 255, 0.08);
   --success: #22c55e;
+  --success-ink: #6ee7a0;
+  --success-soft: #17351f;
+  --success-border: #2b4a35;
+  --danger-ink: #fca5a5;
+  --danger-soft: rgba(255, 255, 255, 0.06);
+  --danger-border: rgba(239, 68, 68, 0.4);
+  --warn-ink: #e8cf78;
+  --warn-soft: #2f2a17;
+  --warn-border: #3d3520;
+  --neutral: #64748b;
+  --track: rgba(255, 255, 255, 0.12);
+  --warn: #eab308;
+  --surface-2: rgba(255, 255, 255, 0.08);
+  --surface-3: rgba(255, 255, 255, 0.06);
+  --glass: rgba(11, 16, 22, 0.86);
   --grad: linear-gradient(135deg, #22d3ee, #3b82f6);
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --detail-score-bg: linear-gradient(135deg, #121a25, #0a0e15);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -14px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 16px 32px -16px rgba(0, 0, 0, 0.72);
+  --detail-score-bg: linear-gradient(135deg, #131b25, #0b1016);
 }
 
 @layer base {
   * {
     box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    /* Anchor jumps land clear of the 60px sticky header. */
+    scroll-padding-top: 72px;
   }
   body {
     margin: 0;
@@ -56,6 +127,38 @@
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
     min-height: 100vh;
+    /* Comfortable reading rhythm for the untagged copy (descriptions, legal
+     * pages, empty states) — sized text keeps its own leading utility. */
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  /* Thin, token-coloured scrollbars — the app's own long lists (standings,
+   * season menus, squads) scroll instead of shouting. The swipeable pill rows
+   * hide theirs themselves via `[scrollbar-width:none]`. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+    background-color: var(--border);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--border-hover);
   }
   button {
     font: inherit;
@@ -68,17 +171,33 @@
   }
   button:focus-visible,
   a:focus-visible,
-  input:focus-visible {
+  input:focus-visible,
+  select:focus-visible,
+  [tabindex]:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+  }
+  /* Respect the reader's motion preference: the live dot stops blinking and
+   * every hover/lift transition resolves instantly. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 }
 
 /* --------------------------------------------------------------------------
- * Keyframes referenced by Tailwind `animate-[...]` utilities:
- *   blink   → StatusBadge live dot
- *   shimmer → skeleton placeholder `after:` sweep
- *   fadeIn  → lazy gutter ad reveal on first scroll
+ * Keyframes:
+ *   blink   → the live dot (`animate-blink`, tailwind.config.js)
+ *   shimmer → skeleton placeholder `after:` sweep (`animate-shimmer`)
+ *   fadeIn  → lazy gutter ad reveal on first scroll (`animate-[fadeIn_...]`)
  * ------------------------------------------------------------------------ */
 @keyframes blink {
   50% {

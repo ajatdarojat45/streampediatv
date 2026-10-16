@@ -5,6 +5,20 @@ import Link, { useLinkStatus } from 'next/link';
 import { ChevronDown, Loader2, Play, Tv } from 'lucide-react';
 import { LocalTime } from '@/components/LocalTime';
 import { StatusBadge } from '@/components/Match';
+import {
+  BADGE,
+  BTN_ACCENT,
+  CHIP_ACTIVE,
+  CHIP_IDLE,
+  PANEL_TITLE,
+  COUNT_ON,
+  EMPTY,
+  PANEL,
+  PILL_ROW,
+  ROW,
+  TAB_ACTIVE,
+  TAB_IDLE,
+} from '@/components/ui';
 import { isLiveStatus } from '@/lib/matchProto';
 import { watchHref } from '@/lib/sports';
 import type {
@@ -45,43 +59,23 @@ import type {
  * (lib/nowgoalMatch.ts, lib/matchStream.ts). Every button is a link carrying the
  * same query with one value changed, so the URL always says what is on screen. */
 
-/** Surface panel — the card every page of the app renders. */
-const PANEL =
-  'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
-/** Tab pill — the same pair the players, competitions and club pages use. */
-const TAB =
-  'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-all';
-const TAB_IDLE = `${TAB} border-border bg-panel text-muted hover:border-[#c7ccd2] hover:text-text`;
-const TAB_ACTIVE = `${TAB} border-accent bg-accent-soft text-accent`;
-/** The smaller pill a plate's own lists are switched with, its count on it. */
-const CHIP =
-  'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold transition-all';
-const CHIP_IDLE = `${CHIP} border-border bg-card text-muted hover:border-[#c7ccd2] hover:text-text`;
-const CHIP_ACTIVE = `${CHIP} border-accent bg-accent-soft text-accent`;
-/** The same pill as a link: one channel of the app's own player. */
-const CHANNEL = `${CHIP_IDLE} no-underline`;
-/** The primary action of the streaming plate — the app's accent button. */
-const WATCH =
-  'mt-3 inline-flex items-center gap-2 rounded-full border border-transparent bg-accent px-4 py-2 text-[13px] font-semibold text-white no-underline transition-all hover:opacity-90';
-const COUNT = 'min-w-5 rounded-full bg-accent-soft px-1.5 text-center text-[10.5px] font-bold';
-/** One swipeable row of pills, like the directory's own tab row. */
-const ROW =
-  'flex flex-nowrap gap-2 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
-/** The dashed box every empty plate renders. */
-const EMPTY =
-  'm-0 mt-3 rounded-[var(--radius-sm)] border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted';
-/** One line of a match table (the head-to-head list and the fixtures). */
-const LINE = 'rounded-lg border border-border bg-card px-3.5 py-2.5';
+/* Panels, tabs, chips and rows come from the app's shared vocabulary
+ * (components/ui.ts). What stays local is what only a match page has: the
+ * channel pill, the primary action, and the event tones of the timeline. */
 
+/** One channel of the app's own player, drawn as a pill-link. */
+const CHANNEL = `${CHIP_IDLE} no-underline`;
+/** The primary action of the streaming plate. */
+const WATCH = `mt-3 ${BTN_ACCENT} no-underline`;
 /** The event tones — the goal/assist/card tones the player page's own match log
  *  uses, so a card reads the same wherever it is printed. */
 const GOAL_TONE =
-  'border-[#c7e3cd] bg-[#e6f4ea] text-[#137333] [[data-theme=dark]_&]:border-border [[data-theme=dark]_&]:bg-[#17351f] [[data-theme=dark]_&]:text-[#6ee7a0]';
+  'border-success-border bg-success-soft text-success-ink';
 const ASSIST_TONE = 'border-border bg-accent-soft text-accent';
 const YELLOW_TONE =
-  'border-[#f0dfa8] bg-[#fdf6dd] text-[#8a6d1f] [[data-theme=dark]_&]:border-border [[data-theme=dark]_&]:bg-[#2f2a17] [[data-theme=dark]_&]:text-[#e8cf78]';
+  'border-warn-border bg-warn-soft text-warn-ink';
 const RED_TONE =
-  'border-[#f3c9c6] bg-[#fce8e6] text-[#c5221f] [[data-theme=dark]_&]:border-border [[data-theme=dark]_&]:bg-[#3a1a17] [[data-theme=dark]_&]:text-[#f87171]';
+  'border-danger-border bg-danger-soft text-danger-ink';
 const DIM_TONE = 'border-border bg-card text-muted';
 
 /** A crest with the monogram fallback every badge in the app carries. */
@@ -90,7 +84,7 @@ function Crest({ src, name, size = 'h-6 w-6' }: { src: string; name: string; siz
   if (!src || broken) {
     return (
       <span
-        className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft`}
+        className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-bold text-muted`}
         aria-hidden="true"
       >
         {(name || '?').trim().charAt(0).toUpperCase() || '?'}
@@ -157,7 +151,7 @@ function Plate({
           {meta ? <span className="text-[11px] text-muted">{meta}</span> : null}
           <ChevronDown
             size={16}
-            className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
           />
         </button>
         {aside}
@@ -201,8 +195,10 @@ function matchHref(
   return `/matches/${id}${search ? `?${search}` : ''}`;
 }
 
-/** The match itself: the competition it is played in, when and where, both sides
- *  with the score the header carries, and the tabs below them. */
+/** The match itself: the competition it is played in, when and where, and both
+ *  sides with the score this header carries. The section tabs are not drawn
+ *  here (see SectionTabs below) so nothing can slip between them and the panel
+ *  they switch. */
 function MatchHeader({ view, href }: { view: NowgoalMatchView; href: Href }) {
   const h = view.header;
   const played = h.homeScore !== null && h.awayScore !== null;
@@ -244,7 +240,7 @@ function MatchHeader({ view, href }: { view: NowgoalMatchView; href: Href }) {
           <span className="text-[20px] font-extrabold tabular-nums">
             {played ? `${h.homeScore} - ${h.awayScore}` : 'vs'}
           </span>
-          <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-semibold text-muted">
+          <span className={BADGE}>
             {badge}
           </span>
         </span>
@@ -263,23 +259,35 @@ function MatchHeader({ view, href }: { view: NowgoalMatchView; href: Href }) {
           {h.splits.map((split) => `${split.label}: ${split.score}`).join(' · ')}
         </p>
       ) : null}
-
-      <div className={`mt-3 border-t border-[rgba(0,0,0,0.06)] pt-2 [[data-theme=dark]_&]:border-[rgba(255,255,255,0.08)] ${ROW}`} role="tablist" aria-label="Match sections">
-        {view.tabs.map((tab) => (
-          <Link
-            key={tab.key}
-            href={href({ tab: tab.key })}
-            scroll={false}
-            role="tab"
-            aria-selected={tab.key === view.tab}
-            className={`no-underline ${tab.key === view.tab ? TAB_ACTIVE : TAB_IDLE}`}
-          >
-            {tab.label}
-            <Pending />
-          </Link>
-        ))}
-      </div>
     </section>
+  );
+}
+
+/** The match's section tabs (Detail / Line Up / H2H). They sit directly above
+ *  the panel they switch, *after* the stream plate: the page's own order is
+ *  who is playing and the score, then how to watch it, then the one section
+ *  that is open — so the strip never lands between the watch plate and the
+ *  section it names. Every tab is a link, scroll={false} keeps the visitor
+ *  where he is, and a match with a single tab has nothing to switch: it draws
+ *  no strip at all. */
+function SectionTabs({ view, href }: { view: NowgoalMatchView; href: Href }) {
+  if (view.tabs.length < 2) return null;
+  return (
+    <div className={`mb-4 ${PILL_ROW}`} role="tablist" aria-label="Match sections">
+      {view.tabs.map((tab) => (
+        <Link
+          key={tab.key}
+          href={href({ tab: tab.key })}
+          scroll={false}
+          role="tab"
+          aria-selected={tab.key === view.tab}
+          className={`no-underline ${tab.key === view.tab ? TAB_ACTIVE : TAB_IDLE}`}
+        >
+          {tab.label}
+          <Pending />
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -295,7 +303,7 @@ function StreamPlate({ view, stream }: { view: NowgoalMatchView; stream: MatchSt
   return (
     <section className={PANEL}>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <h2 className="m-0 flex items-center gap-2 text-[15px] font-bold">
+        <h2 className={PANEL_TITLE}>
           <Tv size={16} className="shrink-0 text-accent" aria-hidden="true" />
           Live stream
         </h2>
@@ -310,7 +318,7 @@ function StreamPlate({ view, stream }: { view: NowgoalMatchView; stream: MatchSt
       </div>
 
       {stream.channels.length ? (
-        <div className={`${ROW} mt-3`}>
+        <div className={`${PILL_ROW} mt-3`}>
           {stream.channels.map((channel) => (
             <Link
               key={channel}
@@ -357,6 +365,9 @@ export function MatchDetail({
     <>
       <MatchHeader view={view} href={href} />
       {stream ? <StreamPlate view={view} stream={stream} /> : null}
+      {/* The sections last, so the strip always sits on top of the panel it
+          switches — and above the content, not the watch plate. */}
+      <SectionTabs view={view} href={href} />
       {view.tab === 'detail' ? <DetailTab view={view} /> : null}
       {view.tab === 'lineup' ? <LineUpTab view={view} /> : null}
       {view.tab === 'h2h' ? <H2HTab view={view} href={href} /> : null}
@@ -368,13 +379,13 @@ export function MatchDetail({
  *  the statistics rows use, the away share in their red (components/Stats.tsx). */
 function Bars({ homePct, awayPct }: { homePct: number; awayPct: number }) {
   return (
-    <div className="flex h-2 overflow-hidden rounded-full bg-[#e5e7eb] [[data-theme=dark]_&]:bg-border-soft">
+    <div className="flex h-2 overflow-hidden rounded-full bg-track">
       <div
-        className="h-full bg-[#16a34a] transition-all duration-300"
+        className="h-full bg-success transition-all duration-300"
         style={{ width: `${homePct}%` }}
       />
       <div
-        className="h-full bg-[#dc2626] transition-all duration-300"
+        className="h-full bg-live transition-all duration-300"
         style={{ width: `${awayPct}%` }}
       />
     </div>
@@ -425,7 +436,7 @@ function EventRow({ event }: { event: NowgoalMatchEvent }) {
       {event.score ? <b className="tabular-nums text-muted">{event.score}</b> : null}
     </span>
   );
-  const divider = 'border-t border-[rgba(0,0,0,0.06)] [[data-theme=dark]_&]:border-[rgba(255,255,255,0.08)]';
+  const divider = 'border-t border-border-soft';
   return (
     <li className={`grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-1.5 first:border-t-0 ${divider}`}>
       {event.side === 'home' ? body : <span aria-hidden="true" />}
@@ -442,7 +453,7 @@ function EventRow({ event }: { event: NowgoalMatchEvent }) {
  *  across the list. */
 function PeriodRow({ period }: { period: NowgoalMatchPeriod }) {
   return (
-    <li className="flex items-center justify-center gap-2 border-t border-[rgba(0,0,0,0.06)] py-2 first:border-t-0 [[data-theme=dark]_&]:border-[rgba(255,255,255,0.08)]">
+    <li className="flex items-center justify-center gap-2 border-t border-border-soft py-2 first:border-t-0">
       <span className="text-[11px] font-bold tracking-wide text-muted">{period.label}</span>
       {period.score ? (
         <span className="text-[12px] font-bold tabular-nums">{period.score}</span>
@@ -551,7 +562,7 @@ function DetailTab({ view }: { view: NowgoalMatchView }) {
           meta={group.label}
           defaultOpen={index === 0}
         >
-          <div className="divide-y divide-[rgba(0,0,0,0.06)] [[data-theme=dark]_&]:divide-[rgba(255,255,255,0.08)]">
+          <div className="divide-y divide-border-soft">
             {group.rows.map((row, rowIndex) => (
               <StatRowLine key={`${row.label}-${rowIndex}`} row={row} />
             ))}
@@ -648,7 +659,7 @@ function LineupSideBlock({
       meta={side.formation ? `Formation ${side.formation}` : undefined}
     >
       {side.lines.length ? (
-        <div className="mt-3 rounded-lg border border-[#d7e6d0] bg-[#eef6ea] px-3 py-4 [[data-theme=dark]_&]:border-border [[data-theme=dark]_&]:bg-[#16241a]">
+        <div className="mt-3 rounded-lg border border-success-border bg-success-soft px-3 py-4">
           <div className="flex flex-col-reverse gap-3">
             {side.lines.map((line, index) => (
               <div key={index} className="flex flex-wrap items-start justify-center gap-2">
@@ -684,7 +695,7 @@ function AbsenceList({ absences }: { absences: NowgoalMatchAbsence[] }) {
       {absences.map((absence, index) => (
         <li
           key={`${absence.id}-${absence.name}-${index}`}
-          className="flex items-center gap-2 border-t border-[rgba(0,0,0,0.06)] py-1.5 first:border-t-0 [[data-theme=dark]_&]:border-[rgba(255,255,255,0.08)]"
+          className="flex items-center gap-2 border-t border-border-soft py-1.5 first:border-t-0"
         >
           <span className="shrink-0 text-[10.5px] font-bold text-muted">{absence.kind}</span>
           {absence.position ? (
@@ -777,9 +788,9 @@ function LineUpTab({ view }: { view: NowgoalMatchView }) {
 /** How a result reads from the side a list follows — the three tones the club
  *  page's own fixtures use (components/TeamDetail.tsx). */
 const RESULT: Record<string, string> = {
-  W: 'bg-[#e6f4ea] text-[#137333] [[data-theme=dark]_&]:bg-[#17351f] [[data-theme=dark]_&]:text-[#6ee7a0]',
-  D: 'bg-[#eef0f2] text-muted [[data-theme=dark]_&]:bg-border-soft',
-  L: 'bg-[#fce8e6] text-[#c5221f] [[data-theme=dark]_&]:bg-[#3a1a17] [[data-theme=dark]_&]:text-[#f87171]',
+  W: 'bg-success-soft text-success-ink',
+  D: 'bg-surface-3 text-muted',
+  L: 'bg-danger-soft text-danger-ink',
 };
 
 /** One line of the strength comparison: both sides' own values with the share of
@@ -857,7 +868,7 @@ function ChipLink({
       className={`no-underline ${active ? CHIP_ACTIVE : CHIP_IDLE}`}
     >
       <span className="max-w-[132px] truncate">{label}</span>
-      <span className={COUNT}>{count}</span>
+      <span className={COUNT_ON}>{count}</span>
       <Pending />
     </Link>
   );
@@ -870,7 +881,7 @@ function ChipLink({
 function MeetingRow({ meeting: m }: { meeting: NowgoalMatchMeeting }) {
   return (
     <li
-      className={`${LINE} mb-2 grid grid-cols-[110px_1fr_auto_1fr_auto] items-center gap-2.5 max-[760px]:grid-cols-[86px_1fr_auto_1fr] max-[760px]:gap-1.5`}
+      className={`${ROW} mb-2 grid grid-cols-[110px_1fr_auto_1fr_auto] items-center gap-2.5 max-[760px]:grid-cols-[86px_1fr_auto_1fr] max-[760px]:gap-1.5`}
     >
       <span className="text-[11px] leading-[1.35] text-muted">
         {m.kickoffMs ? <LocalTime ts={m.kickoffMs} /> : m.date || '—'}
@@ -940,7 +951,7 @@ function MeetingRow({ meeting: m }: { meeting: NowgoalMatchMeeting }) {
 function FixtureLine({ fixture: f }: { fixture: NowgoalMatchFixture }) {
   const away = /^a/i.test(f.venue);
   return (
-    <li className={`${LINE} mb-2 flex flex-wrap items-center gap-x-2.5 gap-y-1`}>
+    <li className={`${ROW} mb-2 flex flex-wrap items-center gap-x-2.5 gap-y-1`}>
       <span className="text-[11px] leading-[1.35] text-muted">
         {f.kickoffMs ? <LocalTime ts={f.kickoffMs} /> : f.date || '—'}
         {f.competition ? (
@@ -989,7 +1000,7 @@ function H2HTab({ view, href }: { view: NowgoalMatchView; href: Href }) {
     { key: 'home', label: header.home.name },
     { key: 'away', label: header.away.name },
   ];
-  const divider = 'divide-y divide-[rgba(0,0,0,0.06)] [[data-theme=dark]_&]:divide-[rgba(255,255,255,0.08)]';
+  const divider = 'divide-y divide-border-soft';
   return (
     <>
       {strength.length ? (
@@ -1012,7 +1023,7 @@ function H2HTab({ view, href }: { view: NowgoalMatchView; href: Href }) {
             : `${last === 'home' ? header.home.name : header.away.name} form`
         }
         aside={
-          <div className={`${ROW} max-w-full`}>
+          <div className={`${PILL_ROW} max-w-full`}>
             {lastTabs.map((option) => (
               <ChipLink
                 key={option.key}
@@ -1039,7 +1050,7 @@ function H2HTab({ view, href }: { view: NowgoalMatchView; href: Href }) {
       <Plate
         title="Fixtures"
         aside={
-          <div className={`${ROW} max-w-full`}>
+          <div className={`${PILL_ROW} max-w-full`}>
             {fixTabs.map((option) => (
               <ChipLink
                 key={option.key}

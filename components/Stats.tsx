@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { MatchStats, MatchStat, Team } from '@/lib/types';
 import { statTypeLabel, isPercentStat } from '@/lib/matchProto';
+import {
+  PANEL,
+} from '@/components/ui';
 
-/** Surface panel, matching the `.panel` style used across the detail page. */
-const PANEL =
-  'mb-4 rounded border border-border bg-panel px-5 py-5 max-[640px]:px-3.5 max-[640px]:py-3.5';
 
 /** Team logo with a monogram fallback. */
 function TeamLogo({ name, logo, size = 'h-6 w-6' }: { name?: string; logo?: string; size?: string }) {
@@ -16,7 +16,7 @@ function TeamLogo({ name, logo, size = 'h-6 w-6' }: { name?: string; logo?: stri
   }
   return (
     <span
-      className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-[#e8eaed] text-[11px] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft`}
+      className={`inline-flex ${size} shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-bold text-muted`}
     >
       {(name ?? '?').charAt(0).toUpperCase()}
     </span>
@@ -60,9 +60,9 @@ function StatRow({ s }: { s: MatchStat }) {
         </span>
         <span className="text-[15px] font-extrabold tabular-nums text-accent">{away}</span>
       </div>
-      <div className="flex h-2 overflow-hidden rounded-full bg-[#e5e7eb] [[data-theme=dark]_&]:bg-border-soft">
-        <div className="h-full bg-[#16a34a] transition-all duration-300" style={{ width: `${homePct}%` }} />
-        <div className="h-full bg-[#dc2626] transition-all duration-300" style={{ width: `${awayPct}%` }} />
+      <div className="flex h-2 overflow-hidden rounded-full bg-track">
+        <div className="h-full bg-success transition-all duration-300" style={{ width: `${homePct}%` }} />
+        <div className="h-full bg-live transition-all duration-300" style={{ width: `${awayPct}%` }} />
       </div>
     </div>
   );
@@ -91,7 +91,7 @@ export function Stats({
         <h3 className="m-0 text-[15px] font-bold">Match Statistics</h3>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -105,7 +105,7 @@ export function Stats({
               <TeamChip name={awayTeam?.name} logo={awayTeam?.logo} align="away" />
             </div>
           </div>
-          <div className="mt-1 divide-y divide-[rgba(0,0,0,0.06)] [[data-theme=dark]_&]:divide-[rgba(255,255,255,0.08)]">
+          <div className="mt-1 divide-y divide-border-soft">
             {stats.map((s) => (
               <StatRow key={s.statType} s={s} />
             ))}

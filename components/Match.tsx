@@ -26,7 +26,7 @@ const LOGO_SIZE: Record<LogoSize, string> = {
 const LOGO_IMG = 'shrink-0 object-contain';
 /** `.logo-empty` — the initial-letter placeholder variant. */
 const LOGO_EMPTY =
-  'inline-flex shrink-0 items-center justify-center bg-[#e8eaed] font-bold text-muted [[data-theme=dark]_&]:bg-border-soft';
+  'inline-flex shrink-0 items-center justify-center bg-surface-2 font-bold text-muted';
 
 /** `.row-team-side` (+ `.row-team > span` / `.detail-team > span` ellipsis). */
 const TEAM_SIDE =
@@ -40,23 +40,23 @@ const TEAM_NAME =
 /** `.status` pill (shared base). */
 const STATUS =
   'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-[11px] py-1 text-[11px] font-semibold';
-/** `.status` — idle. */
-const STATUS_IDLE = `${STATUS} bg-[#f1f3f4] text-muted [[data-theme=dark]_&]:bg-[rgba(255,255,255,0.08)]`;
+/** `.status` — idle (upcoming / finished). */
+const STATUS_IDLE = `${STATUS} bg-surface-2 text-muted`;
 /** `.status.status-live` */
-const STATUS_LIVE = `${STATUS} bg-[var(--live-soft)] text-[#d93025] [[data-theme=dark]_&]:bg-[rgba(255,255,255,0.08)] [[data-theme=dark]_&]:text-[#f87171]`;
+const STATUS_LIVE = `${STATUS} bg-live-soft text-live-ink`;
 /** `.status-live .dot` (blinking live indicator) */
-const STATUS_DOT =
-  'h-[7px] w-[7px] shrink-0 rounded-full bg-current animate-[blink_1.2s_infinite]';
-/** Inline `LIVE` tag shown next to the league name on live match cards —
- *  reuses the live red so it matches the status badge + live phase text. */
+const STATUS_DOT = 'h-[7px] w-[7px] shrink-0 rounded-full bg-current animate-blink';
+/** Inline `LIVE` stamp shown next to the league name on live match cards —
+ *  a solid live fill (with the token that keeps its label readable in both
+ *  themes), so it matches the status badge and the live phase text. */
 const LIVE_LABEL =
-  'inline-flex shrink-0 items-center gap-1 rounded bg-[#d93025] px-1.5 py-px text-[10px] font-extrabold uppercase tracking-[0.06em] text-white [[data-theme=dark]_&]:bg-[#f87171] [[data-theme=dark]_&]:text-[#1a1a1a]';
+  'inline-flex shrink-0 items-center gap-1 rounded bg-live px-1.5 py-px text-[10px] font-extrabold uppercase tracking-[0.06em] text-live-on';
 
 /** Blinking `Live` tag sitting next to the league name — same in every card. */
 function LiveLabel() {
   return (
     <span className={LIVE_LABEL}>
-      <span className="h-1 w-1 rounded-full bg-current animate-[blink_1.2s_infinite]" />
+      <span className="h-1 w-1 rounded-full bg-current animate-blink" />
       Live
     </span>
   );
@@ -67,27 +67,27 @@ function LiveLabel() {
  *  centred content (the side icon columns were removed as duplicates of the
  *  centre). Chrome (radius/padding) and typography mirror the H2H `MeetingRow`. */
 const CARD_CHROME =
-  'w-full rounded-lg border border-l-[3px] bg-card px-3.5 py-2.5 max-[1024px]:px-3.5';
+  'w-full rounded-lg border border-l-[3px] bg-card px-3.5 py-2.5';
 /** `.match-row` base — the interactive variant: lift + shadow on hover. */
 const ROW_BASE =
-  `${CARD_CHROME} block text-left transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow`;
+  `${CARD_CHROME} block text-left transition-[border-color,transform,box-shadow] hover:-translate-y-px hover:shadow`;
 /** `.match-row` (upcoming/idle) — sport-coloured left accent only. */
-const ROW = `${ROW_BASE} border-border border-l-[color:var(--sport-color,transparent)] hover:border-[#c7ccd2]`;
+const ROW = `${ROW_BASE} border-border border-l-[color:var(--sport-color,transparent)] hover:border-border-hover`;
 /** `.match-row.is-live` — live is the exception: the whole border (all sides)
  *  turns red, not just the left accent. */
 const ROW_LIVE = `${ROW_BASE} border-[color:var(--live)]`;
 /** `.match-row` finished — muted gray left accent only (other sides normal). */
-const ROW_FINISHED = `${ROW_BASE} border-border border-l-[#9ca3af]`;
+const ROW_FINISHED = `${ROW_BASE} border-border border-l-[var(--neutral)]`;
 
 /** `MatchHead` (watch page) — the same three states, but read-only: no hover
  *  lift/border-highlight because the card is not clickable. */
 const HEAD = `${CARD_CHROME} block border-border border-l-[color:var(--sport-color,transparent)]`;
 const HEAD_LIVE = `${CARD_CHROME} block border-[color:var(--live)]`;
-const HEAD_FINISHED = `${CARD_CHROME} block border-border border-l-[#9ca3af]`;
+const HEAD_FINISHED = `${CARD_CHROME} block border-border border-l-[var(--neutral)]`;
 
 /** `.sk` shimmer block (pseudo-element rendered via `after:` utilities). */
 const SK =
-  'relative overflow-hidden rounded-lg bg-[#e8eaed] after:absolute after:inset-0 after:content-[""] after:animate-[shimmer_1.4s_infinite] after:bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)] [[data-theme=dark]_&]:bg-border-soft [[data-theme=dark]_&]:after:bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)]';
+  'relative overflow-hidden rounded-lg bg-surface-2 after:absolute after:inset-0 after:content-[""] after:animate-shimmer after:bg-[linear-gradient(90deg,transparent,var(--shimmer),transparent)]';
 
 /** `.detail-countdown` inside `.player-placeholder` (48px, 32px ≤640). */
 const COUNTDOWN =
@@ -273,7 +273,7 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
               Always shown so each card stays self-explanatory even when the
               league group header is scrolled off-screen. */}
           <Box className="mb-2 flex items-center justify-center gap-1 text-[11px] leading-tight text-muted">
-              {match.hot && <Flame className="h-3.5 w-3.5 shrink-0 text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]" />}
+              {match.hot && <Flame className="h-3.5 w-3.5 shrink-0 text-live-ink" />}
               <TeamLogo path={match.league?.logo} name={league} kind="league" size="league" />
               <Box className="min-w-0 max-w-[260px] truncate">{sportName}{' · '}{league}</Box>
               {live && <LiveLabel />}
@@ -284,7 +284,7 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
             </span>
             <span className="flex min-w-[72px] items-center justify-center px-1">
               {started ? (
-                <span className="whitespace-nowrap text-[15px] font-extrabold tabular-nums">{score(match.homeScore)} : {score(match.awayScore)}</span>
+                <span className="whitespace-nowrap text-[16px] font-extrabold tabular-nums">{score(match.homeScore)} : {score(match.awayScore)}</span>
               ) : (
                 <span className="whitespace-nowrap text-[13px] font-bold uppercase tracking-[0.08em] text-muted">VS</span>
               )}
@@ -295,9 +295,9 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
           </Grid>
           <span className="mt-2 flex justify-center">
             {live ? (
-              <span className="whitespace-nowrap text-[11px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">{statusLabel(match.status)}</span>
+              <span className="whitespace-nowrap text-[12px] font-semibold text-live-ink">{statusLabel(match.status)}</span>
             ) : (
-              <span className="text-[11px] text-muted"><LocalTime ts={match.matchDate} /></span>
+              <span className="text-[12px] text-muted"><LocalTime ts={match.matchDate} /></span>
             )}
           </span>
         </Box>
@@ -310,9 +310,9 @@ function CardContent({ match, heading = false }: { match: Match; heading?: boole
           </span>
           <Grid className={`${reset}truncate text-[15px] font-bold`} title={eventName}>{eventName}</Grid>
           {live ? (
-            <span className="whitespace-nowrap text-[11px] font-semibold text-[#d93025] [[data-theme=dark]_&]:text-[#f87171]">{statusLabel(match.status)}</span>
+            <span className="whitespace-nowrap text-[12px] font-semibold text-live-ink">{statusLabel(match.status)}</span>
           ) : (
-            <span className="text-[11px] text-muted"><LocalTime ts={match.matchDate} /></span>
+            <span className="text-[12px] text-muted"><LocalTime ts={match.matchDate} /></span>
           )}
         </Box>
       )}
